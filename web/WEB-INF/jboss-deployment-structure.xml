@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure>  
+    <deployment>
+        <exclusions>  
+            <module name="org.apache.log4j" />  
+            <module name="org.slf4j" />
+            <module name="org.jboss.as.webservices" />
+        </exclusions>  
+        <exclude-subsystems>
+            <subsystem name="logging"/>
+            <subsystem name="webservices"/>
+        </exclude-subsystems>
+        <resources>  
+            <resource-root path="WEB-INF/lib/bcprov-jdk15on-150.jar" use-physical-code-source="true"/>
+        </resources> 
+    </deployment>  
+</jboss-deployment-structure> 
