@@ -3,11 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package vn.mobileid.id.general.keycloak;
+package vn.mobileid.id.general.keycloak.obj;
 
+import vn.mobileid.id.general.keycloak.obj.Certificate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
 /**
  *
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class KeycloakRes {
+    private int status;
     private String access_token;
     private int expires_in;
     private int refresh_expires_in;
@@ -26,6 +29,20 @@ public class KeycloakRes {
     //Error
     private String error;
     private String error_description;
+    
+    //Certificate Keycloak
+    private List<Certificate> key;
+
+    //User
+    private User user;
+    
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }        
     
     @JsonProperty("access_token")
     public String getAccess_token() {
@@ -97,6 +114,23 @@ public class KeycloakRes {
 
     public void setError_description(String error_description) {
         this.error_description = error_description;
+    }
+
+    @JsonProperty("keys")
+    public List<Certificate> getKey() {
+        return key;
+    }
+
+    public void setKey(List<Certificate> key) {
+        this.key = key;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
     
     

@@ -1,2 +1,161 @@
-[WARN ] 2023-01-03 09:44:54.594 [default task-1] ServicesController -- ClientID:null
-[ERROR] 2023-01-03 09:44:54.606 [default task-1] QryptoService -- lOG INTO
+[DEBUG] 2023-01-06 14:57:57.240 [default task-1] ServicesController -- Request fail
+[DEBUG] 2023-01-06 14:57:57.244 [default task-1] ServicesController -- Status:401
+[DEBUG] 2023-01-06 14:57:57.245 [default task-1] ServicesController -- Message:{
+  "error_description" : "MISSING_ACCESS_TOKEN"
+}
+[ERROR] 2023-01-06 14:58:46.193 [default task-3] ServicesController -- Error Parsing ObjectMapper
+[ERROR] 2023-01-06 15:00:53.226 [default task-4] ServicesController -- Error Parsing ObjectMapper
+[ERROR] 2023-01-06 15:01:57.346 [default task-5] ServicesController -- Error Parsing ObjectMapper - Detail:java.lang.IllegalArgumentException: Illegal base64 character 20
+[INFO ] 2023-01-06 15:04:18.958 [default task-6] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:04:18.964 [default task-6] ManageToken -- Checking Header!!
+[ERROR] 2023-01-06 15:04:18.967 [default task-6] ServicesController -- Error Parsing ObjectMapper - Detail:java.lang.IllegalArgumentException: Illegal base64 character 20
+[INFO ] 2023-01-06 15:08:10.940 [default task-7] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:08:10.945 [default task-7] ManageToken -- Checking Header!!
+[ERROR] 2023-01-06 15:08:10.949 [default task-7] KeyCloakInvocation -- Error while decode token!
+[INFO ] 2023-01-06 15:08:10.949 [default task-7] ManageToken -- Verfy:1
+[ERROR] 2023-01-06 15:08:10.949 [default task-7] ServicesController -- Error Parsing ObjectMapper - Detail:java.lang.NullPointerException
+[INFO ] 2023-01-06 15:10:00.330 [default task-8] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:10:00.334 [default task-8] ManageToken -- Checking Header!!
+[ERROR] 2023-01-06 15:10:00.338 [default task-8] KeyCloakInvocation -- Error while decode token!java.lang.IllegalArgumentException: Illegal base64 character 20
+[INFO ] 2023-01-06 15:10:00.338 [default task-8] ManageToken -- Verfy:1
+[ERROR] 2023-01-06 15:10:00.338 [default task-8] ServicesController -- Error Parsing ObjectMapper - Detail:java.lang.NullPointerException
+[INFO ] 2023-01-06 15:13:05.393 [default task-9] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:13:05.397 [default task-9] ManageToken -- Checking Header!!
+[ERROR] 2023-01-06 15:13:05.416 [default task-9] KeyCloakInvocation -- Error while decode token!java.lang.IllegalArgumentException: Illegal base64 character 20
+[INFO ] 2023-01-06 15:13:05.416 [default task-9] ManageToken -- Verfy:1
+[ERROR] 2023-01-06 15:13:05.416 [default task-9] ServicesController -- Error Parsing ObjectMapper - Detail:java.lang.NullPointerException
+[INFO ] 2023-01-06 15:14:46.045 [default task-10] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:14:46.051 [default task-10] ManageToken -- Checking Header!!
+[DEBUG] 2023-01-06 15:14:46.055 [default task-10] KeyCloakInvocation -- Header:Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxSEFyRGRxRFFHYWRWX3dKaUpSLXItdjlUbUpVVldILURxSzRBM0xQT2xvIn0
+[DEBUG] 2023-01-06 15:14:46.055 [default task-10] KeyCloakInvocation -- Payload:eyJleHAiOjE2NzI5OTIyMjEsImlhdCI6MTY3Mjk5MTkyMSwianRpIjoiZWQ2M2QyMTUtYzdlYi00MDQ0LTlkZWItMDE4MzE0MDJjNjdhIiwiaXNzIjoiaHR0cDovLzE5Mi4xNjguMTk4LjEyMDo4MDgxL2F1dGgvcmVhbG1zL1FyeXB0b1JlYWxtIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjVhZTkzYWNkLTk0OTMtNGVhNi1hYTkyLThhMTQyYWRiYzI3MSIsInR5cCI6IkJlYXJlciIsImF6cCI6InFyeXB0b1VzZXIiLCJzZXNzaW9uX3N0YXRlIjoiNmNhMjQzNTAtNjZmNi00YThlLTk3Y2UtMDQwYTEwYTQ5YjZiIiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLXFyeXB0b3JlYWxtIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjZjYTI0MzUwLTY2ZjYtNGE4ZS05N2NlLTA0MGExMGE0OWI2YiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlRhdCBHaWEiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJ1c2VyMiIsImdpdmVuX25hbWUiOiJUYXQiLCJmYW1pbHlfbmFtZSI6IkdpYSIsImVtYWlsIjoiZ2lhdGtAbW9iaWxlLWlkLnZuIn0
+[DEBUG] 2023-01-06 15:14:46.055 [default task-10] KeyCloakInvocation -- Signature:E6f3vIKJo6yPSLkF8TTIQdBkuFen_QpW0T7dCDMEQpnKQ1_7s3ioAQ2g87TVpW6uXuSyxSoa8CZSR9qw2xx41Hyh42c0yN9_qqiJhUKvZdKFQFfTyiea5xryzcvkH_n1mJYNpsOnGV7JwiwE8zwWqMIgSFwl4Qg8XbiagZpPE9y4rlZGI2uPD71yUhZj9ObjJNgebbJRx0OcZQLLXB6YHQa7VsX4Fy-fdGGn9iGbDxuWgiB5-3lbxbV1ocYTbtPCfVdzLiSLIuKeQbhSD74-XucuZDNFnRTcnJkWslhSOI9HtzWkDYgt1Iy7XzYkZzUb9ulrEf25zEpYTOg5vviNrA
+[ERROR] 2023-01-06 15:14:46.055 [default task-10] KeyCloakInvocation -- Error while decode token!java.lang.IllegalArgumentException: Illegal base64 character 20
+[INFO ] 2023-01-06 15:14:46.055 [default task-10] ManageToken -- Verfy:1
+[ERROR] 2023-01-06 15:14:46.055 [default task-10] ServicesController -- Error Parsing ObjectMapper - Detail:java.lang.NullPointerException
+[INFO ] 2023-01-06 15:16:26.573 [default task-11] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:16:26.579 [default task-11] ManageToken -- Checking Header!!
+[DEBUG] 2023-01-06 15:16:26.585 [default task-11] KeyCloakInvocation -- Header:{"alg":"RS256","typ" : "JWT","kid" : "1HArDdqDQGadV_wJiJR-r-v9TmJUVWH-DqK4A3LPOlo"}
+[DEBUG] 2023-01-06 15:16:26.585 [default task-11] KeyCloakInvocation -- Alg:RS256
+[DEBUG] 2023-01-06 15:16:26.585 [default task-11] KeyCloakInvocation -- Payload:{"exp":1672992221,"iat":1672991921,"jti":"ed63d215-c7eb-4044-9deb-01831402c67a","iss":"http://192.168.198.120:8081/auth/realms/QryptoRealm","aud":"account","sub":"5ae93acd-9493-4ea6-aa92-8a142adbc271","typ":"Bearer","azp":"qryptoUser","session_state":"6ca24350-66f6-4a8e-97ce-040a10a49b6b","acr":"1","realm_access":{"roles":["default-roles-qryptorealm","offline_access","uma_authorization"]},"resource_access":{"account":{"roles":["manage-account","manage-account-links","view-profile"]}},"scope":"profile email","sid":"6ca24350-66f6-4a8e-97ce-040a10a49b6b","email_verified":false,"name":"Tat Gia","preferred_username":"user2","given_name":"Tat","family_name":"Gia","email":"giatk@mobile-id.vn"}
+[DEBUG] 2023-01-06 15:16:26.585 [default task-11] KeyCloakInvocation -- Signature:E6f3vIKJo6yPSLkF8TTIQdBkuFen_QpW0T7dCDMEQpnKQ1_7s3ioAQ2g87TVpW6uXuSyxSoa8CZSR9qw2xx41Hyh42c0yN9_qqiJhUKvZdKFQFfTyiea5xryzcvkH_n1mJYNpsOnGV7JwiwE8zwWqMIgSFwl4Qg8XbiagZpPE9y4rlZGI2uPD71yUhZj9ObjJNgebbJRx0OcZQLLXB6YHQa7VsX4Fy-fdGGn9iGbDxuWgiB5-3lbxbV1ocYTbtPCfVdzLiSLIuKeQbhSD74-XucuZDNFnRTcnJkWslhSOI9HtzWkDYgt1Iy7XzYkZzUb9ulrEf25zEpYTOg5vviNrA
+[DEBUG] 2023-01-06 15:16:26.585 [default task-11] KeyCloakInvocation -- Get IAM Certificate!
+[ERROR] 2023-01-06 15:16:26.727 [default task-11] KeyCloakInvocation -- Token is invalid!
+[INFO ] 2023-01-06 15:16:26.727 [default task-11] ManageToken -- Verfy:1
+[ERROR] 2023-01-06 15:16:26.996 [default task-11] QryptoMessageResponse -- Response code 5000 is not defined in database.
+[ERROR] 2023-01-06 15:16:27.036 [default task-11] QryptoMessageResponse -- UNKNOWN EXCEPTION. Details: java.lang.NullPointerException
+	at vn.mobileid.id.qrypto.objects.QryptoMessageResponse.getMessage(QryptoMessageResponse.java:73)
+	at vn.mobileid.id.qrypto.kernel.ManageToken.verifyAccessToken(ManageToken.java:306)
+	at vn.mobileid.id.qrypto.QryptoService.verifyToken(QryptoService.java:267)
+	at vn.mobileid.id.general.api.ServicesController.verify(ServicesController.java:218)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.glassfish.jersey.server.model.internal.ResourceMethodInvocationHandlerFactory$1.invoke(ResourceMethodInvocationHandlerFactory.java:81)
+	at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher$1.run(AbstractJavaResourceMethodDispatcher.java:144)
+	at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher.invoke(AbstractJavaResourceMethodDispatcher.java:161)
+	at org.glassfish.jersey.server.model.internal.JavaResourceMethodDispatcherProvider$ResponseOutInvoker.doDispatch(JavaResourceMethodDispatcherProvider.java:160)
+	at org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher.dispatch(AbstractJavaResourceMethodDispatcher.java:99)
+	at org.glassfish.jersey.server.model.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:389)
+	at org.glassfish.jersey.server.model.ResourceMethodInvoker.apply(ResourceMethodInvoker.java:347)
+	at org.glassfish.jersey.server.model.ResourceMethodInvoker.apply(ResourceMethodInvoker.java:102)
+	at org.glassfish.jersey.server.ServerRuntime$2.run(ServerRuntime.java:326)
+	at org.glassfish.jersey.internal.Errors$1.call(Errors.java:271)
+	at org.glassfish.jersey.internal.Errors$1.call(Errors.java:267)
+	at org.glassfish.jersey.internal.Errors.process(Errors.java:315)
+	at org.glassfish.jersey.internal.Errors.process(Errors.java:297)
+	at org.glassfish.jersey.internal.Errors.process(Errors.java:267)
+	at org.glassfish.jersey.process.internal.RequestScope.runInScope(RequestScope.java:317)
+	at org.glassfish.jersey.server.ServerRuntime.process(ServerRuntime.java:305)
+	at org.glassfish.jersey.server.ApplicationHandler.handle(ApplicationHandler.java:1154)
+	at org.glassfish.jersey.servlet.WebComponent.serviceImpl(WebComponent.java:473)
+	at org.glassfish.jersey.servlet.WebComponent.service(WebComponent.java:427)
+	at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:388)
+	at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:341)
+	at org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:228)
+	at io.undertow.servlet.handlers.ServletHandler.handleRequest(ServletHandler.java:85)
+	at io.undertow.servlet.handlers.security.ServletSecurityRoleHandler.handleRequest(ServletSecurityRoleHandler.java:62)
+	at io.undertow.servlet.handlers.ServletDispatchingHandler.handleRequest(ServletDispatchingHandler.java:36)
+	at org.wildfly.extension.undertow.security.SecurityContextAssociationHandler.handleRequest(SecurityContextAssociationHandler.java:78)
+	at io.undertow.server.handlers.PredicateHandler.handleRequest(PredicateHandler.java:43)
+	at io.undertow.servlet.handlers.security.SSLInformationAssociationHandler.handleRequest(SSLInformationAssociationHandler.java:131)
+	at io.undertow.servlet.handlers.security.ServletAuthenticationCallHandler.handleRequest(ServletAuthenticationCallHandler.java:57)
+	at io.undertow.server.handlers.PredicateHandler.handleRequest(PredicateHandler.java:43)
+	at io.undertow.security.handlers.AbstractConfidentialityHandler.handleRequest(AbstractConfidentialityHandler.java:46)
+	at io.undertow.servlet.handlers.security.ServletConfidentialityConstraintHandler.handleRequest(ServletConfidentialityConstraintHandler.java:64)
+	at io.undertow.security.handlers.AuthenticationMechanismsHandler.handleRequest(AuthenticationMechanismsHandler.java:60)
+	at io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler.handleRequest(CachedAuthenticatedSessionHandler.java:77)
+	at io.undertow.security.handlers.NotificationReceiverHandler.handleRequest(NotificationReceiverHandler.java:50)
+	at io.undertow.security.handlers.AbstractSecurityContextAssociationHandler.handleRequest(AbstractSecurityContextAssociationHandler.java:43)
+	at io.undertow.server.handlers.PredicateHandler.handleRequest(PredicateHandler.java:43)
+	at org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler.handleRequest(JACCContextIdHandler.java:61)
+	at io.undertow.server.handlers.PredicateHandler.handleRequest(PredicateHandler.java:43)
+	at io.undertow.server.handlers.PredicateHandler.handleRequest(PredicateHandler.java:43)
+	at io.undertow.servlet.handlers.ServletInitialHandler.handleFirstRequest(ServletInitialHandler.java:292)
+	at io.undertow.servlet.handlers.ServletInitialHandler.access$100(ServletInitialHandler.java:81)
+	at io.undertow.servlet.handlers.ServletInitialHandler$2.call(ServletInitialHandler.java:138)
+	at io.undertow.servlet.handlers.ServletInitialHandler$2.call(ServletInitialHandler.java:135)
+	at io.undertow.servlet.core.ServletRequestContextThreadSetupAction$1.call(ServletRequestContextThreadSetupAction.java:48)
+	at io.undertow.servlet.core.ContextClassLoaderSetupAction$1.call(ContextClassLoaderSetupAction.java:43)
+	at io.undertow.servlet.api.LegacyThreadSetupActionWrapper$1.call(LegacyThreadSetupActionWrapper.java:44)
+	at io.undertow.servlet.api.LegacyThreadSetupActionWrapper$1.call(LegacyThreadSetupActionWrapper.java:44)
+	at io.undertow.servlet.api.LegacyThreadSetupActionWrapper$1.call(LegacyThreadSetupActionWrapper.java:44)
+	at io.undertow.servlet.api.LegacyThreadSetupActionWrapper$1.call(LegacyThreadSetupActionWrapper.java:44)
+	at io.undertow.servlet.api.LegacyThreadSetupActionWrapper$1.call(LegacyThreadSetupActionWrapper.java:44)
+	at io.undertow.servlet.handlers.ServletInitialHandler.dispatchRequest(ServletInitialHandler.java:272)
+	at io.undertow.servlet.handlers.ServletInitialHandler.access$000(ServletInitialHandler.java:81)
+	at io.undertow.servlet.handlers.ServletInitialHandler$1.handleRequest(ServletInitialHandler.java:104)
+	at io.undertow.server.Connectors.executeRootHandler(Connectors.java:202)
+	at io.undertow.server.HttpServerExchange$1.run(HttpServerExchange.java:805)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+[DEBUG] 2023-01-06 15:16:27.036 [default task-11] ServicesController -- Request fail
+[DEBUG] 2023-01-06 15:16:27.037 [default task-11] ServicesController -- Status:400
+[DEBUG] 2023-01-06 15:16:27.037 [default task-11] ServicesController -- Message:["Internal server exception"]
+[INFO ] 2023-01-06 15:19:53.330 [default task-12] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:19:53.336 [default task-12] ManageToken -- Checking Header!!
+[DEBUG] 2023-01-06 15:19:53.340 [default task-12] KeyCloakInvocation -- Get IAM Certificate!
+[ERROR] 2023-01-06 15:19:53.452 [default task-12] KeyCloakInvocation -- Token is invalid!
+[DEBUG] 2023-01-06 15:19:53.916 [default task-12] ServicesController -- Request fail
+[DEBUG] 2023-01-06 15:19:53.916 [default task-12] ServicesController -- Status:400
+[DEBUG] 2023-01-06 15:19:53.916 [default task-12] ServicesController -- Message:{
+  "error_description" : "INVALID_TOKEN"
+}
+[DEBUG] 2023-01-06 15:20:29.848 [main] KeyCloakInvocation -- Get IAM Certificate!
+[ERROR] 2023-01-06 15:20:30.816 [main] KeyCloakInvocation -- Expired token!
+[ERROR] 2023-01-06 15:20:42.224 [main] KeyCloakInvocation -- Error while decode token!java.lang.StringIndexOutOfBoundsException: String index out of range: -9
+[DEBUG] 2023-01-06 15:21:28.596 [main] KeyCloakInvocation -- Get IAM Certificate!
+[ERROR] 2023-01-06 15:21:29.671 [main] KeyCloakInvocation -- Token is invalid!
+[DEBUG] 2023-01-06 15:21:40.164 [main] KeyCloakInvocation -- Get IAM Certificate!
+[ERROR] 2023-01-06 15:21:41.125 [main] KeyCloakInvocation -- Expired token!
+[INFO ] 2023-01-06 15:22:03.950 [default task-14] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:22:03.951 [default task-14] ManageToken -- Checking Header!!
+[ERROR] 2023-01-06 15:22:03.955 [default task-14] KeyCloakInvocation -- Token is invalid!
+[DEBUG] 2023-01-06 15:22:03.955 [default task-14] ServicesController -- Request fail
+[DEBUG] 2023-01-06 15:22:03.955 [default task-14] ServicesController -- Status:400
+[DEBUG] 2023-01-06 15:22:03.955 [default task-14] ServicesController -- Message:{
+  "error_description" : "INVALID_TOKEN"
+}
+[DEBUG] 2023-01-06 15:22:13.242 [main] KeyCloakInvocation -- Get IAM Certificate!
+[INFO ] 2023-01-06 15:23:37.977 [default task-15] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:23:37.982 [default task-15] ManageToken -- Checking Header!!
+[DEBUG] 2023-01-06 15:23:37.985 [default task-15] KeyCloakInvocation -- Get IAM Certificate!
+[INFO ] 2023-01-06 15:23:43.698 [default task-16] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:23:43.698 [default task-16] ManageToken -- Checking Header!!
+[ERROR] 2023-01-06 15:23:43.699 [default task-16] KeyCloakInvocation -- Error while decode token!java.lang.StringIndexOutOfBoundsException: String index out of range: -12
+[ERROR] 2023-01-06 15:23:43.699 [default task-16] ServicesController -- Error Parsing ObjectMapper - Detail:java.lang.NullPointerException
+[INFO ] 2023-01-06 15:30:27.473 [default task-17] QryptoService -- Verifing---
+[INFO ] 2023-01-06 15:30:27.478 [default task-17] ManageToken -- Checking Header!!
+[ERROR] 2023-01-06 15:30:27.481 [default task-17] KeyCloakInvocation -- Error while decode token!java.lang.StringIndexOutOfBoundsException: String index out of range: -12
+[DEBUG] 2023-01-06 15:30:27.768 [default task-17] ServicesController -- Request fail
+[DEBUG] 2023-01-06 15:30:27.768 [default task-17] ServicesController -- Status:400
+[DEBUG] 2023-01-06 15:30:27.768 [default task-17] ServicesController -- Message:{
+  "error_description" : "INVALID_TOKEN"
+}
+[DEBUG] 2023-01-06 15:51:35.932 [default task-18] ServicesController -- Request fail
+[DEBUG] 2023-01-06 15:51:35.932 [default task-18] ServicesController -- Status:403
+[DEBUG] 2023-01-06 15:51:35.932 [default task-18] ServicesController -- Message:{
+  "error_description" : "VALUE_EXISTED"
+}

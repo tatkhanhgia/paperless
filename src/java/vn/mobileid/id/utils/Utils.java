@@ -5,7 +5,7 @@
  */
 package vn.mobileid.id.utils;
 
-import vn.mobileid.id.qrypto.objects.QryptoConstant;
+import vn.mobileid.id.qrypto.QryptoConstant;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -47,7 +47,6 @@ import org.apache.commons.lang3.SerializationUtils;
 
 //import org.json.simple.JSONObject;
 //import org.json.simple.parser.JSONParser;
-
 import vn.mobileid.id.general.email.EmailReq;
 import vn.mobileid.id.general.email.EmailResp;
 import vn.mobileid.id.general.objects.CredentialTokensJSNObject;
@@ -59,6 +58,8 @@ import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import com.google.gson.Gson;
+import java.util.Map;
+import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -151,7 +152,7 @@ public class Utils {
     }
      */
     public static String walk(String path, String fileName) {
-        try (Stream<Path> walk = Files.walk(Paths.get(path))) {
+        try ( Stream<Path> walk = Files.walk(Paths.get(path))) {
 
             List<String> result = walk.filter(Files::isRegularFile)
                     .map(x -> x.toString()).collect(Collectors.toList());
@@ -443,7 +444,6 @@ public class Utils {
 //        json = gson.toJson(emailReq);
 //        return json;
 //    }
-
     public static String toJson(EmailResp o) {
         String json = null;
         byte[] byte4null = new byte[4];
@@ -468,7 +468,6 @@ public class Utils {
 //        json = gson.toJson(smsReq);
 //        return json;
 //    }
-
     public static String toJson(SmsResp o) {
         String json = null;
         byte[] byte4null = new byte[4];
@@ -493,7 +492,6 @@ public class Utils {
 //        json = gson.toJson(ocrReq);
 //        return json;
 //    }
-
 //    public static String toJson(OCRResp o) {
 //        String json = null;
 //        byte[] byte4null = new byte[4];
@@ -501,7 +499,6 @@ public class Utils {
 //        json = gson.toJson(ocrResp);
 //        return json;
 //    }
-
 //    public static String toJson(DocumentMatchingReq o) {
 //        String json = null;
 //        byte[] byte4null = new byte[4];
@@ -558,7 +555,6 @@ public class Utils {
 //        json = gson.toJson(documentMatchingReq);
 //        return json;
 //    }
-
 //    public static String toJson(DocumentMatchingResp o) {
 //        String json = null;
 //        byte[] byte4null = new byte[4];
@@ -569,7 +565,6 @@ public class Utils {
 //        json = gson.toJson(documentMatchingResp);
 //        return json;
 //    }
-
 //    public static String toJson(ValidationReq o) {
 //        String json = null;
 //        byte[] byte4null = new byte[4];
@@ -581,7 +576,6 @@ public class Utils {
 //        json = gson.toJson(validationReq);
 //        return json;
 //    }
-
 //    public static String toJson(ValidationResp o) {
 //        String json = null;
 //        byte[] byte4null = new byte[4];
@@ -596,7 +590,6 @@ public class Utils {
 //        json = gson.toJson(validationResp);
 //        return json;
 //    }
-
     public static String detectSequenceNumber(String str) {
         List<String> seqNumber = new ArrayList<>();
         for (int i = 0; i < str.length(); i++) {
@@ -628,7 +621,6 @@ public class Utils {
 //        json = gson.toJson(dmsReq);
 //        return json;
 //    }
-
 //    public static String toJson(DMSResp o) {
 //        String json = null;
 //        byte[] byte4null = new byte[4];
@@ -637,7 +629,6 @@ public class Utils {
 //        json = gson.toJson(dmsResp);
 //        return json;
 //    }
-
     public static String getRandomFileName(String currentYearMonth, String hashData) {
         return "local_".concat(currentYearMonth).concat(hashData);
     }
@@ -684,7 +675,7 @@ public class Utils {
 
             fullPath = fullPath.concat(fileName);
 
-            try (OutputStream os = new FileOutputStream(fullPath)) {
+            try ( OutputStream os = new FileOutputStream(fullPath)) {
                 IOUtils.write(fileData, os);
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("The document " + docName + " is now stored in " + fullPath);
@@ -735,7 +726,7 @@ public class Utils {
         File f = new File(fullPath);
         if (f.exists()) {
             byte[] fileData;
-            try (InputStream is = new FileInputStream(fullPath)) {
+            try ( InputStream is = new FileInputStream(fullPath)) {
                 fileData = IOUtils.toByteArray(is);
             }
             return fileData;
@@ -747,7 +738,7 @@ public class Utils {
             f = new File(fullPath);
             if (f.exists()) {
                 byte[] fileData;
-                try (InputStream is = new FileInputStream(fullPath)) {
+                try ( InputStream is = new FileInputStream(fullPath)) {
                     fileData = IOUtils.toByteArray(is);
                 }
                 return fileData;
@@ -765,7 +756,7 @@ public class Utils {
                 f = new File(fullPath);
                 if (f.exists()) {
                     byte[] fileData;
-                    try (InputStream is = new FileInputStream(fullPath)) {
+                    try ( InputStream is = new FileInputStream(fullPath)) {
                         fileData = IOUtils.toByteArray(is);
                     }
                     return fileData;
@@ -803,7 +794,6 @@ public class Utils {
 //        }
 //        return IdentityConstant.INVALID_JSON_STRING;
 //    }
-
     public static String objectToJson(Object o, ObjectMapper mapper) {
         try {
             return mapper.writeValueAsString(o);
@@ -907,7 +897,6 @@ public class Utils {
 //            }
 //        }
 //    }
-
     public static String processOTPPolicy(String otpCode, String otpPolicy) {
         //0 number of digit in a group
         //1 character between each group
@@ -969,7 +958,6 @@ public class Utils {
 //        }
 //        return null;
 //    }
-
 //    public static String preProcessPayloadWithLargeDataLiveness(String payload) {
 //        try {
 //            ObjectMapper objectMapper = new ObjectMapper();
@@ -988,7 +976,6 @@ public class Utils {
 //        }
 //        return null;
 //    }
-
 //    public static String preProcessPayloadWithLargeDataFaceMatch(String payload) {
 //        try {
 //            ObjectMapper objectMapper = new ObjectMapper();
@@ -1007,7 +994,6 @@ public class Utils {
 //        }
 //        return null;
 //    }
-
 //    public static String preProcessPayloadWithLargeDataEnroll(String payload) {
 //        try {
 //            ObjectMapper objectMapper = new ObjectMapper();
@@ -1026,7 +1012,6 @@ public class Utils {
 //        }
 //        return null;
 //    }
-
     public static Date convertToUTC(Date d) throws ParseException {
         SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         String s = isoFormat.format(d);
@@ -1034,7 +1019,7 @@ public class Utils {
         Date date = isoFormat.parse(s);
         return date;
     }
-    
+
     public static String convertToGMT(Date d) throws ParseException {
         SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z");
         isoFormat.setTimeZone(TimeZone.getTimeZone("GMT+07:00"));
@@ -1057,5 +1042,25 @@ public class Utils {
             }
         }
         return (new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z").format(time));
+    }
+
+    public static HashMap<String, String> getDataFromURLEncode(String payload) {
+        try {
+            LOG.info("Payload URL Encoded:" + payload);
+            HashMap<String, String> map = new HashMap<>();
+            String[] temp = payload.split("&");
+            for (String temp2 : temp) {
+                StringTokenizer token = new StringTokenizer(temp2, "=", false);
+                while (token.hasMoreElements()) {
+                    map.put(token.nextToken(), token.nextToken());
+                }
+            }
+            return map;
+        } catch (Exception e) {
+//            if(LogHandler.isShowErrorLog()){
+            LOG.error("Cannot parse data from URL Encode");
+//            }
+            return null;
+        }
     }
 }

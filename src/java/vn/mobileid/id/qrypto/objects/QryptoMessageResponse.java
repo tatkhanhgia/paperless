@@ -16,9 +16,9 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.keycloak.KeycloakRes;
+import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
 import vn.mobileid.id.general.objects.ResponseMessageJSNObject;
-import vn.mobileid.id.qrypto.objects.QryptoConstant;
+import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.response.QryptoErrorMessageJSNObject;
 import vn.mobileid.id.qrypto.objects.response.QryptoGetTokenMessageJSNObject;
 import vn.mobileid.id.utils.Configuration;
@@ -48,6 +48,7 @@ public class QryptoMessageResponse {
         return lang;
     }
 
+    //Error Message
     public static String getMessage(int code, int subCode, String lang, String transactionID) {
         try {
             QryptoErrorMessageJSNObject responseMessageJSNObject = new QryptoErrorMessageJSNObject();
@@ -63,21 +64,21 @@ public class QryptoMessageResponse {
                 responseMessageJSNObject.setCode_description(responseCode.getCode_description());
                 return objectMapper.writeValueAsString(responseMessageJSNObject);
             } else {
-                Database db = new DatabaseImpl();
-                responseCode = db.getResponse(String.valueOf(code));
-                if (responseCode == null) {
+//                Database db = new DatabaseImpl();
+//                responseCode = db.getResponse(String.valueOf(code));
+//                if (responseCode == null) {
                     if (LogHandler.isShowErrorLog()) {
                         LOG.error("Response code " + code + " is not defined in database.");
                     }
                     responseMessageJSNObject.setCode(responseCode.getCode());
                     responseMessageJSNObject.setCode_description(responseCode.getCode_description());
                     return objectMapper.writeValueAsString(responseMessageJSNObject);
-                } else {
-                    Resources.getResponseCodes().put(strCode, responseCode);
-                    responseMessageJSNObject.setCode(responseCode.getCode());
-                    responseMessageJSNObject.setCode_description(responseCode.getCode_description());
-                    return objectMapper.writeValueAsString(responseMessageJSNObject);
-                }
+//                } else {
+//                    Resources.getResponseCodes().put(strCode, responseCode);
+//                    responseMessageJSNObject.setCode(responseCode.getCode());
+//                    responseMessageJSNObject.setCode_description(responseCode.getCode_description());
+//                    return objectMapper.writeValueAsString(responseMessageJSNObject);
+//                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,7 +113,7 @@ public class QryptoMessageResponse {
                 responseMessageJSNObject.setRefreshToken_expires_in(result.getRefresh_expires_in());
                 responseMessageJSNObject.setTokenType(result.getToken_type());
                 responseMessageJSNObject.setScope(result.getScope());
-                
+
                 return objectMapper.writeValueAsString(responseMessageJSNObject);
             } else {
                 Database db = new DatabaseImpl();
@@ -156,6 +157,49 @@ public class QryptoMessageResponse {
             return QryptoConstant.INTERNAL_EXP_MESS;
         }
     }
+
+//    public static String getCreateWorkflowMessage(
+//            int code,
+//            int subCode,
+//            String lang,
+//            String workflowID
+//    ) {
+//        try {
+//            QryptoCreateWorkflowMessageJSNObject responseMessageJSNObject = new QryptoCreateWorkflowMessageJSNObject();
+//            String strCode = String.valueOf(code) + "." + String.valueOf(subCode);
+//            ResponseCode responseCode = Resources.getResponseCodes().get(strCode);
+//            if (responseCode == null) {
+//                Resources.reloadResponseCodes();
+//                responseCode = Resources.getResponseCodes().get(strCode);
+//            }
+//
+//            if (responseCode != null) {
+//                responseMessageJSNObject.setWorkflow_id(workflowID);
+//                return objectMapper.writeValueAsString(responseMessageJSNObject);
+//            } else {
+//                Database db = new DatabaseImpl();
+//                responseCode = db.getResponse(String.valueOf(code));
+//                if (responseCode == null) {
+//                    if (LogHandler.isShowErrorLog()) {
+//                        LOG.error("Response code " + code + " is not defined in database.");
+//                    }
+//                    responseMessageJSNObject.setWorkflow_id(workflowID);
+//
+//                    return objectMapper.writeValueAsString(responseMessageJSNObject);
+//                } else {
+//                    Resources.getResponseCodes().put(strCode, responseCode);
+//                    responseMessageJSNObject.setWorkflow_id(workflowID);
+//                    return objectMapper.writeValueAsString(responseMessageJSNObject);
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+//            }
+//            return QryptoConstant.INTERNAL_EXP_MESS;
+//        }
+//    }
 
     public static boolean isVietnamese(String lang) {
         if (lang.compareToIgnoreCase("vn") == 0) {

@@ -5,7 +5,7 @@
  */
 package vn.mobileid.id.general.objects;
 
-import vn.mobileid.id.qrypto.objects.QryptoConstant;
+import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -27,21 +27,16 @@ public class InternalResponse {
     private String authenticationJSNMessage;
     private String clientType;
 
+    //Data backend
+    private Object object;
+    
     public InternalResponse(int status, String message) {
         this.status = status;
         this.message = message;
         this.processId = QryptoConstant.FEDERAL_ID;
         this.subjectId = QryptoConstant.FEDERAL_ID;
     }
-
-    public InternalResponse(int relyingPartyId, String relyingPartyName, String authenticationJSNMessage, String clientType) {
-        this.relyingPartyId = relyingPartyId;
-        this.relyingPartyName = relyingPartyName;
-        this.authenticationJSNMessage = authenticationJSNMessage;
-        this.clientType = clientType;
-        this.processId = QryptoConstant.FEDERAL_ID;
-        this.subjectId = QryptoConstant.FEDERAL_ID;
-    }
+   
 
     public InternalResponse() {
     }
@@ -144,4 +139,13 @@ public class InternalResponse {
         this.subjectUUID = subjectUUID;
     }
 
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    
 }

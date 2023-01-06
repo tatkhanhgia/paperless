@@ -21,13 +21,17 @@ import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.KeyCloakInvocation;
+import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InfoJSNObject;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.qrypto.kernel.QryptoGetToken;
-import vn.mobileid.id.qrypto.objects.QryptoConstant;
+import vn.mobileid.id.qrypto.kernel.CreateWorkflow;
+import vn.mobileid.id.qrypto.kernel.CreateWorkflowDetail;
+import vn.mobileid.id.qrypto.kernel.ManageToken;
+import vn.mobileid.id.qrypto.objects.QryptoItemWorkflowDetailJSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
+import vn.mobileid.id.qrypto.objects.QryptoWorkflowJSNObject;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 
@@ -76,85 +80,216 @@ public class QryptoService {
         return QryptoConstant.INTERNAL_EXP_MESS;
     }
 
-    /**
-     * Using to get Token from IAM Server
-     *
-     * @param request
-     * @param payload : Body of request
-     * @param functionId : 0-Application/JSON ; 1-Application-form-URLEncode
-     * @return
-     */
     public static InternalResponse getToken(final HttpServletRequest request, String payload, int functionId) {
         if (functionId == 0) {
-            QryptoGetToken token = new QryptoGetToken();
-            InternalResponse response = token.processJSON(request, payload);
+            ManageToken token = new ManageToken();
+            InternalResponse response = token.processJSON_getToken(request, payload);
             return response;
         } else {
-            LOG.error("lOG INTO");
-            QryptoGetToken token = new QryptoGetToken();
-            InternalResponse response = token.processFORM(request);
+            ManageToken token = new ManageToken();
+            InternalResponse response = token.processFORM_getToken(request, payload);
             return response;
-        }        
+        }
     }
 
-//    public static String getToken(final HttpServletRequest request, String payload, int functionId) {
-//        QryptoAWSAuthentication auth = new QryptoAWSAuthentication();
-//        InternalResponse verifyRequestResp = auth.verifyRequest(request, payload, functionId);
-//        if (verifyRequestResp.getAuthenticationJSNMessage() != QryptoConstant.AWS_CREDENTIALS_SUCCESS) {
-//            return verifyRequestResp.getAuthenticationJSNMessage();
-//        } else {
-//            //
-//            //
-//            // LOGGING
-//            Database db = new DatabaseImpl();
-//            DatabaseResponse dr = db.getIdentityLogId();
-//
-//            String transactionId = Utils.generateTransactionId(
-//                    verifyRequestResp.getRelyingPartyName(), dr.getIdentityLogId(), dr.getIdentityLogDt());
-//
-//            QryptoGetToken getToken = new QryptoGetToken();
-//            InternalResponse internalResponse = getToken.processJSON(request, payload, transactionId);
-//
-//            ResponseCode responseCode = Resources.getResponseCodes().get(String.valueOf(internalResponse.getStatus()));
-//            if (responseCode == null) {
-//                Resources.reloadResponseCodes();
-//                responseCode = Resources.getResponseCodes().get(String.valueOf(internalResponse.getStatus()));
+    public static InternalResponse revoke(final HttpServletRequest request, String payload, int functionId) {
+        if (functionId == 0) {
+            ManageToken token = new ManageToken();
+            InternalResponse response = token.processJSON_revoke(request, payload);
+            return response;
+        } else {
+            ManageToken token = new ManageToken();
+            InternalResponse response = token.processFORM_revoke(request, payload);
+            return response;
+        }
+    }
+
+    public static InternalResponse createWorkflow(final HttpServletRequest request, String payload) {
+        //Thiếu check content type - accessToken - header !!!!
+
+        if (Utils.isNullOrEmpty(payload)) {
+            LOG.info("No payload found");
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                            QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
+                            "en",
+                            null));
+        }
+
+        //Check Workflow_Temlate_Type
+        if (!checkTemplateTypeInRequest(payload)) {
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            QryptoConstant.SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE,
+                            QryptoMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        QryptoWorkflowJSNObject workflow = new QryptoWorkflowJSNObject();
+        try {
+            workflow = mapper.readValue(payload, QryptoWorkflowJSNObject.class);
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot parse payload");
+            }
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            QryptoMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+
+        //Check valid data 
+        InternalResponse result = null;
+        result = CreateWorkflow.checkDataWorkflow(workflow);
+        if (result.getStatus() != 200) {
+            return result;
+        }
+
+        //Processing
+        try {
+            return CreateWorkflow.processingCreateWorkflow(workflow);
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot create new Workflow");
+            }
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
+    }
+
+    public static InternalResponse createWorkflowDetail(final HttpServletRequest request, String payload, int id) {
+        //Thiếu check content type - accessToken - header !!!!
+
+        if (Utils.isNullOrEmpty(payload)) {
+            LOG.info("No payload found");
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                            QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
+                            "en",
+                            null));
+        }
+
+        payload = payload.replaceAll("\n", "");
+        payload = payload.replaceAll("\t", "");
+        payload = payload.replaceAll("[ ]{2,10}", "");
+        ObjectMapper mapper = new ObjectMapper();
+
+        QryptoItemWorkflowDetailJSNObject workflow = new QryptoItemWorkflowDetailJSNObject();
+        try {
+            workflow = mapper.readValue(payload, QryptoItemWorkflowDetailJSNObject.class);
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot parse payload");
+            }
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            QryptoMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+
+        //Check valid data 
+        InternalResponse result = null;
+        result = CreateWorkflowDetail.checkDataWorkflowDetail(workflow);
+        if (result.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+            return result;
+        }
+
+        //Processing
+        try {
+            return CreateWorkflowDetail.processingCreateWorkflowDetail(id, workflow, "bcd@gmail.com");
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot create new Workflow");
+            }
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
+    }
+
+    public static InternalResponse createWorkflowActivity(final HttpServletRequest request, String payload) {
+        //Check valid token
+        InternalResponse response = verifyToken(request, payload);
+        if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null){
+            return response;
+        }
+        User user_info =(User) response.getObject();
+                
+        if (Utils.isNullOrEmpty(payload)) {
+            LOG.info("No payload found");
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                            QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
+                            "en",
+                            null));
+        }
+
+        //Check Workflow_Temlate_Type
+        if (!checkTemplateTypeInRequest(payload)) {
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            QryptoConstant.SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE,
+                            QryptoMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+
+//        ObjectMapper mapper = new ObjectMapper();
+//        QryptoWorkflowJSNObject workflow = new QryptoWorkflowJSNObject();
+//        try {
+//            workflow = mapper.readValue(payload, QryptoWorkflowJSNObject.class);
+//        } catch (Exception e) {
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("Cannot parse payload");
 //            }
-//            int responseCodeId = (responseCode == null) ? (int) QryptoConstant.FEDERAL_ID : responseCode.getId();
-//            Date now = Calendar.getInstance().getTime();
-//            if (dr.getIdentityLogId() != 0) {
-//                if (db.insertIdentityLog(dr.getIdentityLogId(),
-//                        QryptoConstant.FEDERAL_ID, // subjectId
-//                        null, //subjectUUID
-//                        QryptoConstant.FEDERAL_ID, // processId
-//                        null, //processUUID
-//                        Utils.getExtraInfoInRequest(payload)[0], //extendedId
-//                        payload, //requestData
-//                        internalResponse.getMessage(), //responseData
-//                        Utils.extractRequestHeader(request),
-//                        Utils.getExtraInfoInRequest(payload)[1], //bill_code in request
-//                        transactionId, //transactionId
-//                        responseCodeId, //responseCodeId
-//                        functionId, //functionId
-//                        verifyRequestResp.getRelyingPartyId(), //relyingPartyId
-//                        request.getRemoteAddr(),
-//                        now,
-//                        now)) {
-//
-//                } else {
-//                    // insert log attribute
-//
-//                }
-//                return internalResponse.getMessage();
-//            } else {
-//                if (LogHandler.isShowErrorLog()) {
-//                    LOG.error("CANNOT insert identity log due to LOG_ID is zero");
-//                }
-//                return QryptoMessageResponse.getMessage(
-//                        QryptoConstant.CODE_UNEXPE_EXP,
-//                        QryptoConstant.SUBCODE_NOSUBCODE,
-//                        QryptoMessageResponse.getLangFromJson(payload),
-//                        transactionId);
-//            }
+//            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+//                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+//                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+//                            QryptoMessageResponse.getLangFromJson(payload),
+//                            null));
 //        }
+//
+//        //Check valid data 
+//        InternalResponse result = null;
+//        result = CreateWorkflow.checkDataWorkflow(workflow);
+//        if (result.getStatus() != 200) {
+//            return result;
+//        }
+//
+//        //Processing
+//        try {
+//            return CreateWorkflow.processingCreateWorkflow(workflow);
+//        } catch (Exception e) {
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("Cannot create new Workflow");
+//            }
+//            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+//        }
+return null;
+    }
+            
+    public static InternalResponse verifyToken(final HttpServletRequest request, String payload) {
+        ManageToken token = new ManageToken();        
+        InternalResponse response = token.verifyAccessToken(request, payload);
+        return response;
+    }
+
+    //=================== INTERNAL FUNCTION - METHOD============================
+    private static boolean checkTemplateTypeInRequest(String payload) {
+        payload = payload.replaceAll("\n", "");
+        payload = payload.replaceAll("\t", "");
+        boolean result = false;
+        String[] temp = payload.split(",");
+        for (String a : temp) {
+            if (a.contains("workflow_template_type")) {
+                String[] number = a.split(":");
+                String tempp = number[1].trim();
+                return tempp.matches("^[0-" + QryptoConstant.NUMBER_WORKFLOW_TEMPLATE_TYPE + "]$");
+            }
+        }
+        return result;
+    }
+
+    public static void main(String[] args) {
+
+    }
 }

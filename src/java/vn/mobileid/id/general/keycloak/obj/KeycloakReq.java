@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package vn.mobileid.id.general.keycloak;
+package vn.mobileid.id.general.keycloak.obj;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -27,8 +27,6 @@ public class KeycloakReq {
     private String[] disableableCredentialTypes;
     private String[] requiredActions;
     private long notBefore;
-    private Credential[] credentials;
-    private Attributes attributes;
     
     //For create connection
     private String client_id;
@@ -36,6 +34,10 @@ public class KeycloakReq {
     private String grant_type;
     private String client_secret;
     private String scope;
+    
+    //For Revoke connection
+    private String token;
+    private String token_type_hint;
 
     @JsonProperty("username")
     public String getUsername() {
@@ -126,25 +128,7 @@ public class KeycloakReq {
     public void setNotBefore(long notBefore) {
         this.notBefore = notBefore;
     }
-
-    @JsonProperty("credentials")
-    public Credential[] getCredentials() {
-        return credentials;
-    }
-
-    public void setCredentials(Credential[] credentials) {
-        this.credentials = credentials;
-    }
-
-    @JsonProperty("attributes")
-    public Attributes getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(Attributes attributes) {
-        this.attributes = attributes;
-    }
-
+    
     @JsonProperty("client_id")
     public String getClient_id() {
         return client_id;
@@ -188,6 +172,24 @@ public class KeycloakReq {
 
     public void setScope(String scope) {
         this.scope = scope;
+    }
+
+    @JsonProperty("refresh_token")
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    @JsonProperty("token_type_hint")
+    public String getToken_type_hint() {
+        return token_type_hint;
+    }
+
+    public void setToken_type_hint(String token_type_hint) {
+        this.token_type_hint = token_type_hint;
     }
 
     

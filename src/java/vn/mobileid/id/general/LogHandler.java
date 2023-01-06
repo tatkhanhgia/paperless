@@ -19,35 +19,38 @@ import vn.mobileid.id.general.objects.LogController;
  *
  * @author GiaTK
  */
-public class LogHandler {    
+public class LogHandler {
+
     private static boolean showDebugLog;
     private static boolean showInfoLog;
     private static boolean showWarnLog;
     private static boolean showErrorLog;
     private static boolean showFatalLog;
-    
+
     private static boolean configCaching;
-    
+
     private static FileHandler handler;
     private static SimpleFormatter formatter;
-    
-    private static LogHandler instance;       
-    
+
+    private static LogHandler instance;
+
     private static void readConfig() {
-        LogController logController = null;
-        Entity systemConfig = Resources.getEntities().get(Entity.ENTITY_SYSTEM_CONFIG);
-        if (systemConfig != null) {
-            EntityProperties entityProperties = systemConfig.getEntityProperties();
-            if (entityProperties != null) {
-                logController = entityProperties.getLogController();
-                showDebugLog = logController.isShowDebugLog() && Configuration.getInstance().isShowDebugLog();
-                showInfoLog = logController.isShowInfoLog() && Configuration.getInstance().isShowInfoLog();
-                showWarnLog = logController.isShowWarnLog() && Configuration.getInstance().isShowWarnLog();
-                showErrorLog = logController.isShowErrorLog() && Configuration.getInstance().isShowErrorLog();
-                showFatalLog = logController.isShowFatalLog() && Configuration.getInstance().isShowFatalLog();
-                configCaching = entityProperties.isConfigCaching();
-            }
-        }
+//        LogController logController = null;
+//        Entity systemConfig = Resources.getEntities().get(Entity.ENTITY_SYSTEM_CONFIG);
+//        if (systemConfig != null) {
+//            EntityProperties entityProperties = systemConfig.getEntityProperties();
+//            if (entityProperties != null) {
+//                logController = entityProperties.getLogController();
+//        showDebugLog = logController.isShowDebugLog() && Configuration.getInstance().isShowDebugLog();
+//        showInfoLog = logController.isShowInfoLog() && Configuration.getInstance().isShowInfoLog();
+//        showWarnLog = logController.isShowWarnLog() && Configuration.getInstance().isShowWarnLog();
+//        showErrorLog = logController.isShowErrorLog() && Configuration.getInstance().isShowErrorLog();
+//        showFatalLog = logController.isShowFatalLog() && Configuration.getInstance().isShowFatalLog();
+//                configCaching = entityProperties.isConfigCaching();
+        showDebugLog = Configuration.getInstance().isShowDebugLog();
+        showInfoLog = Configuration.getInstance().isShowInfoLog();
+        showWarnLog = Configuration.getInstance().isShowWarnLog();
+        showErrorLog = Configuration.getInstance().isShowErrorLog();
     }
 
     public static boolean isShowDebugLog() {
