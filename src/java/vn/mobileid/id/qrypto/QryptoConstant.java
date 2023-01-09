@@ -17,7 +17,10 @@ public class QryptoConstant {
 
     final public static String TOKEN_TYPE_BEARER = "Bearer";
     final public static String TOKEN_TYPE_BASIC = "Basic";
-     
+    
+    final public static int FLAG_FALSE_DB = 0;
+    final public static int FLAG_TRUE_DB = 1;
+    
     //Workflow Type    
     final public static int WORKFLOW_TYPE_QR = 1;
     final public static int WORKFLOW_TYPE_PDF_GENERATOR = 2;
@@ -49,6 +52,7 @@ public class QryptoConstant {
     final public static int CODE_FAIL = 1;
     final public static int CODE_INVALID_PARAMS_KEYCLOAK = 5000;
     final public static int CODE_INVALID_PARAMS_WORKFLOW = 5001;
+    final public static int CODE_INVALID_PARAMS_WORKFLOWACTIVITY = 5002;
     
     
     
@@ -56,12 +60,13 @@ public class QryptoConstant {
     final public static int CODE_INVALID_BEARER_TOKEN = 5006;
     final public static int CODE_EXPIRED_BEARER_TOKEN = 5007;
             
-    //------------SUB CODE    
+    //-----------------------SUB CODE    -----------------------------
     final public static int SUBCODE_SUCCESS = 0;    
     final public static int SUBCODE_NO_PAYLOAD_FOUND = 1;
     final public static int SUBCODE_INVALID_PAYLOAD_STRUCTURE = 6;
     final public static int SUBCODE_INTERNAL_ERROR = -1;
     
+    //SUBCODE INVALID KEYCLOAK
     final public static int SUBCODE_INVALID_USER_CREDENTIALS = 2;
     final public static int SUBCODE_INVALID_CLIENT_SECRET = 3;
     final public static int SUBCODE_UNSUPPORTED_GRANT_TYPE = 4;
@@ -74,15 +79,17 @@ public class QryptoConstant {
     final public static int SUBCODE_TOKEN_EXPIRED = 12;
     final public static int SUBCODE_MISSING_ACCESS_TOKEN = 13;
     
+    //SUBCODE INVALID WORKFLOW
     final public static int SUBCODE_MISSING_WORKFLOW_LABEL = 2;
     final public static int SUBCODE_MISSING_WORKFLOW_USER_EMAIL_OR_ID = 3;
     final public static int SUBCODE_MISSING_WORKFLOW_CREATED_BY = 4;
     final public static int SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE = 5;
-        
-    final public static int SUBCODE_RESPONSE_DB_VALUE_NULL = 100;
-    final public static int SUBCODE_RESPONSE_DB_VALUE_NOT_EXIST = 101;
-    final public static int SUBCODE_RESPONSE_DB_VALUE_EXISTED = 102;
-    final public static int SUBCODE_RESPONSE_DB_ACCOUNT_LOCKED = 103;
+    final public static int SUBCODE_MISSING_ARRAY_FIELD_C = 7;    
     
-    final public static int SUBCODE_MISSING_ARRAY_FIELD_C = 7;
+    //SUBCODE RESPONSE FROM DB
+
+    
+    //SUBCODE INVALID WORKFLOW ACTIVITY
+    final public static int SUBCODE_MISSING_ENTERPRISE_DATA = 2;
+    final public static int SUBCODE_MISSING_WORKFLOW_ID = 3;
 }

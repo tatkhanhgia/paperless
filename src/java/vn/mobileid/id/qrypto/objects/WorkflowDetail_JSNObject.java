@@ -17,14 +17,14 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class QryptoWorkflowDetailJSNObject {
+public class WorkflowDetail_JSNObject {
     private List<String> c ;
 //    private String c;
     private boolean mandatory_enable;
 //    private String mandatory_enable;
     private String t;
 
-    public QryptoWorkflowDetailJSNObject() {
+    public WorkflowDetail_JSNObject() {
     }
 
     @JsonProperty("c")

@@ -19,8 +19,9 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
 import vn.mobileid.id.general.objects.ResponseMessageJSNObject;
 import vn.mobileid.id.qrypto.QryptoConstant;
+import vn.mobileid.id.qrypto.objects.response.Create_WorkflowActivity_MessageJSNObject;
 import vn.mobileid.id.qrypto.objects.response.QryptoErrorMessageJSNObject;
-import vn.mobileid.id.qrypto.objects.response.QryptoGetTokenMessageJSNObject;
+import vn.mobileid.id.qrypto.objects.response.GetToken_IAM_MessageJSNObject;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 
@@ -49,7 +50,7 @@ public class QryptoMessageResponse {
     }
 
     //Error Message
-    public static String getMessage(int code, int subCode, String lang, String transactionID) {
+    public static String getErrorMessage(int code, int subCode, String lang, String transactionID) {
         try {
             QryptoErrorMessageJSNObject responseMessageJSNObject = new QryptoErrorMessageJSNObject();
             String strCode = String.valueOf(code) + "." + String.valueOf(subCode);
@@ -95,7 +96,7 @@ public class QryptoMessageResponse {
             String lang,
             KeycloakRes result) {
         try {
-            QryptoGetTokenMessageJSNObject responseMessageJSNObject = new QryptoGetTokenMessageJSNObject();
+            GetToken_IAM_MessageJSNObject responseMessageJSNObject = new GetToken_IAM_MessageJSNObject();
             String strCode = String.valueOf(code) + "." + String.valueOf(subCode);
             ResponseCode responseCode = Resources.getResponseCodes().get(strCode);
             if (responseCode == null) {
@@ -156,51 +157,8 @@ public class QryptoMessageResponse {
             }
             return QryptoConstant.INTERNAL_EXP_MESS;
         }
-    }
-
-//    public static String getCreateWorkflowMessage(
-//            int code,
-//            int subCode,
-//            String lang,
-//            String workflowID
-//    ) {
-//        try {
-//            QryptoCreateWorkflowMessageJSNObject responseMessageJSNObject = new QryptoCreateWorkflowMessageJSNObject();
-//            String strCode = String.valueOf(code) + "." + String.valueOf(subCode);
-//            ResponseCode responseCode = Resources.getResponseCodes().get(strCode);
-//            if (responseCode == null) {
-//                Resources.reloadResponseCodes();
-//                responseCode = Resources.getResponseCodes().get(strCode);
-//            }
-//
-//            if (responseCode != null) {
-//                responseMessageJSNObject.setWorkflow_id(workflowID);
-//                return objectMapper.writeValueAsString(responseMessageJSNObject);
-//            } else {
-//                Database db = new DatabaseImpl();
-//                responseCode = db.getResponse(String.valueOf(code));
-//                if (responseCode == null) {
-//                    if (LogHandler.isShowErrorLog()) {
-//                        LOG.error("Response code " + code + " is not defined in database.");
-//                    }
-//                    responseMessageJSNObject.setWorkflow_id(workflowID);
-//
-//                    return objectMapper.writeValueAsString(responseMessageJSNObject);
-//                } else {
-//                    Resources.getResponseCodes().put(strCode, responseCode);
-//                    responseMessageJSNObject.setWorkflow_id(workflowID);
-//                    return objectMapper.writeValueAsString(responseMessageJSNObject);
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            if (LogHandler.isShowErrorLog()) {
-//                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-//            }
-//            return QryptoConstant.INTERNAL_EXP_MESS;
-//        }
-//    }
-
+    }   
+    
     public static boolean isVietnamese(String lang) {
         if (lang.compareToIgnoreCase("vn") == 0) {
             return true;
@@ -208,10 +166,4 @@ public class QryptoMessageResponse {
         return false;
     }
 
-    public static QryptoErrorMessageJSNObject setError(ResponseCode res) {
-        QryptoErrorMessageJSNObject obj = new QryptoErrorMessageJSNObject();
-        obj.setCode(res.getCode());
-        obj.setCode_description(res.getCode_description());
-        return obj;
-    }
 }

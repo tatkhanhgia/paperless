@@ -60,7 +60,7 @@ public class ManageToken {
     public InternalResponse processJSON_getToken(final HttpServletRequest request, String payload) {
         if (Utils.isNullOrEmpty(payload)) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
@@ -75,7 +75,7 @@ public class ManageToken {
                 LOG.error("Cannot parse payload");
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
@@ -111,7 +111,7 @@ public class ManageToken {
         } else {
             int sub_code = ManageToken.convertError(accessToken.getError_description());
             response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
 
         return response;
@@ -150,7 +150,7 @@ public class ManageToken {
         } else {
             int sub_code = ManageToken.convertError(accessToken.getError_description());
             response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
 
         return response;
@@ -159,7 +159,7 @@ public class ManageToken {
     public InternalResponse processJSON_revoke(final HttpServletRequest request, String payload) {
         if (Utils.isNullOrEmpty(payload)) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
@@ -174,7 +174,7 @@ public class ManageToken {
                 LOG.error("Cannot parse payload");
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
@@ -202,7 +202,7 @@ public class ManageToken {
         } else {
             int sub_code = ManageToken.convertError(accessToken.getError_description());
             response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
 
         return response;
@@ -236,7 +236,7 @@ public class ManageToken {
         } else {
             int sub_code = ManageToken.convertError(accessToken.getError_description());
             response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
 
         return response;
@@ -294,9 +294,10 @@ public class ManageToken {
         //Get Access Token
         LOG.info("Checking Header!!");
         String token = request.getHeader("Authorization");
+        LOG.info("Token:"+token);
         if(token == null){
             return new InternalResponse(QryptoConstant.HTTP_CODE_UNAUTHORIZED,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             QryptoConstant.SUBCODE_MISSING_ACCESS_TOKEN, "en", null)
             );
         }
@@ -310,11 +311,11 @@ public class ManageToken {
         InternalResponse response;
         if (accessToken.getStatus() == QryptoConstant.CODE_SUCCESS) {
             response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,"SUCCESS");
-            response.setObject(accessToken);
+            response.setUser(accessToken.getUser());
         } else {
             int sub_code = ManageToken.convertError(accessToken.getError_description());
             response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
 
         return response;

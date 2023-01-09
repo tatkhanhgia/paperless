@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @JsonIgnoreProperties("code")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class QryptoGetTokenMessageJSNObject {
+public class GetToken_IAM_MessageJSNObject {
 
     private String code;
     private String message;

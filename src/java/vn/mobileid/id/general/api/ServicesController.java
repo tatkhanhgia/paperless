@@ -203,7 +203,7 @@ public class ServicesController {
             }
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error Parsing ObjectMapper");
+                LOG.error("Error - Detail:"+e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }

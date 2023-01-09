@@ -28,7 +28,7 @@ import vn.mobileid.id.general.objects.RelyingPartyAttribute;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.everification.objects.CertificationAuthority;
 import vn.mobileid.id.general.objects.TSAProfile;
-import vn.mobileid.id.qrypto.objects.QryptoWorkflowJSNObject;
+import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
 
 /**
  *
@@ -70,5 +70,60 @@ public interface Database {
             String agent_detail,
             String HMAC,
             String create_by
+    );
+    
+    public DatabaseResponse createFileManagement(
+            String UUID,
+            String name,
+            int pages, 
+            int size,
+            int width,
+            int height,
+            String HMAC,
+            String created_by
+    );
+    
+    public DatabaseResponse addEnterpriseUser(
+            String email_owner,
+            int enterprise_id,
+            String email_user,
+            String role,
+            int status,
+            String hmac
+    );
+    
+    public DatabaseResponse createTransaction(
+            String email,
+            int logID,
+            int QRUUID,         
+            int CSV_Task,
+            int enable_CSV_Task,
+            String IPAddress,
+            String initFile, //Name file
+            int pY,
+            int pX,
+            int PC,
+            int pS,
+            int pages,
+            String des,
+            String hmac,
+            String created_by          
+    );
+    
+    public DatabaseResponse createWorkflowActivity(
+            int enterprise_id,
+            int workflow_id,
+            String user_email,
+            String transaction_id,
+            int file_link,
+            int csv,
+            String remark,
+            int use_test_token,
+            int enable_production,
+            int enable_update,
+            int workflow_type,
+            String request_data,
+            String HMAC,
+            String created_by
     );
 }

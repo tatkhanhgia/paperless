@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import java.awt.List;
 import java.io.File;
 import java.io.IOException;
-import vn.mobileid.id.qrypto.objects.QryptoItemWorkflowDetailJSNObject;
-import vn.mobileid.id.qrypto.objects.QryptoWorkflowDetailJSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowDetail_Item_JSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowDetail_JSNObject;
 
 /**
  *
@@ -66,8 +66,8 @@ c = c.replaceAll("\t", "");
 c = c.replaceAll("\n", "");
 c = c.replaceAll("[ ]{2,10}", "");
         System.out.println("c:"+c);        
-QryptoItemWorkflowDetailJSNObject langList = mapper.readValue(c,QryptoItemWorkflowDetailJSNObject.class);
-        for(QryptoWorkflowDetailJSNObject temp : langList.getItem()){
+WorkflowDetail_Item_JSNObject langList = mapper.readValue(c,WorkflowDetail_Item_JSNObject.class);
+        for(WorkflowDetail_JSNObject temp : langList.getItem()){
             System.out.println("T:"+temp.getT());
         }
     }

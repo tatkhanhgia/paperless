@@ -13,7 +13,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.QryptoWorkflowJSNObject;
+import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -24,43 +24,43 @@ public class CreateWorkflow {
 
     final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
-    public static InternalResponse checkDataWorkflow(QryptoWorkflowJSNObject workflow) {
+    public static InternalResponse checkDataWorkflow(Workflow_JSNObject workflow) {
         if (workflow == null) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             "en",
                             null));
         }
         if (Utils.isNullOrEmpty(workflow.getLabel())) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             QryptoConstant.SUBCODE_MISSING_WORKFLOW_LABEL,
                             "en",
                             null));
         }
         if (Utils.isNullOrEmpty(workflow.getUser_id())) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             QryptoConstant.SUBCODE_MISSING_WORKFLOW_USER_EMAIL_OR_ID,
                             "en",
                             null));
         }
         if (Utils.isNullOrEmpty(workflow.getCreated_by())) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             QryptoConstant.SUBCODE_MISSING_WORKFLOW_CREATED_BY,
                             "en",
                             null));
         }
         return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getMessage(QryptoConstant.CODE_SUCCESS,
+                QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
                         QryptoConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
 
-    public static InternalResponse processingCreateWorkflow(QryptoWorkflowJSNObject workflow) {
+    public static InternalResponse processingCreateWorkflow(Workflow_JSNObject workflow) {
         try {
             Database DB = new DatabaseImpl();
 
@@ -73,7 +73,7 @@ public class CreateWorkflow {
             
             if(createWorkflow.getStatus() != QryptoConstant.CODE_SUCCESS ){
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getMessage(
+                        QryptoMessageResponse.getErrorMessage(
                                 QryptoConstant.CODE_FAIL,
                                 createWorkflow.getStatus(),
                                 "en"

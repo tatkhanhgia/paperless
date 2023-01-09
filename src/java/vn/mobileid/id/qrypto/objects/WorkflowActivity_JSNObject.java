@@ -14,18 +14,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class QryptoWorkflowActivityJSNObject {
+public class WorkflowActivity_JSNObject {
     private String enterprise_name;
     private int enterprise_id;
-    private int workflow_id;
+    private int workflow_id = 0;
     private String workflow_label;
-    private int workflow_template_type;
+    private int workflow_template_type = 0;
     private String user_email;
     private String transaction;
     private String remark;
-    private boolean use_test_token;
-    private boolean update_enable;
+    private boolean use_test_token = false;
+    private boolean update_enable = false;
     private String created_by;
+    private boolean is_production = false;
 
     @JsonProperty("enterprise_name")
     public String getEnterprise_name() {
@@ -91,8 +92,14 @@ public class QryptoWorkflowActivityJSNObject {
     }
 
     @JsonProperty("use_test_token")
-    public boolean isUse_test_token() {
-        return use_test_token;
+    public int isUse_test_token() {
+       if(use_test_token)
+       {
+           this.is_production = false;
+           return 1;
+       }
+       this.is_production = true;
+       return 0;
     }
 
     public void setUse_test_token(boolean use_test_token) {
@@ -100,8 +107,8 @@ public class QryptoWorkflowActivityJSNObject {
     }
 
     @JsonProperty("update_enable")
-    public boolean isUpdate_enable() {
-        return update_enable;
+    public int isUpdate_enable() {
+        return use_test_token==true?1:0;
     }
 
     public void setUpdate_enable(boolean update_enable) {
@@ -124,6 +131,14 @@ public class QryptoWorkflowActivityJSNObject {
 
     public void setEnterprise_id(int enterprise_id) {
         this.enterprise_id = enterprise_id;
+    }
+
+    public int isIs_production() {
+        return is_production==true?1:0;
+    }
+
+    public void setIs_production(boolean is_production) {
+        this.is_production = is_production;
     }
     
     

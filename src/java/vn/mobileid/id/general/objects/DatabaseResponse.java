@@ -18,6 +18,35 @@ public class DatabaseResponse {
     
     private String workflowID;
     
+    private int ID_Response;
+    private String TransactionID;
+
+    public int getID_Response() {
+        return ID_Response;
+    }
+
+    public void setID_Response(int ID_Response) {
+        this.ID_Response = ID_Response;
+    }
+
+    public String getTransactionID() {
+        return TransactionID;
+    }
+
+    public void setTransactionID(String TransactionID) {
+        this.TransactionID = TransactionID;
+    }
+    
+    
+    public int getIDResponse() {
+        return ID_Response;
+    }
+
+    public void setIDResponse(int LOG_ID) {
+        this.ID_Response = LOG_ID;
+    }
+    
+    
     public int getStatus() {
         return status;
     }

@@ -21,17 +21,20 @@ import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.KeyCloakInvocation;
+import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InfoJSNObject;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.qrypto.kernel.CreateWorkflow;
+import vn.mobileid.id.qrypto.kernel.CreateWorkflowActivity;
 import vn.mobileid.id.qrypto.kernel.CreateWorkflowDetail;
 import vn.mobileid.id.qrypto.kernel.ManageToken;
-import vn.mobileid.id.qrypto.objects.QryptoItemWorkflowDetailJSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowDetail_Item_JSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.QryptoWorkflowJSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
+import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 
@@ -110,7 +113,7 @@ public class QryptoService {
         if (Utils.isNullOrEmpty(payload)) {
             LOG.info("No payload found");
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
@@ -119,22 +122,22 @@ public class QryptoService {
         //Check Workflow_Temlate_Type
         if (!checkTemplateTypeInRequest(payload)) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             QryptoConstant.SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        QryptoWorkflowJSNObject workflow = new QryptoWorkflowJSNObject();
+        Workflow_JSNObject workflow = new Workflow_JSNObject();
         try {
-            workflow = mapper.readValue(payload, QryptoWorkflowJSNObject.class);
+            workflow = mapper.readValue(payload, Workflow_JSNObject.class);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot parse payload");
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
@@ -164,7 +167,7 @@ public class QryptoService {
         if (Utils.isNullOrEmpty(payload)) {
             LOG.info("No payload found");
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
@@ -175,15 +178,15 @@ public class QryptoService {
         payload = payload.replaceAll("[ ]{2,10}", "");
         ObjectMapper mapper = new ObjectMapper();
 
-        QryptoItemWorkflowDetailJSNObject workflow = new QryptoItemWorkflowDetailJSNObject();
+        WorkflowDetail_Item_JSNObject workflow = new WorkflowDetail_Item_JSNObject();
         try {
-            workflow = mapper.readValue(payload, QryptoItemWorkflowDetailJSNObject.class);
+            workflow = mapper.readValue(payload, WorkflowDetail_Item_JSNObject.class);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot parse payload");
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
@@ -213,12 +216,13 @@ public class QryptoService {
         if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null){
             return response;
         }
-        User user_info =(User) response.getObject();
+        
+        User user_info = response.getUser();
                 
         if (Utils.isNullOrEmpty(payload)) {
             LOG.info("No payload found");
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
@@ -227,44 +231,43 @@ public class QryptoService {
         //Check Workflow_Temlate_Type
         if (!checkTemplateTypeInRequest(payload)) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             QryptoConstant.SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
         }
 
-//        ObjectMapper mapper = new ObjectMapper();
-//        QryptoWorkflowJSNObject workflow = new QryptoWorkflowJSNObject();
-//        try {
-//            workflow = mapper.readValue(payload, QryptoWorkflowJSNObject.class);
-//        } catch (Exception e) {
-//            if (LogHandler.isShowErrorLog()) {
-//                LOG.error("Cannot parse payload");
-//            }
-//            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
-//                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
-//                            QryptoMessageResponse.getLangFromJson(payload),
-//                            null));
-//        }
-//
-//        //Check valid data 
-//        InternalResponse result = null;
-//        result = CreateWorkflow.checkDataWorkflow(workflow);
-//        if (result.getStatus() != 200) {
-//            return result;
-//        }
-//
-//        //Processing
-//        try {
-//            return CreateWorkflow.processingCreateWorkflow(workflow);
-//        } catch (Exception e) {
-//            if (LogHandler.isShowErrorLog()) {
-//                LOG.error("Cannot create new Workflow");
-//            }
-//            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
-//        }
-return null;
+        ObjectMapper mapper = new ObjectMapper();
+        WorkflowActivity_JSNObject workflow = new WorkflowActivity_JSNObject();
+        try {
+            workflow = mapper.readValue(payload, WorkflowActivity_JSNObject.class);
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot parse payload");
+            }
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            QryptoMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+
+        //Check valid data 
+        InternalResponse result = null;
+        result = CreateWorkflowActivity.checkDataWorkflowActivity(workflow);
+        if (result.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+            return result;
+        }
+
+        //Processing
+        try {
+            return CreateWorkflowActivity.processingCreateWorkflowActivity(workflow, user_info);
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot create new Workflow");
+            }
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
     }
             
     public static InternalResponse verifyToken(final HttpServletRequest request, String payload) {

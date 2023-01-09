@@ -5,6 +5,7 @@
  */
 package vn.mobileid.id.general.objects;
 
+import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.utils.Utils;
 
@@ -28,7 +29,7 @@ public class InternalResponse {
     private String clientType;
 
     //Data backend
-    private Object object;
+    private User object;
     
     public InternalResponse(int status, String message) {
         this.status = status;
@@ -139,11 +140,11 @@ public class InternalResponse {
         this.subjectUUID = subjectUUID;
     }
 
-    public Object getObject() {
+    public User getUser() {
         return object;
     }
 
-    public void setObject(Object object) {
+    public void setUser(User object) {
         this.object = object;
     }
 

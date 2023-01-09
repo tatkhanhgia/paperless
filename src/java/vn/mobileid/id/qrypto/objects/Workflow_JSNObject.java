@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class QryptoWorkflowJSNObject {
+public class Workflow_JSNObject {
     private String workflow_id;
     private int status; //0 - inactive  1 - active
     private String user_id; //author
@@ -28,7 +28,7 @@ public class QryptoWorkflowJSNObject {
     private String last_modified_at;
         
 
-    public QryptoWorkflowJSNObject(String workflow_id, int status, String user_id, int template_type, String label, int workflow_type, String created_by, String created_at, String last_modified_by, String last_modified_at ) {
+    public Workflow_JSNObject(String workflow_id, int status, String user_id, int template_type, String label, int workflow_type, String created_by, String created_at, String last_modified_by, String last_modified_at ) {
         this.workflow_id = workflow_id;
         this.status = status;
         this.user_id = user_id;
@@ -41,7 +41,7 @@ public class QryptoWorkflowJSNObject {
         this.last_modified_at = last_modified_at;        
     }
 
-    public QryptoWorkflowJSNObject() {
+    public Workflow_JSNObject() {
         this.workflow_id = null;
         this.status = 0;
         this.user_id = null;

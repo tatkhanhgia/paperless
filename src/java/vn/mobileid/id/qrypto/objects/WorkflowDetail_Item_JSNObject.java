@@ -16,18 +16,18 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class QryptoItemWorkflowDetailJSNObject {
-    private List<QryptoWorkflowDetailJSNObject> item;
+public class WorkflowDetail_Item_JSNObject {
+    private List<WorkflowDetail_JSNObject> item;
 //    private List<String> item;
-    public QryptoItemWorkflowDetailJSNObject() {
+    public WorkflowDetail_Item_JSNObject() {
     }
 
     @JsonProperty("items")
-    public List<QryptoWorkflowDetailJSNObject> getItem() {
+    public List<WorkflowDetail_JSNObject> getItem() {
         return item;
     }
 
-    public void setItem(List<QryptoWorkflowDetailJSNObject> item) {
+    public void setItem(List<WorkflowDetail_JSNObject> item) {
         this.item = item;
     }
     

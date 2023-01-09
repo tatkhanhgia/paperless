@@ -14,10 +14,10 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
-import vn.mobileid.id.qrypto.objects.QryptoItemWorkflowDetailJSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowDetail_Item_JSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.QryptoWorkflowDetailJSNObject;
-import vn.mobileid.id.qrypto.objects.QryptoWorkflowJSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowDetail_JSNObject;
+import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -28,8 +28,8 @@ public class CreateWorkflowDetail {
 
     final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
-    public static InternalResponse checkDataWorkflowDetail(QryptoItemWorkflowDetailJSNObject workflow) {
-        for(QryptoWorkflowDetailJSNObject detail : workflow.getItem()){
+    public static InternalResponse checkDataWorkflowDetail(WorkflowDetail_Item_JSNObject workflow) {
+        for(WorkflowDetail_JSNObject detail : workflow.getItem()){
             InternalResponse response = checkDataWorkflowDetail(detail);
             if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
                 return response;
@@ -37,43 +37,43 @@ public class CreateWorkflowDetail {
         }
         
         return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getMessage(QryptoConstant.CODE_SUCCESS,
+                QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
                         QryptoConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
     
-    private static InternalResponse checkDataWorkflowDetail(QryptoWorkflowDetailJSNObject workflow) {
+    private static InternalResponse checkDataWorkflowDetail(WorkflowDetail_JSNObject workflow) {
         if (workflow == null) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_FAIL,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                             QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             "en",
                             null));
         }
         if (workflow.getC() == null || workflow.getC().size() == 0) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             QryptoConstant.SUBCODE_MISSING_ARRAY_FIELD_C,
                             "en",
                             null));
         }
 //        if (Utils.isNullOrEmpty(workflow.getT())) {
 //            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+//                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
 //                            QryptoConstant.SUBCODE_MISSING_WORKFLOW_USER_EMAIL_OR_ID,
 //                            "en",
 //                            null));
 //        }
         
         return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getMessage(QryptoConstant.CODE_SUCCESS,
+                QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
                         QryptoConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
 
-    public static InternalResponse processingCreateWorkflowDetail(int workflow_id, QryptoItemWorkflowDetailJSNObject workflow, String user_mail) {
+    public static InternalResponse processingCreateWorkflowDetail(int workflow_id, WorkflowDetail_Item_JSNObject workflow, String user_mail) {
         try {
             Database DB = new DatabaseImpl();
 
@@ -86,7 +86,7 @@ public class CreateWorkflowDetail {
             
             if(createWorkflow.getStatus() != QryptoConstant.CODE_SUCCESS ){
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getMessage(
+                        QryptoMessageResponse.getErrorMessage(
                                 QryptoConstant.CODE_FAIL,
                                 createWorkflow.getStatus(),
                                 "en"

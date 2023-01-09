@@ -437,7 +437,7 @@ public class KeyCloakInvocation {
                 return result;
             }
         }
-
+        
         //Convert to Object
         User data = null;
         try {
@@ -453,6 +453,7 @@ public class KeyCloakInvocation {
 
         //Verify Token
         try {
+            LOG.info("Verify Token");
             RSAPublicKey pub = getPublicKeyFromString(
                     KeyCloakInvocation.certificate.getN(),
                     KeyCloakInvocation.certificate.getE()
@@ -476,7 +477,7 @@ public class KeyCloakInvocation {
             LOG.debug("Get IAM Certificate!");
         }
         String tokenUrl = url + "/realms/" + realm + FUNCTION_CERTS;
-
+        
         KeycloakRes token = null;
         HttpRequest httpRequest = new HttpRequest(false, null, tokenUrl, null);
         HttpRequest.Response response = httpRequest.sendRequest();
@@ -529,8 +530,7 @@ public class KeyCloakInvocation {
         } catch (TokenExpiredException e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Expired token!");
-            }            
-            System.out.println("Expired");
+            }                        
             KeycloakRes result = new KeycloakRes();
             result.setStatus(QryptoConstant.CODE_FAIL);
             result.setError_description("Token is expired!");
@@ -538,8 +538,7 @@ public class KeyCloakInvocation {
         } catch (JWTVerificationException e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Token is invalid!");
-            }            
-            System.out.println("Error token");
+            }                        
             KeycloakRes result = new KeycloakRes();
             result.setStatus(QryptoConstant.CODE_FAIL);
             result.setError_description("Token is invalid!");
