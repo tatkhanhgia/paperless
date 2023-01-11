@@ -108,7 +108,13 @@ public class QryptoService {
     }
 
     public static InternalResponse createWorkflow(final HttpServletRequest request, String payload) {
-        //Thiếu check content type - accessToken - header !!!!
+        //Check valid token
+        InternalResponse response = verifyToken(request, payload);
+        if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null){
+            return response;
+        }
+        
+        User user_info = response.getUser();
 
         if (Utils.isNullOrEmpty(payload)) {
             LOG.info("No payload found");
@@ -152,7 +158,7 @@ public class QryptoService {
 
         //Processing
         try {
-            return CreateWorkflow.processingCreateWorkflow(workflow);
+            return CreateWorkflow.processingCreateWorkflow(workflow,user_info);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot create new Workflow");
@@ -264,7 +270,7 @@ public class QryptoService {
             return CreateWorkflowActivity.processingCreateWorkflowActivity(workflow, user_info);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Cannot create new Workflow");
+                LOG.error("Cannot create new Workflow Activity");
             }
             return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
         }
@@ -293,6 +299,6 @@ public class QryptoService {
     }
 
     public static void main(String[] args) {
-
+        
     }
 }

@@ -13,7 +13,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Admin
  */
-@JsonIgnoreProperties("code")
+@JsonIgnoreProperties({"code","message"})
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GetToken_IAM_MessageJSNObject {
 

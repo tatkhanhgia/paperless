@@ -5,7 +5,6 @@
  */
 package vn.mobileid.id.general.objects;
 
-import vn.mobileid.id.license.LicenseServerData;
 
 /**
  *
@@ -47,8 +46,7 @@ public class RelyingParty {
     private DMSProperties dmsProperties;
 
     private int assignedBy;
-    
-    private LicenseServerData licenseServerData;
+        
 
     public int getId() {
         return id;
@@ -178,12 +176,4 @@ public class RelyingParty {
         this.verificationIPRestriction = verificationIPRestriction;
     }
 
-    public LicenseServerData getLicenseServerData() {
-        return licenseServerData;
-    }
-
-    public void setLicenseServerData(LicenseServerData licenseServerData) {
-        this.licenseServerData = licenseServerData;
-    }
-    
 }

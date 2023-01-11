@@ -26,7 +26,6 @@ import vn.mobileid.id.general.objects.RegistrationParty;
 import vn.mobileid.id.general.objects.RelyingParty;
 import vn.mobileid.id.general.objects.RelyingPartyAttribute;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.everification.objects.CertificationAuthority;
 import vn.mobileid.id.general.objects.TSAProfile;
 import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
 
@@ -79,6 +78,7 @@ public interface Database {
             int size,
             int width,
             int height,
+            byte[] fileData,
             String HMAC,
             String created_by
     );
@@ -95,9 +95,8 @@ public interface Database {
     public DatabaseResponse createTransaction(
             String email,
             int logID,
-            int QRUUID,         
-            int CSV_Task,
-            int enable_CSV_Task,
+            int UUID,
+            int type,
             String IPAddress,
             String initFile, //Name file
             int pY,
@@ -124,6 +123,16 @@ public interface Database {
             int workflow_type,
             String request_data,
             String HMAC,
+            String created_by
+    );
+    
+    public DatabaseResponse getDataRP(
+            int enterprise_id
+    );
+    
+    public DatabaseResponse createQR(
+            String metaData,
+            String hmac,
             String created_by
     );
 }

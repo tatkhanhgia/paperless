@@ -24,7 +24,6 @@ import vn.mobileid.id.general.objects.Province;
 import vn.mobileid.id.general.objects.RegistrationParty;
 import vn.mobileid.id.general.objects.RelyingParty;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.everification.objects.CertificationAuthority;
 import vn.mobileid.id.general.objects.TSAProfile;
 
 /**
@@ -48,7 +47,7 @@ public class Resources {
             List<ResponseCode> listOfResponseCode = db.getResponseCodes();
             for (ResponseCode responseCode : listOfResponseCode) {
                 responseCodes.put(responseCode.getName(), responseCode);   
-                System.out.println("Name:"+responseCode.getName());
+//                System.out.println("Name:"+responseCode.getName());
             }
         }
 

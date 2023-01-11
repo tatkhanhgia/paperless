@@ -17,8 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Workflow_JSNObject {
     private String workflow_id;
-    private int status; //0 - inactive  1 - active
-    private String user_id; //author
+    private int status; //0 - inactive  1 - active    
     private int template_type;
     private String label;
     private int workflow_type;
@@ -28,10 +27,9 @@ public class Workflow_JSNObject {
     private String last_modified_at;
         
 
-    public Workflow_JSNObject(String workflow_id, int status, String user_id, int template_type, String label, int workflow_type, String created_by, String created_at, String last_modified_by, String last_modified_at ) {
+    public Workflow_JSNObject(String workflow_id, int status, int template_type, String label, int workflow_type, String created_by, String created_at, String last_modified_by, String last_modified_at ) {
         this.workflow_id = workflow_id;
-        this.status = status;
-        this.user_id = user_id;
+        this.status = status;        
         this.template_type = template_type;
         this.label = label;
         this.workflow_type = workflow_type;
@@ -43,8 +41,7 @@ public class Workflow_JSNObject {
 
     public Workflow_JSNObject() {
         this.workflow_id = null;
-        this.status = 0;
-        this.user_id = null;
+        this.status = 0;        
         this.template_type = QryptoConstant.TEMPLATE_TYPE_COURSE_CERTIFICATE_PDF_TEMPLATE;
         this.label = null;
         this.workflow_type = QryptoConstant.WORKFLOW_TYPE_PDF_GENERATOR;
@@ -70,15 +67,6 @@ public class Workflow_JSNObject {
 
     public void setStatus(int status) {
         this.status = status;
-    }
-
-    @JsonProperty("user_email")
-    public String getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(String user_id) {
-        this.user_id = user_id;
     }
 
     @JsonProperty("workflow_template_type")

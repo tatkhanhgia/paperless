@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
+import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
@@ -38,14 +39,7 @@ public class CreateWorkflow {
                             QryptoConstant.SUBCODE_MISSING_WORKFLOW_LABEL,
                             "en",
                             null));
-        }
-        if (Utils.isNullOrEmpty(workflow.getUser_id())) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-                            QryptoConstant.SUBCODE_MISSING_WORKFLOW_USER_EMAIL_OR_ID,
-                            "en",
-                            null));
-        }
+        }        
         if (Utils.isNullOrEmpty(workflow.getCreated_by())) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
@@ -60,7 +54,7 @@ public class CreateWorkflow {
                         null));
     }
 
-    public static InternalResponse processingCreateWorkflow(Workflow_JSNObject workflow) {
+    public static InternalResponse processingCreateWorkflow(Workflow_JSNObject workflow, User user) {
         try {
             Database DB = new DatabaseImpl();
 
@@ -68,7 +62,7 @@ public class CreateWorkflow {
                     workflow.getTemplate_type(),
                     workflow.getLabel(),
                     workflow.getCreated_by(),
-                    workflow.getUser_id()
+                    user.getEmail()
             );
             
             if(createWorkflow.getStatus() != QryptoConstant.CODE_SUCCESS ){

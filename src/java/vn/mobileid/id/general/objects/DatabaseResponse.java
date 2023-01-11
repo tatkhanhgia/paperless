@@ -21,13 +21,8 @@ public class DatabaseResponse {
     private int ID_Response;
     private String TransactionID;
 
-    public int getID_Response() {
-        return ID_Response;
-    }
-
-    public void setID_Response(int ID_Response) {
-        this.ID_Response = ID_Response;
-    }
+    //Test
+    private Object object;        
 
     public String getTransactionID() {
         return TransactionID;
@@ -77,6 +72,14 @@ public class DatabaseResponse {
 
     public void setWorkflowID(String workflowID) {
         this.workflowID = workflowID;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
     }
             
     

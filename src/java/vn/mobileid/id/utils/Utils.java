@@ -61,6 +61,7 @@ import com.google.gson.Gson;
 import java.util.Map;
 import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
+import restful.sdk.API.Property;
 
 /**
  *
@@ -1062,5 +1063,29 @@ public class Utils {
 //            }
             return null;
         }
+    }
+    
+    public static Property getDataRESTFromString(String dataREST){
+        HashMap<String, String> map = new HashMap<>();
+        StringTokenizer token = new StringTokenizer(dataREST,"\n", false);
+        while(token.hasMoreTokens()){
+            String[] row = token.nextToken().split("=");
+            map.put(row[0],row[1]);
+        }
+        String baseUrl = map.get("mobileid.rssp.baseurl");
+        String relyingParty = map.get("mobileid.rssp.rp.name");
+        String relyingPartyUser = map.get("mobileid.rssp.rp.user");
+        String relyingPartyPassword = map.get("mobileid.rssp.rp.password");
+        String relyingPartySignature = map.get("mobileid.rssp.rp.signature");
+        String relyingPartyKeyStore = map.get("mobileid.rssp.rp.keystore.file");
+        String relyingPartyKeyStorePassword = map.get("mobileid.rssp.rp.keystore.password");
+        return new Property(
+                baseUrl,
+                relyingParty,
+                relyingPartyUser,
+                relyingPartyPassword,
+                relyingPartySignature,
+                relyingPartyKeyStore,
+                relyingPartyKeyStorePassword);
     }
 }

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import javax.sql.rowset.serial.SerialBlob;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,16 +53,14 @@ import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.general.objects.SMSGWProperties;
 import vn.mobileid.id.general.objects.SMTPProperties;
 import vn.mobileid.id.utils.Configuration;
-import vn.mobileid.id.everification.objects.CAProperties;
-import vn.mobileid.id.everification.objects.CertificationAuthority;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.objects.TSAProfile;
 import vn.mobileid.id.general.objects.TSAProfileProperties;
 import vn.mobileid.id.general.objects.Value;
 import vn.mobileid.id.general.objects.VerificationPropertiesJSNObject;
-import vn.mobileid.id.license.LicenseServerData;
 import vn.mobileid.id.qrypto.QryptoConstant;
+import vn.mobileid.id.qrypto.objects.Enterprise_JSNObject;
 import vn.mobileid.id.utils.Crypto;
 import vn.mobileid.id.utils.Utils;
 
@@ -104,8 +103,8 @@ public class DatabaseImpl implements Database {
                     responseCode = new ResponseCode();
                     responseCode.setId(rs.getInt("ID"));
                     responseCode.setName(rs.getString("NAME"));
-                    responseCode.setCode(rs.getString("CODE"));
-                    responseCode.setCode_description(rs.getString("CODE_DESCRIPTION"));
+                    responseCode.setCode(rs.getString("ERROR"));
+                    responseCode.setCode_description(rs.getString("ERROR_DESCRIPTION"));
                     break;
                 }
             }
@@ -204,8 +203,8 @@ public class DatabaseImpl implements Database {
                         ResponseCode responseCode = new ResponseCode();
 //                            responseCode.setId(rs.getInt("ID"));
                         responseCode.setName(rs.getString("NAME"));
-                        responseCode.setCode(rs.getString("CODE"));
-                        responseCode.setCode_description(rs.getString("CODE_DESCRIPTION"));
+                        responseCode.setCode(rs.getString("ERROR"));
+                        responseCode.setCode_description(rs.getString("ERROR_DESCRIPTION"));
                         responseCodes.add(responseCode);
 
                     } catch (NumberFormatException ex) {
@@ -457,6 +456,7 @@ public class DatabaseImpl implements Database {
             int size,
             int width,
             int height,
+            byte[] fileData,
             String HMAC,
             String created_by
     ) {
@@ -472,7 +472,11 @@ public class DatabaseImpl implements Database {
         int numOfRetry = retryTimes;
         while (numOfRetry > 0) {
             try {
-                String str = "{ call USP_FILE_MANAGEMENT_ADD(?,?,?,?,?,?,?,?,?,?) }";
+                Blob blob = null;
+                if(fileData!=null){
+                 blob = new SerialBlob(fileData);
+                }
+                String str = "{ call USP_FILE_MANAGEMENT_ADD(?,?,?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setString("pUUID", UUID);               
@@ -480,7 +484,8 @@ public class DatabaseImpl implements Database {
                 cals.setInt("PAGES", pages);
                 cals.setInt("pSIZE", size);
                 cals.setInt("pWIDTH", width);
-                cals.setInt("pHEIGHT", height);
+                cals.setInt("pHEIGHT", height);                
+                cals.setBlob("pBINARY_DATA",blob);                
                 cals.setString("pHMAC", HMAC);
                 cals.setString("pCREATED_BY", created_by);
 
@@ -582,9 +587,8 @@ public class DatabaseImpl implements Database {
     public DatabaseResponse createTransaction(
             String email,
             int logID,
-            int QRUUID,
-            int CSV_Task,
-            int enable_CSV_Task,
+            int UUID,
+            int type,
             String IPAddress,
             String initFile,
             int pY,
@@ -604,14 +608,13 @@ public class DatabaseImpl implements Database {
         int numOfRetry = retryTimes;
         while (numOfRetry > 0) {
             try {
-                String str = "{ call USP_TRANSACTION_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+                String str = "{ call USP_TRANSACTION_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setString("U_EMAIL", email);               
                 cals.setInt("pLOG_ID", logID);               
-                cals.setInt("pQR_UUID", QRUUID);               
-                cals.setInt("pCSV_TASK", CSV_Task);               
-                cals.setInt("pIS_CSV_TASK", enable_CSV_Task);               
+                cals.setInt("pOBJECT_ID", UUID);               
+                cals.setInt("pOBJECT_TYPE", type);               
                 cals.setString("pIP_ADDRESS", IPAddress);               
                 cals.setString("pINITIAL_FILE", initFile);               
                 cals.setInt("pY", pY);               
@@ -712,6 +715,116 @@ public class DatabaseImpl implements Database {
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
                     databaseResponse.setIDResponse(cals.getInt("pWORKFLOW_ACTIVITY_ID"));
+                    databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
+                } else {
+                    databaseResponse.setStatus(mysqlResult);
+                }
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+                numOfRetry--;
+                databaseResponse.setStatus(QryptoConstant.CODE_FAIL);
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Error while inserting agreement. Details: " + Utils.printStackTrace(e));
+                }
+            } finally {
+                DatabaseConnectionManager.getInstance().close(conn);
+            }
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of insertAgreement in milliseconds: " + timeElapsed / 1000000);
+        }
+        return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse getDataRP(int enterprise_id) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        boolean result = false;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        while (numOfRetry > 0) {
+            try {
+                String str = "{ call USP_ENTERPRISE_GET_DATA_RESTFUL(?,?,?) }";
+                conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+                cals = conn.prepareCall(str);
+                cals.setInt("pENTERPRISE_ID", enterprise_id);               
+                
+                cals.registerOutParameter("pDATA_RESTFUL", java.sql.Types.VARCHAR);
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+                
+
+                if (LogHandler.isShowDebugLog()) {
+                    LOG.debug("[SQL] " + cals.toString());
+                }
+                cals.execute();                
+                int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+                if (mysqlResult == 1) {
+                    Enterprise_JSNObject temp = new Enterprise_JSNObject();                    
+                    String check = cals.getString("pDATA_RESTFUL");
+                    temp.setData(cals.getString("pDATA_RESTFUL"));
+                    databaseResponse.setObject(temp);
+                    databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
+                } else {
+                    databaseResponse.setStatus(mysqlResult);
+                }
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+                numOfRetry--;
+                databaseResponse.setStatus(QryptoConstant.CODE_FAIL);
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Error while inserting agreement. Details: " + Utils.printStackTrace(e));
+                }
+            } finally {
+                DatabaseConnectionManager.getInstance().close(conn);
+            }
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of insertAgreement in milliseconds: " + timeElapsed / 1000000);
+        }
+        return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse createQR(
+            String metaData,
+            String hmac,
+            String created_by) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        boolean result = false;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        while (numOfRetry > 0) {
+            try {
+                String str = "{ call USP_QR_ADD(?,?,?,?,?) }";
+                conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+                cals = conn.prepareCall(str);
+                cals.setString("pMETA_DATA", metaData);               
+                cals.setString("pHMAC", hmac);                         
+                cals.setString("pCREATED_BY", created_by);                                                             
+                
+                cals.registerOutParameter("pQR_UUID", java.sql.Types.BIGINT);
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+                
+
+                if (LogHandler.isShowDebugLog()) {
+                    LOG.debug("[SQL] " + cals.toString());
+                }
+                cals.execute();                
+                int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+                if (mysqlResult == 1) {
+                    databaseResponse.setIDResponse(cals.getInt("pQR_UUID"));
                     databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
                 } else {
                     databaseResponse.setStatus(mysqlResult);

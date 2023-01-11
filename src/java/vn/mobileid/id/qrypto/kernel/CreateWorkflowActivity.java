@@ -62,102 +62,66 @@ public class CreateWorkflowActivity {
             int logID = -1;
             int fileManagementID = -1;
             String transactionID = "";
+            String QRUUID = "";
             
-            //Create new User_Activity_log
-            DatabaseResponse callDB = DB.createUserActivityLog(
-                    user.getEmail(), //email 
-                    workflow.getEnterprise_id(),//enterprise_id
-                    null, //module
-                    null, //action
-                    null, //info_key
-                    null, //info_value
-                    null, //detail
-                    null, //agent
-                    null, //agent_detail
-                    null, //HMAC
-                    workflow.getCreated_by());//created_by                
-                        
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){
-                String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                    LOG.error("Cannot create User_Activity_log - Detail:"+message);
-                }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        message
-                );
+            InternalResponse response = null;
+            //Create new User Activity Log
+//            boolean check1 = CreateUserActivityLog.checkData(workflow);
+//            if(check1 == false){
+//                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+//                        QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+//                                QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+//                                "en",
+//                                null));
+//            }           
+            response = CreateUserActivityLog.processingCreateUserActivityLog(workflow, user);
+            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+                return response;
             }
-            logID = callDB.getIDResponse();            
+            logID = Integer.parseInt(response.getMessage());
             
             //Create new File Management
-            callDB = DB.createFileManagement(
-                    "null", //UUID
-                    null,   //name
-                    0,      //page
-                    0,      //size
-                    0,      //width
-                    0,      //height
-                    "HMAC", //HMAC
-                    workflow.getCreated_by());
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){
-                String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                    LOG.error("Cannot create File Management - Detail:"+message);
-                }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        message
-                );
+            response = CreateFileManagement.processingCreateFileManagement(
+                    workflow,
+                    "HMAC",
+                    null,
+                    user);
+            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+                return response;
             }
-            fileManagementID = callDB.getIDResponse();
+            fileManagementID = Integer.parseInt(response.getMessage());
+            
+            //Create new QR
+            response = CreateQR.processingCreateQR(
+                    "metaData",
+                    "HMAC",
+                    workflow.getCreated_by());
+                    
+            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+                return response;
+            }
+            QRUUID = response.getMessage();
             
             //Create new Transaction
-            callDB = DB.createTransaction(
-                    user.getEmail(),  //email
-                    logID,      //logID
-                    -1,      //QRUUID
-                    -1,      //CSV_Task
-                    0,       //enable_CSV_Task
-                    null,  //IPAddress
-                    null,  //initFile
-                    0,      //pY
-                    0,      //pX
-                    0,      //pC
-                    0,      //pS
-                    0,      //pages
-                    "No Description",  //des   
-                    "HMAC",  //hmac
-                    workflow.getCreated_by()   //created_by
-            );
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){
-                String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                    LOG.error("Cannot create Transaction - Detail:"+message);
-                }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        message
-                );
+            response = CreateTransaction.processingCreateTransaction(
+                    logID,
+                    Integer.parseInt(QRUUID),
+                    1,  //Type QR:1 CSV:2
+                    user,
+                    workflow.getCreated_by());
+            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+                return response;
             }
-            transactionID = callDB.getTransactionID();
+            transactionID = response.getMessage();
                     
             //Create new Workflow Activity
-            callDB = DB.createWorkflowActivity(
+            DatabaseResponse callDB = DB.createWorkflowActivity(
                 workflow.getEnterprise_id(), //enterpriseID
                 workflow.getWorkflow_id(), //workflowID
                 user.getEmail(),    //useremail
                 transactionID, //transactionid
-                QryptoConstant.FLAG_FALSE_DB,  //file link
-                QryptoConstant.FLAG_FALSE_DB,  //csv
+                fileManagementID,  //file link
+                -1,  //csv
                 workflow.getRemark(), //remark
                 workflow.isUse_test_token(),  //use test token
                 workflow.isIs_production(),  //is production
@@ -196,5 +160,21 @@ public class CreateWorkflowActivity {
             e.printStackTrace();
             return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
         }        
+    }
+    
+    public static void main(String[] args){
+        WorkflowActivity_JSNObject object = new WorkflowActivity_JSNObject();
+        object.setEnterprise_id(3);
+        object.setWorkflow_id(8);
+        object.setWorkflow_template_type(3);
+        object.setRemark("Remak");
+        object.setUse_test_token(false);
+        object.setUpdate_enable(false);
+        object.setCreated_by("GIATK");
+        
+        User user = new User();
+        user.setEmail("giatk@mobile-id.vn");
+        
+        CreateWorkflowActivity.processingCreateWorkflowActivity(object, user);
     }
 }
