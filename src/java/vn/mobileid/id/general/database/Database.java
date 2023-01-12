@@ -135,4 +135,8 @@ public interface Database {
             String hmac,
             String created_by
     );
+    
+    public DatabaseResponse getFile(
+            int fileID
+    );
 }

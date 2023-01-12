@@ -61,6 +61,7 @@ import vn.mobileid.id.general.objects.Value;
 import vn.mobileid.id.general.objects.VerificationPropertiesJSNObject;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.Enterprise_JSNObject;
+import vn.mobileid.id.qrypto.objects.FileManagement_JSNObject;
 import vn.mobileid.id.utils.Crypto;
 import vn.mobileid.id.utils.Utils;
 
@@ -461,7 +462,7 @@ public class DatabaseImpl implements Database {
             String created_by
     ) {
         long startTime = System.nanoTime();
-        if (name == null){
+        if (name == null) {
             name = String.valueOf(startTime);
         }
         Connection conn = null;
@@ -473,19 +474,19 @@ public class DatabaseImpl implements Database {
         while (numOfRetry > 0) {
             try {
                 Blob blob = null;
-                if(fileData!=null){
-                 blob = new SerialBlob(fileData);
+                if (fileData != null) {
+                    blob = new SerialBlob(fileData);
                 }
                 String str = "{ call USP_FILE_MANAGEMENT_ADD(?,?,?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setString("pUUID", UUID);               
+                cals.setString("pUUID", UUID);
                 cals.setString("pNAME", name);
                 cals.setInt("PAGES", pages);
                 cals.setInt("pSIZE", size);
                 cals.setInt("pWIDTH", width);
-                cals.setInt("pHEIGHT", height);                
-                cals.setBlob("pBINARY_DATA",blob);                
+                cals.setInt("pHEIGHT", height);
+                cals.setBlob("pBINARY_DATA", blob);
                 cals.setString("pHMAC", HMAC);
                 cals.setString("pCREATED_BY", created_by);
 
@@ -543,13 +544,13 @@ public class DatabaseImpl implements Database {
                 String str = "{ call USP_ENTERPRISE_ADD_USER(?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setString("CREATED_EMAIL", email_owner);               
+                cals.setString("CREATED_EMAIL", email_owner);
                 cals.setInt("pENTERPRISE_ID", enterprise_id);
                 cals.setString("U_EMAIL", email_user);
                 cals.setString("E_ROLE_NAME", role);
                 cals.setInt("E_U_STATUS", status);
-                cals.setString("E_U_HMAC", hmac);                
-                
+                cals.setString("E_U_HMAC", hmac);
+
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
                 if (LogHandler.isShowDebugLog()) {
@@ -611,29 +612,28 @@ public class DatabaseImpl implements Database {
                 String str = "{ call USP_TRANSACTION_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setString("U_EMAIL", email);               
-                cals.setInt("pLOG_ID", logID);               
-                cals.setInt("pOBJECT_ID", UUID);               
-                cals.setInt("pOBJECT_TYPE", type);               
-                cals.setString("pIP_ADDRESS", IPAddress);               
-                cals.setString("pINITIAL_FILE", initFile);               
-                cals.setInt("pY", pY);               
-                cals.setInt("pX", pX);               
-                cals.setInt("pC", pC);               
-                cals.setInt("pS", pS);               
-                cals.setInt("pPAGES", pages);               
-                cals.setString("pDESCRIPTION", des);               
-                cals.setString("pHMAC", hmac);                                       
-                cals.setString("pCREATED_BY", created_by);               
-                
+                cals.setString("U_EMAIL", email);
+                cals.setInt("pLOG_ID", logID);
+                cals.setInt("pOBJECT_ID", UUID);
+                cals.setInt("pOBJECT_TYPE", type);
+                cals.setString("pIP_ADDRESS", IPAddress);
+                cals.setString("pINITIAL_FILE", initFile);
+                cals.setInt("pY", pY);
+                cals.setInt("pX", pX);
+                cals.setInt("pC", pC);
+                cals.setInt("pS", pS);
+                cals.setInt("pPAGES", pages);
+                cals.setString("pDESCRIPTION", des);
+                cals.setString("pHMAC", hmac);
+                cals.setString("pCREATED_BY", created_by);
+
                 cals.registerOutParameter("pTRANSACTION_ID", java.sql.Types.VARCHAR);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-                
 
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
-                cals.execute();                
+                cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
                     databaseResponse.setTransactionID(cals.getString("pTRANSACTION_ID"));
@@ -689,29 +689,28 @@ public class DatabaseImpl implements Database {
                 String str = "{ call USP_WORKFLOW_ACTIVITY_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setInt("pENTERPRISE_ID", enterprise_id);               
-                cals.setInt("pWORKFLOW_ID", workflow_id);               
-                cals.setString("pUSER_EMAIL", user_email);               
-                cals.setString("pTRANSACTION_ID", transaction_id);               
-                cals.setInt("pFILE_CREATED_ID", pFILE_CREATED_ID);               
-                cals.setInt("pCSV", csv);               
-                cals.setString("pREMARK", remark);               
-                cals.setInt("pUSE_TEST_TOKEN", use_test_token);               
-                cals.setInt("pIS_PRODUCTION", enable_production);               
-                cals.setInt("pIS_UPDATE", enable_update);               
-                cals.setInt("pWORKFLOW_TYPE", workflow_type);               
-                cals.setString("pREQUEST_DATA", request_data);               
-                cals.setString("pHMAC", HMAC);               
-                cals.setString("pCREATED_BY", created_by);                                                             
-                
+                cals.setInt("pENTERPRISE_ID", enterprise_id);
+                cals.setInt("pWORKFLOW_ID", workflow_id);
+                cals.setString("pUSER_EMAIL", user_email);
+                cals.setString("pTRANSACTION_ID", transaction_id);
+                cals.setInt("pFILE_CREATED_ID", pFILE_CREATED_ID);
+                cals.setInt("pCSV", csv);
+                cals.setString("pREMARK", remark);
+                cals.setInt("pUSE_TEST_TOKEN", use_test_token);
+                cals.setInt("pIS_PRODUCTION", enable_production);
+                cals.setInt("pIS_UPDATE", enable_update);
+                cals.setInt("pWORKFLOW_TYPE", workflow_type);
+                cals.setString("pREQUEST_DATA", request_data);
+                cals.setString("pHMAC", HMAC);
+                cals.setString("pCREATED_BY", created_by);
+
                 cals.registerOutParameter("pWORKFLOW_ACTIVITY_ID", java.sql.Types.BIGINT);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-                
 
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
-                cals.execute();                
+                cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
                     databaseResponse.setIDResponse(cals.getInt("pWORKFLOW_ACTIVITY_ID"));
@@ -753,19 +752,18 @@ public class DatabaseImpl implements Database {
                 String str = "{ call USP_ENTERPRISE_GET_DATA_RESTFUL(?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setInt("pENTERPRISE_ID", enterprise_id);               
-                
+                cals.setInt("pENTERPRISE_ID", enterprise_id);
+
                 cals.registerOutParameter("pDATA_RESTFUL", java.sql.Types.VARCHAR);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-                
 
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
-                cals.execute();                
+                cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
-                    Enterprise_JSNObject temp = new Enterprise_JSNObject();                    
+                    Enterprise_JSNObject temp = new Enterprise_JSNObject();
                     String check = cals.getString("pDATA_RESTFUL");
                     temp.setData(cals.getString("pDATA_RESTFUL"));
                     databaseResponse.setObject(temp);
@@ -810,18 +808,17 @@ public class DatabaseImpl implements Database {
                 String str = "{ call USP_QR_ADD(?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setString("pMETA_DATA", metaData);               
-                cals.setString("pHMAC", hmac);                         
-                cals.setString("pCREATED_BY", created_by);                                                             
-                
+                cals.setString("pMETA_DATA", metaData);
+                cals.setString("pHMAC", hmac);
+                cals.setString("pCREATED_BY", created_by);
+
                 cals.registerOutParameter("pQR_UUID", java.sql.Types.BIGINT);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-                
 
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
-                cals.execute();                
+                cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
                     databaseResponse.setIDResponse(cals.getInt("pQR_UUID"));
@@ -848,6 +845,63 @@ public class DatabaseImpl implements Database {
         }
         return databaseResponse;
     }
-    
-    
+
+    @Override
+    public DatabaseResponse getFile(int fileID) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        boolean result = false;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        while (numOfRetry > 0) {
+            try {
+                String str = "{ call USP_FILE_MANAGEMENT_GET(?,?) }";
+                conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+                cals = conn.prepareCall(str);
+                cals.setInt("pFILE_ID", fileID);
+
+                cals.registerOutParameter("pRESPONE_CODE", java.sql.Types.VARCHAR);
+
+                if (LogHandler.isShowDebugLog()) {
+                    LOG.debug("[SQL] " + cals.toString());
+                }
+                rs = cals.executeQuery();
+                int mysqlResult = Integer.parseInt(cals.getString("pRESPONE_CODE"));
+                if (mysqlResult == 1) {
+                    rs.next();
+//                    Blob data = cals.getBlob("");
+                    databaseResponse.setObject(new FileManagement_JSNObject(
+//                            data.getBytes(1, (int) data.length()),
+                            null,
+                            rs.getString("NAME"),
+                            rs.getString("ID"),
+//                            rs.getString("CREATED_BY") 
+                            null
+                    ));
+                    databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
+                } else {
+                    databaseResponse.setStatus(mysqlResult);
+                }
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+                numOfRetry--;
+                databaseResponse.setStatus(QryptoConstant.CODE_FAIL);
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Error while inserting agreement. Details: " + Utils.printStackTrace(e));
+                }
+            } finally {
+                DatabaseConnectionManager.getInstance().close(conn);
+            }
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of insertAgreement in milliseconds: " + timeElapsed / 1000000);
+        }
+        return databaseResponse;
+    }
+
 }

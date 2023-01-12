@@ -142,12 +142,23 @@ public class CreateFileManagement {
         User user = new User();
         user.setEmail("giatk@mobile-id.vn");
         
-        String pa = "D:\\NetBeansProjects\\Restfult-SDK-Java_newest\\file\\gic.p12";
+        String pa = "D:\\NetBean\\QryptoServices\\file\\rssp.p12";
         byte[] data = Files.readAllBytes(new File(pa).toPath());
         
+//        CreateFileManagement.processingCreateFileManagement(
+//                object,
+//                "HMAC",
+//                data, user);
         CreateFileManagement.processingCreateFileManagement(
                 object,
+                "RSSP",
+                0,
+                0,
+                0,
+                0,
                 "HMAC",
-                data, user);
+                data,
+                user);
+                
     }
 }

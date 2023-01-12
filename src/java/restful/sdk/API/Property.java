@@ -12,6 +12,7 @@ public class Property {
     private String relyingPartySignature;
     private String relyingPartyKeyStore;
     private String relyingPartyKeyStorePassword;
+    private byte[] relyingPartyKeyStoreData;
 
     public Property(String baseUrl,
             String relyingParty,
@@ -30,6 +31,23 @@ public class Property {
         this.relyingPartyKeyStorePassword = relyingPartyKeyStorePassword;
     }
 
+    public Property(String baseUrl,
+            String relyingParty,
+            String relyingPartyUser,
+            String relyingPartyPassword,
+            String relyingPartySignature,
+            byte[] relyingPartyKeyStoreData,
+            String relyingPartyKeyStorePassword) {
+
+        this.baseUrl = baseUrl;
+        this.relyingParty = relyingParty;
+        this.relyingPartyUser = relyingPartyUser;
+        this.relyingPartyPassword = relyingPartyPassword;
+        this.relyingPartySignature = relyingPartySignature;
+        this.relyingPartyKeyStoreData = relyingPartyKeyStoreData;
+        this.relyingPartyKeyStorePassword = relyingPartyKeyStorePassword;
+    }
+    
     public String getBaseUrl() {
         return baseUrl;
     }
@@ -96,4 +114,23 @@ public class Property {
         return "SSL2 " + Base64.getEncoder().encodeToString(byteSSL2);
     }
 
+    public String getAuthorization2() throws Exception, Throwable {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String data2sign = relyingPartyUser + relyingPartyPassword + relyingPartySignature + timestamp;
+        String pkcs1Signature = Utils.getPKCS1Signature(data2sign, relyingPartyKeyStoreData, relyingPartyKeyStorePassword);
+
+        String strSSL2 = (relyingPartyUser + ":" + relyingPartyPassword + ":" + relyingPartySignature + ":" + timestamp + ":" + pkcs1Signature);
+        byte[] byteSSL2 = strSSL2.getBytes();
+        return "SSL2 " + Base64.getEncoder().encodeToString(byteSSL2);
+    }
+    
+    public byte[] getRelyingPartyKeyStoreData() {
+        return relyingPartyKeyStoreData;
+    }
+
+    public void setRelyingPartyKeyStoreData(byte[] relyingPartyKeyStoreData) {
+        this.relyingPartyKeyStoreData = relyingPartyKeyStoreData;
+    }
+
+    
 }

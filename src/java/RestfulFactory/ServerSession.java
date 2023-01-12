@@ -48,6 +48,7 @@ import RestfulFactoryl.Response.Response;
 import RestfulFactoryl.Response.SignDocResponse;
 import RestfulFactoryl.Response.SignHashResponse;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,19 +92,20 @@ public class ServerSession implements IServerSession {
             authHeader = refreshToken;
         } else {
             retryLogin++;
-            authHeader = property.getAuthorization();
+            authHeader = property.getAuthorization2();
         }
         System.out.println("Login-retry: " + retryLogin);
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setRememberMeEnabled(true);
         loginRequest.setRelyingParty(property.getRelyingParty());
-        loginRequest.setClientInfo(new ClientInfo());
-        loginRequest.getClientInfo().setInstanceUUID(this.sessionId);
+//        loginRequest.setClientInfo(new ClientInfo());
+//        loginRequest.getClientInfo().setInstanceUUID(this.sessionId);
 
         loginRequest.setLang(this.lang);
 
         String jsonReq = Utils.gsTmp.toJson(loginRequest);
         HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "auth/login", jsonReq, authHeader);
+
         if (!response.isStatus()) {
             try {
                 throw new Exception(response.getMsg());
@@ -111,7 +113,7 @@ public class ServerSession implements IServerSession {
                 Logger.getLogger(ServerSession.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-                
+
         LoginResponse signCloudResp = Utils.gsTmp.fromJson(response.getMsg(), LoginResponse.class);
         if (signCloudResp.getError() == 3005 || signCloudResp.getError() == 3006) {
             refreshToken = null;
@@ -205,7 +207,7 @@ public class ServerSession implements IServerSession {
         if (!response.isStatus()) {
             try {
                 throw new Exception(response.getMsg());
-            } catch (Exception ex) {                
+            } catch (Exception ex) {
                 Logger.getLogger(ServerSession.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -220,7 +222,7 @@ public class ServerSession implements IServerSession {
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
 
-        ICertificate iCrt = (ICertificate) new Certificate(signCloudResp.getCert(), agreementUUID, this);  
+        ICertificate iCrt = (ICertificate) new Certificate(signCloudResp.getCert(), agreementUUID, this);
 //        signCloudResp.getCert().setAuthorizationEmail(signCloudResp.getAuthorizationEmail());
 //        signCloudResp.getCert().setAuthorizationPhone(signCloudResp.getAuthorizationPhone());
 //        signCloudResp.getCert().setSharedMode(signCloudResp.getSharedMode());
@@ -232,8 +234,8 @@ public class ServerSession implements IServerSession {
 //        signCloudResp.getCert().setContractExpirationDate(signCloudResp.getContractExpirationDate());
 //        signCloudResp.getCert().setDefaultPassphraseEnabled(signCloudResp.isDefaultPassphraseEnabled());
 //        signCloudResp.getCert().setTrialEnabled(signCloudResp.isTrialEnabled());
-                
-        return iCrt;          
+
+        return iCrt;
     }
 
     @Override
@@ -623,7 +625,7 @@ public class ServerSession implements IServerSession {
             return getStatesOrProvinces();
         } else if (signCloudResp.getError() != 0) {
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
-        }        
+        }
 
         return signCloudResp.getProvinces();
     }
@@ -661,8 +663,8 @@ public class ServerSession implements IServerSession {
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
         List<CertificateAuthority> cas = new ArrayList<CertificateAuthority>();
-        
-        if(signCloudResp.getCsr() != null){
+
+        if (signCloudResp.getCsr() != null) {
             System.out.println("Csr = " + signCloudResp.getCsr());
         } else {
             System.out.println("Certificate = " + signCloudResp.getCertificates()[0]);
@@ -688,7 +690,7 @@ public class ServerSession implements IServerSession {
                 Logger.getLogger(ServerSession.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         IssueCertificateResponse signCloudResp = Utils.gsTmp.fromJson(response.getMsg(), IssueCertificateResponse.class);
         if (signCloudResp.getError() == 3005 || signCloudResp.getError() == 3006) {
             login();

@@ -99,7 +99,7 @@ public class HTTPUtils {
             Map<String, String> headers = new HashMap<>();
             headers.put("Content-Type", "application/json");
             headers.put("Authorization", authorizationHeader);
-            headers.put("X-RSSP-BACKEND", "rssp02");
+//            headers.put("X-RSSP-BACKEND", "rssp02");
 
             return invokeHttpRequest(null, endpointUrl, httpMethod, timeout, headers, requestBody);
         } catch (Exception e) {

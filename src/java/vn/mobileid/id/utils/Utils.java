@@ -1065,9 +1065,10 @@ public class Utils {
         }
     }
     
-    public static Property getDataRESTFromString(String dataREST){
+    public static Property getDataRESTFromString(String dataREST, byte[] p12){
+//        dataREST = dataREST.replaceAll("\r", "");
         HashMap<String, String> map = new HashMap<>();
-        StringTokenizer token = new StringTokenizer(dataREST,"\n", false);
+        StringTokenizer token = new StringTokenizer(dataREST,";", false);
         while(token.hasMoreTokens()){
             String[] row = token.nextToken().split("=");
             map.put(row[0],row[1]);
@@ -1079,6 +1080,17 @@ public class Utils {
         String relyingPartySignature = map.get("mobileid.rssp.rp.signature");
         String relyingPartyKeyStore = map.get("mobileid.rssp.rp.keystore.file");
         String relyingPartyKeyStorePassword = map.get("mobileid.rssp.rp.keystore.password");
+        byte[] relyingPartyKeyStoreData = p12;
+        if(p12 != null){
+        return new Property(
+                baseUrl,
+                relyingParty,
+                relyingPartyUser,
+                relyingPartyPassword,
+                relyingPartySignature,
+                relyingPartyKeyStoreData,
+                relyingPartyKeyStorePassword);
+        }
         return new Property(
                 baseUrl,
                 relyingParty,
@@ -1087,5 +1099,33 @@ public class Utils {
                 relyingPartySignature,
                 relyingPartyKeyStore,
                 relyingPartyKeyStorePassword);
+    }
+    
+    public static Property getDataRESTFromString2(String dataREST, byte[] p12){
+//        dataREST = dataREST.replaceAll("\r", "");
+        ArrayList<String> list = new ArrayList();
+        StringTokenizer token = new StringTokenizer(dataREST,";", false);
+        while(token.hasMoreTokens()){
+            list.add(token.nextToken());
+        }
+//        String baseUrl = map.get("mobileid.rssp.baseurl");
+//        String relyingParty = map.get("mobileid.rssp.rp.name");
+//        String relyingPartyUser = map.get("mobileid.rssp.rp.user");
+//        String relyingPartyPassword = map.get("mobileid.rssp.rp.password");
+//        String relyingPartySignature = map.get("mobileid.rssp.rp.signature");
+//        String relyingPartyKeyStore = map.get("mobileid.rssp.rp.keystore.file");
+//        String relyingPartyKeyStorePassword = map.get("mobileid.rssp.rp.keystore.password");
+        byte[] relyingPartyKeyStoreData = p12;
+        
+        return new Property(
+                list.get(0),
+                list.get(1),
+                list.get(2),
+                list.get(3),
+                list.get(4),
+                relyingPartyKeyStoreData,
+                list.get(5));
+        
+        
     }
 }

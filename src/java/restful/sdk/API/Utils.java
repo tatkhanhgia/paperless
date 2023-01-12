@@ -30,6 +30,11 @@ public class Utils {
         MakeSignature mks = new MakeSignature(data, key, passkey);
         return mks.getSignature();
     }
+    
+    public static String getPKCS1Signature(String data, byte[] keyData, String passkey) throws Throwable {
+        MakeSignature mks = new MakeSignature(data, keyData, passkey);
+        return mks.getSignature();
+    }
 
     private static final LocalDateTime Jan1st1970 = LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0);
 //    private static final LocalDateTime Jan1st1970 = LocalDateTime.of(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc.);
