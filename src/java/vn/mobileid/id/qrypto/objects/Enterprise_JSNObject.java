@@ -11,14 +11,7 @@ package vn.mobileid.id.qrypto.objects;
 
 public class Enterprise_JSNObject extends Object{
     private String data;
-
-    //Data RSSP
-    private String RP_name ;
-    private String RP_user;
-    private String RP_pass;
-    private String RP_signature;
-    private String RP_keystorefile;
-    private String RP_keystorePass;
+    private String fileP12_id;
     
     public Enterprise_JSNObject() {
     }   
@@ -35,6 +28,15 @@ public class Enterprise_JSNObject extends Object{
         this.data = data;
         return this;
     }
+
+    public String getFileP12_id() {
+        return fileP12_id;
+    }
+
+    public void setFileP12_id(String fileP12_id) {
+        this.fileP12_id = fileP12_id;
+    }
+    
     
     public Enterprise_JSNObject build(){
         return this;

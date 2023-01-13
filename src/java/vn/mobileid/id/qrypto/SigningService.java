@@ -57,6 +57,8 @@ public class SigningService {
 
     private static final Logger LOG = LogManager.getLogger(SigningService.class);
 
+    private int enterprise_id_instant;
+    
     private Property prop ;
 
     private ISessionFactory sessionFactory;
@@ -64,24 +66,31 @@ public class SigningService {
 
     private static SigningService signingService;
 
-    public static SigningService getInstant() {
-        if (SigningService.signingService == null) {
-            SigningService.signingService = new SigningService();
+    public static SigningService getInstant(int i) {   
+        if(i<=0){
+            return null;
         }
+        if (SigningService.signingService == null) {
+            SigningService.signingService = new SigningService(i);
+        }
+        if(SigningService.signingService.enterprise_id_instant != i){
+            SigningService.signingService = new SigningService(i);
+        }
+        SigningService.signingService.enterprise_id_instant = i;
         return SigningService.signingService;
     }
 
-    private SigningService() {
-        init();
+    private SigningService(int i) {
+        init(i);
     }
 
-    private void init() {
+    private void init(int enterprise_id) {
         Database callDB = new DatabaseImpl();
         Enterprise_JSNObject object;
         FileManagement_JSNObject object2;
 
         try {
-            object = (Enterprise_JSNObject) callDB.getDataRP(3).getObject();
+            object = (Enterprise_JSNObject) callDB.getDataRP(enterprise_id).getObject();
             object2 = (FileManagement_JSNObject) callDB.getFile(22).getObject();
         } catch (ClassCastException ex) {
             if (LogHandler.isShowErrorLog()) {
@@ -156,11 +165,11 @@ public class SigningService {
         File imgFile = new File("");
         
         //Data
-        String font_hand = "";        
-        String font_Sign = "";
-        String logos = "";
-        String agreementUUID = "";
-        String credentials = "";
+        String font_hand = "D:\\NetBean\\QryptoServices\\file\\file\\Fz-Jim-Sintergate.ttf";        
+        String font_Sign = "D:\\NetBean\\QryptoServices\\file\\file\\FunkySignature-Regular.ttf";
+        String logos = "D:\\NetBean\\QryptoServices\\file\\file\\MobileID-Signature.png";
+        String agreementUUID = "9E6FA0D0-6319-4D57-A760-99BBBECB35D0";
+        String credentials = "fc081a30-8ed5-40c0-93b3-7b9cbd8d40f2";
         
         String fullNameReplaceSpace = fullNameWitness.replaceAll(" ", "").toString();
         byte[] picture = ImageGenerator.remoteSignWithPathFont("", font_hand, font_hand, fullNameReplaceSpace, "");
@@ -171,7 +180,7 @@ public class SigningService {
         IPdfSignFile signFile = new SignFileFactory().createPdfSignFile(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B );
 
         PdfProfile profile = signFile.getProfile();
-        profile.setReason("Ký hợp đồng điện tử");
+        profile.setReason("Ký hợp đồng điệnDĐ tử");
         profile.setTextContent("Signed by: " + fullNameWitness + "\nSigned at: {date}"
                 + "\nLocation: {location}"
                 + "\nReason: Witnessing " + fullNameWitness);
@@ -214,8 +223,10 @@ public class SigningService {
     }
     
     public static void main(String[] arhs) throws IOException {
-        String path = "D:\\NetBean\\QryptoServices\\file\\sample.pdf";
-        byte[] content = Files.readAllBytes(new File(path).toPath());
-        SigningService.getInstant().signHashBussiness("hallo", content);
+//        String path = "D:\\NetBean\\QryptoServices\\file\\sample.pdf";
+//        byte[] content = Files.readAllBytes(new File(path).toPath());
+//        SigningService.getInstant().signHashBussiness("hallo", content);
+        String filename = "";
+//        SigningService.getInstant().signHashWitness(filename, filename, filename)
     }
 }

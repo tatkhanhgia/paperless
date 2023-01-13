@@ -1,0 +1,7 @@
+mobileid.rssp.baseurl=https://rssp.mobile-id.vn/rssp/v2/
+mobileid.rssp.rp.name=VIETTEL_DEMO
+mobileid.rssp.rp.user=VIETTEL_DEMO
+mobileid.rssp.rp.password=pB3uXK6r
+mobileid.rssp.rp.signature=jjWra5jTSJVg8IEk5lQXRZ39VLckAIPT0hrRZ6WRh5kHW+lExVDmKr47hxf7fxp6xltCx5UIkPsL/toaSIrtvaTQgy5gz5Sf7JQC9u/Fwcfer8OH/k/xkSGeyidsae+xmTQ/8XxiUnDd1UUg3+VxLu71q6PbmZ/WW+6DYzAQl3esLUqiNlSo/EVm4mBV0rxugWRQJvM9c03L8Fk3KuOt1twS8Yv44J/DPCoq0j+rcMf0lZZTvSakvGjgjKG3SfAPksOHSjVq0bWdc3wUjhCyi2gB4GiG91bRPAMBtjdkOSdJdPqdhN03YK5HyAiUP2mzmrwCMR26RngCRHQeMZuosQ==
+mobileid.rssp.rp.keystore.file=D:\\Netbean Projects\\demoElaborcontract\\file\\VIETTEL_DEMO.p12
+mobileid.rssp.rp.keystore.password=EhvN98WP

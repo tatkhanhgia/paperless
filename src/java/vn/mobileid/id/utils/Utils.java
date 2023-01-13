@@ -243,6 +243,16 @@ public class Utils {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
+    
+    public static String generateTransactionID_noRP() {
+        String billCode = null;
+        try{
+            billCode = generateOneTimePassword(4) + "-" + generateOneTimePassword(5) + "-" + generateOneTimePassword(5);
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return billCode;
+    }
 
     public static List<CredentialTokensJSNObject> cleanUpCredentialTokens(List<CredentialTokensJSNObject> listOfCredentialTokensJSNObject) {
         long tenMinutes = 0; // in miliseconds
@@ -282,7 +292,7 @@ public class Utils {
             SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
             sdf.setTimeZone(TimeZone.getTimeZone(System.getProperty("user.timezone")));
             String dateTime = sdf.format(logDatetime);
-            billCode = relyingParty + "-" + dateTime + "-" + logId + "-" + generateOneTimePassword(6);
+            billCode = relyingParty + "-" + dateTime + "-" + logId + "-" + generateOneTimePassword(6);            
         } catch (Exception e) {
             e.printStackTrace();
         }
