@@ -10,21 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import vn.mobileid.id.general.objects.IDXCertificate;
-import vn.mobileid.id.general.objects.IdentityProcessType;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
-import vn.mobileid.id.general.gateway.p2p.objects.P2P;
-import vn.mobileid.id.general.gateway.p2p.objects.P2PFunction;
-import vn.mobileid.id.general.objects.Entity;
-import vn.mobileid.id.general.objects.IdentityDocumentType;
-import vn.mobileid.id.general.objects.IdentityProcessStatus;
-import vn.mobileid.id.general.objects.IdentityProvider;
-import vn.mobileid.id.general.objects.Province;
-import vn.mobileid.id.general.objects.RegistrationParty;
-import vn.mobileid.id.general.objects.RelyingParty;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.general.objects.TSAProfile;
+
 
 /**
  *
@@ -34,12 +23,8 @@ public class Resources {
 
     private static volatile Logger LOG = LogManager.getLogger(Resources.class);        
 
-    private static volatile HashMap<String, ResponseCode> responseCodes = new HashMap<>();
-   
-
-    private static volatile HashMap<String, Entity> entities = new HashMap<>();
+    private static volatile HashMap<String, ResponseCode> responseCodes = new HashMap<>();     
         
-
     public static synchronized void init() {
         Database db = new DatabaseImpl();
 
@@ -160,13 +145,7 @@ public class Resources {
 ////        }
 ////    }
 
-    public static void reloadEntities() {
-        Database db = new DatabaseImpl();
-        List<Entity> listOfEntity = db.getEntities();
-        for (Entity entity : listOfEntity) {
-            entities.put(entity.getName(), entity);
-        }
-    }
+  
 
 //    public static HashMap<String, IDXCertificate> getIdxCertificates() {
 //        return idxCertificates;
@@ -196,9 +175,7 @@ public class Resources {
 //        return idRelyingParties;
 //    }
 
-    public static HashMap<String, Entity> getEntities() {
-        return entities;
-    }
+   
 
 //    public static HashMap<String, P2P> getP2ps() {
 //        return p2ps;

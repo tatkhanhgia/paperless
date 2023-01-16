@@ -11,9 +11,6 @@ import java.util.logging.Level;
 import java.util.logging.SimpleFormatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import vn.mobileid.id.general.objects.Entity;
-import vn.mobileid.id.general.objects.EntityProperties;
-import vn.mobileid.id.general.objects.LogController;
 
 /**
  *

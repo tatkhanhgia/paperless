@@ -50,7 +50,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import vn.mobileid.id.general.email.EmailReq;
 import vn.mobileid.id.general.email.EmailResp;
 import vn.mobileid.id.general.objects.CredentialTokensJSNObject;
-import vn.mobileid.id.general.objects.RequestHeaderJSNObject;
 import vn.mobileid.id.general.sms.SmsResp;
 import vn.mobileid.id.general.LogHandler;
 import org.apache.logging.log4j.LogManager;
@@ -309,25 +308,6 @@ public class Utils {
         return new String(otp);
     }
 
-    public static String extractRequestHeader(final HttpServletRequest request) {
-        String result = null;
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            RequestHeaderJSNObject requestHeaderJSNObject = new RequestHeaderJSNObject();
-            HashMap<String, String> headers = new HashMap<>();
-            Enumeration headerNames = request.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                String key = (String) headerNames.nextElement();
-                String value = request.getHeader(key);
-                headers.put(key, value);
-            }
-            requestHeaderJSNObject.setHeaders(headers);
-            return objectMapper.writeValueAsString(requestHeaderJSNObject);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
 
     public static String getDocumentDateTimeString(Date date) {
         try {

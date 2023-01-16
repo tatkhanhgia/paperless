@@ -908,3 +908,6 @@
 [ERROR] 2023-01-13 16:43:55.767 [main] WebSocketEndpoint -- Error while create websocket!
 [ERROR] 2023-01-13 16:46:59.222 [main] WebSocketEndpoint -- Error while create websocket!
 [ERROR] 2023-01-13 16:51:40.284 [main] WebSocketEndpoint -- Error while create websocket!
+[ERROR] 2023-01-16 09:42:35.091 [main] WebSocketEndpoint -- Error while create websocket!
+[ERROR] 2023-01-16 09:42:47.909 [main] WebSocketEndpoint -- Error while create websocket!
+[ERROR] 2023-01-16 14:39:54.865 [main] WebSocket -- Deployment Exception - Details:javax.websocket.DeploymentException: Class argument in connectToServer(Class, URI) is to be annotated endpoint class.Class vn.mobileid.id.general.WS.WebSocketEndpoint does not have @ClientEndpoint

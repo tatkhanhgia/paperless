@@ -24,7 +24,6 @@ import vn.mobileid.id.general.keycloak.KeyCloakInvocation;
 import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.general.objects.InfoJSNObject;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.qrypto.kernel.CreateWorkflow;
@@ -48,40 +47,40 @@ public class QryptoService {
 
     final private static Properties appInfo = Configuration.getInstance().getAppInfo();
 
-    public static String getInfo() {
-        try {
-            String[] version = appInfo.getProperty("dtis.app.version").split(";");
-            String name = appInfo.getProperty("dtis.app.name");
-            String description = appInfo.getProperty("dtis.app.description");
-            String logo = appInfo.getProperty("dtis.app.logo");
-            String[] langs = appInfo.getProperty("dtis.app.langs").split(";");
-            String[] methods = appInfo.getProperty("dtis.app.methods").split(";");
-
-            String region = appInfo.getProperty("dtis.app.region");
-            SimpleDateFormat sdf = new SimpleDateFormat(appInfo.getProperty("dtis.app.dateformat"));
-            sdf.setTimeZone(TimeZone.getTimeZone(System.getProperty("user.timezone")));
-            String serverTime = sdf.format(Calendar.getInstance().getTime());
-
-            InfoJSNObject info = new InfoJSNObject();
-            info.setVersions(version);
-            info.setName(name);
-            info.setDescription(description);
-            info.setLogo(logo);
-            info.setLangs(langs);
-            info.setMethods(methods);
-            info.setRegion(region);
-            info.setServerTime(serverTime);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(info);
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error while getting version. Details: " + Utils.printStackTrace(e));
-            }
-        }
-        return QryptoConstant.INTERNAL_EXP_MESS;
-    }
+//    public static String getInfo() {
+//        try {
+//            String[] version = appInfo.getProperty("dtis.app.version").split(";");
+//            String name = appInfo.getProperty("dtis.app.name");
+//            String description = appInfo.getProperty("dtis.app.description");
+//            String logo = appInfo.getProperty("dtis.app.logo");
+//            String[] langs = appInfo.getProperty("dtis.app.langs").split(";");
+//            String[] methods = appInfo.getProperty("dtis.app.methods").split(";");
+//
+//            String region = appInfo.getProperty("dtis.app.region");
+//            SimpleDateFormat sdf = new SimpleDateFormat(appInfo.getProperty("dtis.app.dateformat"));
+//            sdf.setTimeZone(TimeZone.getTimeZone(System.getProperty("user.timezone")));
+//            String serverTime = sdf.format(Calendar.getInstance().getTime());
+//
+//            InfoJSNObject info = new InfoJSNObject();
+//            info.setVersions(version);
+//            info.setName(name);
+//            info.setDescription(description);
+//            info.setLogo(logo);
+//            info.setLangs(langs);
+//            info.setMethods(methods);
+//            info.setRegion(region);
+//            info.setServerTime(serverTime);
+//
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            return objectMapper.writeValueAsString(info);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("Error while getting version. Details: " + Utils.printStackTrace(e));
+//            }
+//        }
+//        return QryptoConstant.INTERNAL_EXP_MESS;
+//    }
 
     public static InternalResponse getToken(final HttpServletRequest request, String payload, int functionId) {
         if (functionId == 0) {

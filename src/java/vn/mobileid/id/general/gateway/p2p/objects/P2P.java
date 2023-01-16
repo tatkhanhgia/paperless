@@ -7,7 +7,6 @@ package vn.mobileid.id.general.gateway.p2p.objects;
 
 import java.util.HashMap;
 import java.util.List;
-import vn.mobileid.id.general.objects.Value;
 //import vn.mobileid.esigncloud.dao.CacheProperties;
 //import vn.mobileid.esigncloud.dao.Ssl2Properties;
 
@@ -28,7 +27,7 @@ public class P2P {
     //private CacheProperties cacheProperties;
     private List<P2PEntityAttribute> p2pEntityAttribute;
     
-    private HashMap<String, Value> engineProperties;
+//    private HashMap<String, Value> engineProperties;
 
     public int getP2pID() {
         return p2pID;
@@ -118,13 +117,13 @@ public class P2P {
         this.p2pEntityAttribute = p2pEntityAttribute;
     }
 
-    public HashMap<String, Value> getEngineProperties() {
-        return engineProperties;
-    }
-
-    public void setEngineProperties(HashMap<String, Value> engineProperties) {
-        this.engineProperties = engineProperties;
-    }
+//    public HashMap<String, Value> getEngineProperties() {
+//        return engineProperties;
+//    }
+//
+//    public void setEngineProperties(HashMap<String, Value> engineProperties) {
+//        this.engineProperties = engineProperties;
+//    }
     
     
 }

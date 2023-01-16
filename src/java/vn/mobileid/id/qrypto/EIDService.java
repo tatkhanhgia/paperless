@@ -4,20 +4,27 @@
  */
 package vn.mobileid.id.qrypto;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
+import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import vn.mobileid.id.eid.object.InfoDetails;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.qrypto.apiObject.BiometricEvidenceRequest;
-import vn.mobileid.id.qrypto.apiObject.DataCreateOwner;
-import vn.mobileid.id.qrypto.apiObject.DataGetChallenge;
-import vn.mobileid.id.qrypto.apiObject.RequireBiometricEvidence;
-import vn.mobileid.id.qrypto.apiObject.TokenResponse;
+import vn.mobileid.id.everification.object.DataCreateOwner;
+import vn.mobileid.id.everification.object.DataGetChallenge;
+import vn.mobileid.id.everification.object.GetChallengeResponse;
+import vn.mobileid.id.eid.object.RequireBiometricEvidence;
+import vn.mobileid.id.eid.object.TokenResponse;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
+import vn.mobileid.id.general.WS.WebSocketEndpoint;
+import vn.mobileid.id.eid.object.InterfaceCommunicationEID;
+import vn.mobileid.id.eid.object.RequireInfoDetailsGet;
 
 /**
  *
@@ -38,7 +45,7 @@ public class EIDService {
     private String xApiKey;
     private String contentType = "application/json";
     private String sessionToken;
-    private String bearerToken;
+    private String URI = "ws://127.0.0.1:9505/ISPlugin";
 
     private static EIDService instant;
 
@@ -113,9 +120,8 @@ public class EIDService {
                     xApiKey,
                     contentType);
 
-            Object abc = aWSCallGetToken.v1VeriOidcToken(EIDConstant.V1_EVERIFICATION_OIDC_TOKEN, sessionToken);
+            TokenResponse abc = (TokenResponse) aWSCallGetToken.v1VeriOidcToken(EIDConstant.V1_EVERIFICATION_OIDC_TOKEN, sessionToken);
 
-            this.bearerToken = aWSCallGetToken.bearerToken;
             return abc;
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
@@ -126,7 +132,7 @@ public class EIDService {
     }
 
     //v1/owner/challenge
-    private Object v1OwnerChallenge(DataGetChallenge dataGetChallenge) {
+    private Object v1OwnerChallenge(DataGetChallenge dataGetChallenge, String token) {
         try {
             AWSCall aWSCallGetChallenge = new AWSCall(
                     methodName,
@@ -145,22 +151,25 @@ public class EIDService {
                         EIDConstant.V1_OWNER_CHALLENGE,
                         dataGetChallenge.challenge_type,
                         dataGetChallenge.transaction_data,
-                        this.bearerToken);
+                        token);
             } else {
                 return aWSCallGetChallenge.v1OwnerChallengeHasUsername(
                         EIDConstant.V1_OWNER_CHALLENGE,
                         dataGetChallenge.challenge_type,
                         dataGetChallenge.username,
                         dataGetChallenge.transaction_data,
-                        this.bearerToken);
+                        token);
             }
         } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot get Challenge from dtis - Details:" + e);
+            }
             return null;
         }
     }
 
     //v1/owner/create
-    private Object v1OwnerCreate(DataCreateOwner dataCreateOwner) {
+    private Object v1OwnerCreate(DataCreateOwner dataCreateOwner, String token) {
         try {
             AWSCall aWSCallCreateOwner = new AWSCall(
                     methodName,
@@ -182,63 +191,89 @@ public class EIDService {
                     dataCreateOwner.phone,
                     dataCreateOwner.pa,
                     dataCreateOwner.face_matching,
-                    this.bearerToken);
+                    token);
         } catch (Exception e) {
             return null;
         }
     }
 
     //v1/e-verification/eid/verify
-    private Object v1EidVerification(DataCreateOwner dataCreateOwner){
-        try{
-        AWSCall aWSCallEidVerification = new AWSCall(
-            methodName,
-            accessKey,
-            secretKey,
-            regionName,
-            serviceName,
-            timeOut,
-            xApiKey,
-            contentType); 
-        
-        if(dataCreateOwner.typeVerification == "fingerPrint"){
-            return aWSCallEidVerification.v1EidVerifiFinger(
-                EIDConstant.V1_EID_VERIFY,
-                dataCreateOwner.username,
-                dataCreateOwner.pa,
-                dataCreateOwner.face_matching,
-                this.bearerToken);
-        }
-        else{
-            return aWSCallEidVerification.v1EidVerifi(
-                EIDConstant.V1_EID_VERIFY,
-                dataCreateOwner.username,
-                dataCreateOwner.pa,
-                dataCreateOwner.face_matching,
-                this.bearerToken);
-        }
-        } catch (Exception e){
+    private Object v1EidVerification(DataCreateOwner dataCreateOwner, String token) {
+        try {
+            AWSCall aWSCallEidVerification = new AWSCall(
+                    methodName,
+                    accessKey,
+                    secretKey,
+                    regionName,
+                    serviceName,
+                    timeOut,
+                    xApiKey,
+                    contentType);
+
+            if (dataCreateOwner.typeVerification == "fingerPrint") {
+                return aWSCallEidVerification.v1EidVerifiFinger(
+                        EIDConstant.V1_EID_VERIFY,
+                        dataCreateOwner.username,
+                        dataCreateOwner.pa,
+                        dataCreateOwner.face_matching,
+                        token);
+            } else {
+                return aWSCallEidVerification.v1EidVerifi(
+                        EIDConstant.V1_EID_VERIFY,
+                        dataCreateOwner.username,
+                        dataCreateOwner.pa,
+                        dataCreateOwner.face_matching,
+                        token);
+            }
+        } catch (Exception e) {
             return null;
         }
-        
-    } 
-    
-    private Object getBiometricEvidence(RequireBiometricEvidence type){
-        String requestID = Utils.generateTransactionID_noRP();
-        BiometricEvidenceRequest request = new BiometricEvidenceRequest();
-        request.setRequestID(requestID);
-        request.setCmdType("BiometricAuthentication");
-        request.setTimeOutInterval(60);
-        request.setBiometricType(type);
-        
-        String host = "";
-        String port = "";
-//        URI uri = "";
-        
-               return null;
-        
+
     }
-    
+
+    //Get evidence after authenticate
+    private InterfaceCommunicationEID getBiometricEvidence(String token, InterfaceCommunicationEID type) {
+        try {
+            WebSocketEndpoint socket = WebSocketEndpoint.createWebSocket(langEN, new URI(URI));
+
+        } catch (URISyntaxException ex) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot open socket ISPlugin");
+            }
+            return null;
+        }
+        return null;
+    }
+
+    //Read Identity card
+    private InterfaceCommunicationEID<InfoDetails> getInformationDetails(String token, InterfaceCommunicationEID object) {
+        try {
+            WebSocketEndpoint socket = WebSocketEndpoint.createWebSocket(token, new URI(URI));
+            if (socket == null) {
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Cannot open socket ISPlugin");
+                }
+                return null;
+            }
+            socket.sendMessage(token, new ObjectMapper().writeValueAsString(object));
+            String json = socket.getMessage(token);
+            InterfaceCommunicationEID<InfoDetails> response = new InterfaceCommunicationEID<InfoDetails>();            
+            ObjectMapper mapper = new ObjectMapper();
+            response = mapper.readValue(json, response.getClass());
+            return response;
+        } catch (URISyntaxException ex) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot open socket ISPlugin");
+            }
+            return null;
+        } catch (Exception ex) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot open socket ISPlugin");
+            }
+            return null;
+        }        
+    }
+
     //====================GET - SET=================================
     public String getLangVN() {
         return langVN;
@@ -328,23 +363,48 @@ public class EIDService {
         this.sessionToken = sessionToken;
     }
 
-    public String getBearerToken() {
-        return bearerToken;
-    }
-
-    public void setBearerToken(String bearerToken) {
-        this.bearerToken = bearerToken;
-    }
-
     public static void main(String[] args) {
         System.out.println(EIDService.getInstant().getAccessKey());
         System.out.println(EIDService.getInstant().getRegionName());
         System.out.println(EIDService.getInstant().getxApiKey());
         System.out.println(EIDService.getInstant().getSessionToken());
         System.out.println(EIDService.getInstant().getSecretKey());
+
+        //Get Token
+        TokenResponse response =  (TokenResponse) EIDService.getInstant().v1VeriOidcToken();        
+        String token = "Bearer "+response.access_token;
+        System.out.println("Bearer Token:"+token);
         
-        TokenResponse a = (TokenResponse)EIDService.getInstant().v1VeriOidcToken();
-        
-        String temp = "A ";
+        //Get Challenge
+        DataGetChallenge data = new DataGetChallenge();
+        data.challenge_type = "EID";
+        data.transaction_data = "transactionData";
+        GetChallengeResponse response2 = (GetChallengeResponse) EIDService.getInstant().v1OwnerChallenge(data, token);
+        System.out.println("====Get Challenged====");
+        System.out.println("Transaction:"+response2.getTransactionId());
+        System.out.println("Message:"+response2.getMessage());
+        System.out.println("Card no:"+response2.getCard_no());
+        System.out.println("Challenged:"+response2.getChallenge());
+            //Get Challenged from a string contains it
+            String temp = response2.getChallenge();
+            String challenged = temp.substring(temp.indexOf("challengeValue")+17, temp.indexOf("transactionData")-3);
+            System.out.println("Challenged:"+challenged);
+
+        //Read Document Details (read Identity card)
+        InterfaceCommunicationEID<RequireInfoDetailsGet> data2 = new InterfaceCommunicationEID();
+        data2.setCmdType("GetInfoDetails");
+        data2.setRequestID(Utils.generateTransactionID_noRP()); 
+            RequireInfoDetailsGet dataDetails = new RequireInfoDetailsGet();
+            dataDetails.setMrzEnabled(true);
+            dataDetails.setImageEnabled(true);
+            dataDetails.setDataGroupEnabled(true);
+            dataDetails.setOptionDetailsEnabled(true);
+            dataDetails.setCanValue("");
+            dataDetails.setChallenge(challenged);
+            dataDetails.setCaEnabled(true);
+            dataDetails.setTaEnabled(true);
+            dataDetails.setPaEnabled(true);
+            
+        // 
     }
 }

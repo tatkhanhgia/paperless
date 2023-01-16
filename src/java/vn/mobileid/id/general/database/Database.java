@@ -5,29 +5,9 @@
  */
 package vn.mobileid.id.general.database;
 
-import java.util.Date;
 import java.util.List;
-import vn.mobileid.id.general.objects.IDXCertificate;
-import vn.mobileid.id.general.objects.IdentityProcessType;
-import vn.mobileid.id.general.gateway.p2p.objects.P2P;
-import vn.mobileid.id.general.gateway.p2p.objects.P2PEntityAttribute;
-import vn.mobileid.id.general.gateway.p2p.objects.P2PFunction;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.general.objects.Entity;
-import vn.mobileid.id.general.objects.IdentityDocument;
-import vn.mobileid.id.general.objects.IdentityDocumentType;
-import vn.mobileid.id.general.objects.IdentityProcess;
-import vn.mobileid.id.general.objects.IdentityProcessStatus;
-import vn.mobileid.id.general.objects.IdentitySubject;
-import vn.mobileid.id.general.objects.IdentityProcessAttribute;
-import vn.mobileid.id.general.objects.IdentityProvider;
-import vn.mobileid.id.general.objects.Province;
-import vn.mobileid.id.general.objects.RegistrationParty;
-import vn.mobileid.id.general.objects.RelyingParty;
-import vn.mobileid.id.general.objects.RelyingPartyAttribute;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.general.objects.TSAProfile;
-import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
 
 /**
  *
@@ -48,14 +28,12 @@ public interface Database {
             String HMAC,
             String created_by
     );
-    
-    public ResponseCode getResponse(String name);
 
-    public List<Entity> getEntities();
+    public ResponseCode getResponse(String name);
 
     public List<ResponseCode> getResponseCodes();
 
-    public List<Integer> getVerificationFunctionIDGrantForRP(int relyingPartyId);    
+    public List<Integer> getVerificationFunctionIDGrantForRP(int relyingPartyId);
 
     public DatabaseResponse createUserActivityLog(
             String email,
@@ -70,11 +48,11 @@ public interface Database {
             String HMAC,
             String create_by
     );
-    
+
     public DatabaseResponse createFileManagement(
             String UUID,
             String name,
-            int pages, 
+            int pages,
             int size,
             int width,
             int height,
@@ -82,7 +60,7 @@ public interface Database {
             String HMAC,
             String created_by
     );
-    
+
     public DatabaseResponse addEnterpriseUser(
             String email_owner,
             int enterprise_id,
@@ -91,7 +69,7 @@ public interface Database {
             int status,
             String hmac
     );
-    
+
     public DatabaseResponse createTransaction(
             String email,
             int logID,
@@ -106,9 +84,9 @@ public interface Database {
             int pages,
             String des,
             String hmac,
-            String created_by          
+            String created_by
     );
-    
+
     public DatabaseResponse createWorkflowActivity(
             int enterprise_id,
             int workflow_id,
@@ -125,17 +103,17 @@ public interface Database {
             String HMAC,
             String created_by
     );
-    
+
     public DatabaseResponse getDataRP(
             int enterprise_id
     );
-    
+
     public DatabaseResponse createQR(
             String metaData,
             String hmac,
             String created_by
     );
-    
+
     public DatabaseResponse getFile(
             int fileID
     );

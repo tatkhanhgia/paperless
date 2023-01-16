@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vn.mobileid.id.qrypto.apiObject;
+package vn.mobileid.id.eid.object;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,11 +14,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BiometricEvidenceRequest {
+public class InterfaceCommunicationEID<T> {
     private String cmdType;
     private String requestID;
     private int timeOutInterval;
-    private RequireBiometricEvidence biometricType;
+    private T data;
 
     @JsonProperty("cmdType")
     public String getCmdType() {
@@ -48,12 +48,12 @@ public class BiometricEvidenceRequest {
     }
 
     @JsonProperty("data")
-    public RequireBiometricEvidence getBiometricType() {
-        return biometricType;
+    public T getData() {
+        return data;
     }
 
-    public void setBiometricType(RequireBiometricEvidence biometricType) {
-        this.biometricType = biometricType;
+    public void setData(T data) {
+        this.data = data;
     }
     
     

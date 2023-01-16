@@ -17,7 +17,6 @@ import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
-import vn.mobileid.id.general.objects.ResponseMessageJSNObject;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.response.Create_WorkflowActivity_MessageJSNObject;
 import vn.mobileid.id.qrypto.objects.response.QryptoErrorMessageJSNObject;

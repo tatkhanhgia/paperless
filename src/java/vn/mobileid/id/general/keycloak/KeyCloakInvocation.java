@@ -39,7 +39,6 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.gateway.p2p.objects.P2PFunction;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.general.objects.Entity;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;

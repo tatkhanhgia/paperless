@@ -42,7 +42,7 @@ public class ServicesController {
     @GET
     @Path("/info")
     public Response getInfo(@Context final HttpServletRequest request, String payload) {
-        return Response.status(200).entity(QryptoService.getInfo()).build();
+        return Response.status(200).entity("").build();
     }
 
     // AUTHENTICATE

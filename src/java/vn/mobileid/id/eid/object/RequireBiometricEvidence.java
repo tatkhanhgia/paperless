@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vn.mobileid.id.qrypto.apiObject;
+package vn.mobileid.id.eid.object;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -17,16 +17,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class RequireBiometricEvidence {
     private String biometricType;
     
-    public void setFingerLeftIndex(){
-        this.biometricType = "fingerLeftIndex";        
+    public RequireBiometricEvidence setFingerLeftIndex(){
+        this.biometricType = "fingerLeftIndex";       
+        return this;
     }
 
-    public void setFingerRightIndex(){
+    public RequireBiometricEvidence setFingerRightIndex(){
         this.biometricType = "fingerRightIndex";
+        return this;
     }    
     
-    public void setFaceID(){
+    public RequireBiometricEvidence setFaceID(){
         this.biometricType = "faceID";
+        return this;
     }
     
     @JsonProperty("biometricType")

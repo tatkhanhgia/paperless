@@ -2,16 +2,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package vn.mobileid.id.qrypto.apiObject;
+package vn.mobileid.id.everification.object;
 
 /**
  *
  * @author GiaTK
  */
-public class EidVerifiResponse {
+public class GetChallengeResponse {
     public int status;
     public String message;
     public String transaction_id;
+    public String challenge;
     public String card_no;
     
     public int getStatus() {
@@ -21,7 +22,7 @@ public class EidVerifiResponse {
     public void setStatus(int status) {
         this.status = status;
     }
-    
+
     public String getMessage() {
         return message;
     }
@@ -30,13 +31,20 @@ public class EidVerifiResponse {
         this.message = message;
     }
     
-    
-    public String getTransaction_id() {
+    public String getTransactionId() {
         return transaction_id;
     }
 
-    public void setTransaction_id(String transaction_id) {
+    public void setTransactionId(String transaction_id) {
         this.transaction_id = transaction_id;
+    }
+    
+    public String getChallenge() {
+        return challenge;
+    }
+
+    public void setChallenge(String challenge) {
+        this.challenge = challenge;
     }
     
     public String getCard_no() {

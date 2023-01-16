@@ -5,60 +5,20 @@
  */
 package vn.mobileid.id.general.database;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.security.cert.X509Certificate;
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import javax.sql.rowset.serial.SerialBlob;
-import javax.xml.bind.DatatypeConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import vn.mobileid.id.general.objects.IDXCertificate;
-import vn.mobileid.id.general.objects.IdentityProcessType;
-import vn.mobileid.id.general.gateway.p2p.objects.P2P;
-import vn.mobileid.id.general.gateway.p2p.objects.P2PEntityAttribute;
-import vn.mobileid.id.general.gateway.p2p.objects.P2PFunction;
-import vn.mobileid.id.general.gateway.p2p.objects.P2PFunctionAccessPrivilege;
-import vn.mobileid.id.general.gateway.p2p.objects.P2PIPAccessPrivilege;
-import vn.mobileid.id.general.objects.AWSV4PropertiesJSNObject;
-import vn.mobileid.id.general.objects.DMSProperties;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.general.objects.Entity;
-import vn.mobileid.id.general.objects.EntityProperties;
-import vn.mobileid.id.general.objects.IPRestrictionList;
-import vn.mobileid.id.general.objects.IdentityDocument;
-import vn.mobileid.id.general.objects.IdentityDocumentType;
-import vn.mobileid.id.general.objects.IdentityProcess;
-import vn.mobileid.id.general.objects.IdentityProcessStatus;
-import vn.mobileid.id.general.objects.IdentityPropertiesJSNObject;
-import vn.mobileid.id.general.objects.IdentitySubject;
-import vn.mobileid.id.general.objects.IdentityProcessAttribute;
-import vn.mobileid.id.general.objects.IdentityProvider;
-import vn.mobileid.id.general.objects.IdentityProviderProperties;
-import vn.mobileid.id.general.objects.Province;
-import vn.mobileid.id.general.objects.RegistrationParty;
-import vn.mobileid.id.general.objects.RelyingParty;
-import vn.mobileid.id.general.objects.RelyingPartyAttribute;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.general.objects.SMSGWProperties;
-import vn.mobileid.id.general.objects.SMTPProperties;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.Resources;
-import vn.mobileid.id.general.objects.TSAProfile;
-import vn.mobileid.id.general.objects.TSAProfileProperties;
-import vn.mobileid.id.general.objects.Value;
-import vn.mobileid.id.general.objects.VerificationPropertiesJSNObject;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.Enterprise_JSNObject;
 import vn.mobileid.id.qrypto.objects.FileManagement_JSNObject;
@@ -123,61 +83,6 @@ public class DatabaseImpl implements Database {
             LOG.debug("Execution time of getResponse in milliseconds: " + timeElapsed / 1000000);
         }
         return responseCode;
-    }
-
-    @Override
-    public List<Entity> getEntities() {
-        long startTime = System.nanoTime();
-        Connection conn = null;
-        ResultSet rs = null;
-        CallableStatement cals = null;
-        List<Entity> entities = new ArrayList<>();
-        try {
-            String str = "{ call SP_FO_ENTITY_LIST() }";
-            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
-            cals = conn.prepareCall(str);
-            if (LogHandler.isShowDebugLog()) {
-                LOG.debug("[SQL] " + cals.toString());
-            }
-            cals.execute();
-            rs = cals.getResultSet();
-            if (rs != null) {
-                while (rs.next()) {
-                    Entity entity = new Entity();
-                    entity.setEntityID(rs.getInt("ID"));
-                    entity.setName(rs.getString("NAME"));
-                    entity.setUri(rs.getString("URI"));
-                    entity.setRemark(rs.getString("REMARK"));
-                    entity.setRemarkEn(rs.getString("REMARK_EN"));
-                    if (!Utils.isNullOrEmpty(rs.getString("PROPERTIES"))) {
-                        try {
-                            EntityProperties entityProperties = objectMapper.readValue(rs.getString("PROPERTIES"), EntityProperties.class);
-                            entity.setEntityProperties(entityProperties);
-                        } catch (Exception e) {
-                            if (LogHandler.isShowErrorLog()) {
-                                LOG.error("Error while parsing ENTITY_PROPERTIES. Details: " + e.toString());
-                            }
-                            e.printStackTrace();
-                            entity.setEntityProperties(null);
-                        }
-                    }
-                    entities.add(entity);
-                }
-            }
-        } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error while getting Entity information. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
-        } finally {
-            DatabaseConnectionManager.getInstance().close(conn);
-        }
-        long endTime = System.nanoTime();
-        long timeElapsed = endTime - startTime;
-        if (LogHandler.isShowDebugLog()) {
-            LOG.debug("Execution time of getEntities in milliseconds: " + timeElapsed / 1000000);
-        }
-        return entities;
     }
 
     @Override
@@ -873,11 +778,11 @@ public class DatabaseImpl implements Database {
                     rs.next();
 //                    Blob data = cals.getBlob("");
                     databaseResponse.setObject(new FileManagement_JSNObject(
-//                            data.getBytes(1, (int) data.length()),
+                            //                            data.getBytes(1, (int) data.length()),
                             null,
                             rs.getString("NAME"),
                             rs.getString("ID"),
-//                            rs.getString("CREATED_BY") 
+                            //                            rs.getString("CREATED_BY") 
                             null
                     ));
                     databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);

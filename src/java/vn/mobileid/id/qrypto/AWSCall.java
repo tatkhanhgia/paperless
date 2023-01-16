@@ -13,13 +13,13 @@ import java.util.TreeMap;
 import restful.sdk.API.HTTPUtils;
 import vn.mobileid.aws.client.AWSV4Auth;
 import vn.mobileid.aws.client.AWSV4Constants;
-import vn.mobileid.id.qrypto.apiObject.CreateOwnerRequest;
-import vn.mobileid.id.qrypto.apiObject.CreateOwnerResponse;
-import vn.mobileid.id.qrypto.apiObject.EidVerifiRequest;
-import vn.mobileid.id.qrypto.apiObject.EidVerifiResponse;
-import vn.mobileid.id.qrypto.apiObject.GetChallengeRequest;
-import vn.mobileid.id.qrypto.apiObject.GetChallengeResponse;
-import vn.mobileid.id.qrypto.apiObject.TokenResponse;
+import vn.mobileid.id.everification.object.CreateOwnerRequest;
+import vn.mobileid.id.everification.object.CreateOwnerResponse;
+import vn.mobileid.id.everification.object.EidVerifiRequest;
+import vn.mobileid.id.everification.object.EidVerifiResponse;
+import vn.mobileid.id.everification.object.GetChallengeRequest;
+import vn.mobileid.id.everification.object.GetChallengeResponse;
+import vn.mobileid.id.eid.object.TokenResponse;
 import vn.mobileid.id.utils.HttpUtils;
 
 /**
