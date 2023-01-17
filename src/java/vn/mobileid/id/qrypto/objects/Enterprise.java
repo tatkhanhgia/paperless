@@ -9,14 +9,14 @@ package vn.mobileid.id.qrypto.objects;
  * @author GiaTK
  */
 
-public class Enterprise_JSNObject extends Object{
+public class Enterprise extends Object{
     private String data;
     private String fileP12_id;
     
-    public Enterprise_JSNObject() {
+    public Enterprise() {
     }   
     
-    public Enterprise_JSNObject(String data) {
+    public Enterprise(String data) {
         this.data = data;
     }
 
@@ -24,7 +24,7 @@ public class Enterprise_JSNObject extends Object{
         return data;
     }
 
-    public Enterprise_JSNObject setData(String data) {
+    public Enterprise setData(String data) {
         this.data = data;
         return this;
     }
@@ -38,7 +38,7 @@ public class Enterprise_JSNObject extends Object{
     }
     
     
-    public Enterprise_JSNObject build(){
+    public Enterprise build(){
         return this;
     }
 }

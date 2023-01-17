@@ -45,10 +45,10 @@ public class ServicesController {
         return Response.status(200).entity("").build();
     }
 
+    // TOKEN ==============================================================
     // AUTHENTICATE
     @POST
     @Path("/authenticate")
-//    @Produces(MediaType.APPLICATION_JSON)
     public Response AuthenticateJSON(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response;
@@ -81,7 +81,6 @@ public class ServicesController {
     // REVOKE TOKEN
     @DELETE
     @Path("/tokens")
-//    @Produces(MediaType.APPLICATION_JSON)
     public Response RevokeToken(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response = null;
@@ -111,7 +110,8 @@ public class ServicesController {
         }
     }
 
-    // WORKFLOW
+    // WORKFLOW ==========================================================
+    // Create workflow
     @POST
     @Path("/v1/workflow")
     public Response createWorkflow(@Context final HttpServletRequest request, String payload) {
@@ -144,12 +144,13 @@ public class ServicesController {
         }
     }
 
+    // Create workflow template
     @POST
     @Path("/v1/workflow/{id}")
-    public Response createWorkflowDetail(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
+    public Response createWorkflowTemplate(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
         try {
             InternalResponse response;
-            response = QryptoService.createWorkflowDetail(request, payload, id);
+            response = QryptoService.createWorkflowTemplate(request, payload, id);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -176,13 +177,47 @@ public class ServicesController {
         }
     }
 
-    // WORKFLOW ACTIVITY ======================
+    // WORKFLOW ACTIVITY ===============================================
+    // Create workflow activity
     @POST
     @Path("/v1/workflowactivity")
     public Response createWorkflowActivity(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response;
             response = QryptoService.createWorkflowActivity(request, payload);
+            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(200)
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Request fail");
+                    LOG.debug("Status:" + response.getStatus());
+                    LOG.debug("Message:" + response.getMessage());
+                }
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error - Detail:"+e);
+            }
+            return Response.status(500).entity("Internal Server Error").build();
+        }
+    }
+    
+    // Process Workflow activity
+    @POST
+    @Path("/v1/workflowactivity/{id}/process")
+    public Response processWorkflowActivity(@Context final HttpServletRequest request, @PathParam("id") int id,String payload) {
+        try {
+            InternalResponse response;
+            response = QryptoService.processWorkflowActivity(request, payload, id);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)

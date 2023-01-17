@@ -7,6 +7,7 @@ package vn.mobileid.id.qrypto.objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +18,12 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class WorkflowDetail_JSNObject {
+public class ItemDetails {
     private List<String> c ;
-//    private String c;
     private boolean mandatory_enable;
-//    private String mandatory_enable;
     private String t;
 
-    public WorkflowDetail_JSNObject() {
+    public ItemDetails() {
     }
 
     @JsonProperty("c")

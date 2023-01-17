@@ -52,7 +52,7 @@ public class QryptoMessageResponse {
     public static String getErrorMessage(int code, int subCode, String lang, String transactionID) {
         try {
             QryptoErrorMessageJSNObject responseMessageJSNObject = new QryptoErrorMessageJSNObject();
-            String strCode = String.valueOf(code) + "." + String.valueOf(subCode);
+            String strCode = String.valueOf(code) + String.valueOf(subCode);
             ResponseCode responseCode = Resources.getResponseCodes().get(strCode);
             if (responseCode == null) {
                 Resources.reloadResponseCodes();
@@ -96,7 +96,7 @@ public class QryptoMessageResponse {
             KeycloakRes result) {
         try {
             GetToken_IAM_MessageJSNObject responseMessageJSNObject = new GetToken_IAM_MessageJSNObject();
-            String strCode = String.valueOf(code) + "." + String.valueOf(subCode);
+            String strCode = String.valueOf(code) + String.valueOf(subCode);
             ResponseCode responseCode = Resources.getResponseCodes().get(strCode);
             if (responseCode == null) {
                 Resources.reloadResponseCodes();

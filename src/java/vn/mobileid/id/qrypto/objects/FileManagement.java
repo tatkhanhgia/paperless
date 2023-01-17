@@ -8,20 +8,20 @@ package vn.mobileid.id.qrypto.objects;
  *
  * @author GiaTK
  */
-public class FileManagement_JSNObject extends Object{
+public class FileManagement extends Object{
     private byte[] data;
     private String name;
     private String ID;
     private String created_by;
 
-    public FileManagement_JSNObject(byte[] data, String name, String ID, String created_by) {
+    public FileManagement(byte[] data, String name, String ID, String created_by) {
         this.data = data;
         this.name = name;
         this.ID = ID;
         this.created_by = created_by;
     }
 
-    public FileManagement_JSNObject(byte[] data, String name, String ID) {
+    public FileManagement(byte[] data, String name, String ID) {
         this.data = data;
         this.name = name;
         this.ID = ID;
@@ -29,7 +29,7 @@ public class FileManagement_JSNObject extends Object{
 
     
     
-    public FileManagement_JSNObject() {
+    public FileManagement() {
     }
 
     public byte[] getData() {

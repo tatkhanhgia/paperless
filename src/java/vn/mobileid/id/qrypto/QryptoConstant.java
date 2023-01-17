@@ -92,4 +92,5 @@ public class QryptoConstant {
     //SUBCODE INVALID WORKFLOW ACTIVITY
     final public static int SUBCODE_MISSING_ENTERPRISE_DATA = 2;
     final public static int SUBCODE_MISSING_WORKFLOW_ID = 3;
+    final public static int SUBCODE_MISSING_OR_ERROR_FILE_TYPE = 4;
 }

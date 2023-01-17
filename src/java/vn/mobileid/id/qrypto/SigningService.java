@@ -43,8 +43,8 @@ import vn.mobileid.exsig.TextAlignment;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
-import vn.mobileid.id.qrypto.objects.Enterprise_JSNObject;
-import vn.mobileid.id.qrypto.objects.FileManagement_JSNObject;
+import vn.mobileid.id.qrypto.objects.Enterprise;
+import vn.mobileid.id.qrypto.objects.FileManagement;
 import vn.mobileid.id.qrypto.objects.ValueSignHash;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
@@ -86,12 +86,12 @@ public class SigningService {
 
     private void init(int enterprise_id) {
         Database callDB = new DatabaseImpl();
-        Enterprise_JSNObject object;
-        FileManagement_JSNObject object2;
+        Enterprise object;
+        FileManagement object2;
 
         try {
-            object = (Enterprise_JSNObject) callDB.getDataRP(enterprise_id).getObject();
-            object2 = (FileManagement_JSNObject) callDB.getFile(22).getObject();
+            object = (Enterprise) callDB.getDataRP(enterprise_id).getObject();
+            object2 = (FileManagement) callDB.getFile(22).getObject();
         } catch (ClassCastException ex) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot cast data - Details:" + ex);

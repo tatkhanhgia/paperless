@@ -20,8 +20,8 @@ import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.qrypto.QryptoConstant;
-import vn.mobileid.id.qrypto.objects.Enterprise_JSNObject;
-import vn.mobileid.id.qrypto.objects.FileManagement_JSNObject;
+import vn.mobileid.id.qrypto.objects.Enterprise;
+import vn.mobileid.id.qrypto.objects.FileManagement;
 import vn.mobileid.id.utils.Crypto;
 import vn.mobileid.id.utils.Utils;
 
@@ -109,7 +109,7 @@ public class DatabaseImpl implements Database {
                         ResponseCode responseCode = new ResponseCode();
 //                            responseCode.setId(rs.getInt("ID"));
                         responseCode.setName(rs.getString("NAME"));
-                        responseCode.setCode(rs.getString("ERROR"));
+                        
                         responseCode.setCode_description(rs.getString("ERROR_DESCRIPTION"));
                         responseCodes.add(responseCode);
 
@@ -668,7 +668,7 @@ public class DatabaseImpl implements Database {
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
-                    Enterprise_JSNObject temp = new Enterprise_JSNObject();
+                    Enterprise temp = new Enterprise();
                     String check = cals.getString("pDATA_RESTFUL");
                     temp.setData(cals.getString("pDATA_RESTFUL"));
                     databaseResponse.setObject(temp);
@@ -777,7 +777,7 @@ public class DatabaseImpl implements Database {
                 if (mysqlResult == 1) {
                     rs.next();
 //                    Blob data = cals.getBlob("");
-                    databaseResponse.setObject(new FileManagement_JSNObject(
+                    databaseResponse.setObject(new FileManagement(
                             //                            data.getBytes(1, (int) data.length()),
                             null,
                             rs.getString("NAME"),

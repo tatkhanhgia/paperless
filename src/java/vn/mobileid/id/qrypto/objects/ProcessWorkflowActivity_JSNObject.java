@@ -7,8 +7,10 @@ package vn.mobileid.id.qrypto.objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import vn.mobileid.id.qrypto.kernel.CreateWorkflow;
 
 /**
  *
@@ -16,29 +18,22 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class WorkflowDetail_Item_JSNObject {
-    private List<WorkflowDetail_JSNObject> item;
-//    private List<String> item;
-    public WorkflowDetail_Item_JSNObject() {
+public class ProcessWorkflowActivity_JSNObject {
+    private List<ItemDetails> item;    
+    private List<FileDataDetails> file_data;
+
+    public ProcessWorkflowActivity_JSNObject() {
     }
 
     @JsonProperty("items")
-    public List<WorkflowDetail_JSNObject> getItem() {
+    public List<ItemDetails> getItem() {
         return item;
     }
 
-    public void setItem(List<WorkflowDetail_JSNObject> item) {
-        this.item = item;
+    @JsonProperty("file_data")
+    public List<FileDataDetails> getFile_data() {
+        return file_data;
     }
-    
-//    @JsonProperty("item")
-//    public List<String> getItem() {
-//        return item;
-//    }
-//
-//    public void setItem(List<String> item) {
-//        this.item = item;
-//    }
     
     
 }

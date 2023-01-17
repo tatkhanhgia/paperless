@@ -22,7 +22,7 @@ import vn.mobileid.id.eid.object.RequireBiometricEvidence;
 import vn.mobileid.id.eid.object.TokenResponse;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
-import vn.mobileid.id.general.WS.WebSocketEndpoint;
+//import vn.mobileid.id.general.WS.WebSocketEndpoint;
 import vn.mobileid.id.eid.object.InterfaceCommunicationEID;
 import vn.mobileid.id.eid.object.RequireInfoDetailsGet;
 
@@ -231,48 +231,48 @@ public class EIDService {
 
     }
 
-    //Get evidence after authenticate
+    //Get evidence after authenticate - PENDING
     private InterfaceCommunicationEID getBiometricEvidence(String token, InterfaceCommunicationEID type) {
-        try {
-            WebSocketEndpoint socket = WebSocketEndpoint.createWebSocket(langEN, new URI(URI));
-
-        } catch (URISyntaxException ex) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Cannot open socket ISPlugin");
-            }
-            return null;
-        }
+//        try {
+//            WebSocketEndpoint socket = WebSocketEndpoint.createWebSocket(langEN, new URI(URI));
+//
+//        } catch (URISyntaxException ex) {
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("Cannot open socket ISPlugin");
+//            }
+//            return null;
+//        }
         return null;
     }
 
-    //Read Identity card
-    private InterfaceCommunicationEID<InfoDetails> getInformationDetails(String token, InterfaceCommunicationEID object) {
-        try {
-            WebSocketEndpoint socket = WebSocketEndpoint.createWebSocket(token, new URI(URI));
-            if (socket == null) {
-                if (LogHandler.isShowErrorLog()) {
-                    LOG.error("Cannot open socket ISPlugin");
-                }
-                return null;
-            }
-            socket.sendMessage(token, new ObjectMapper().writeValueAsString(object));
-            String json = socket.getMessage(token);
-            InterfaceCommunicationEID<InfoDetails> response = new InterfaceCommunicationEID<InfoDetails>();            
-            ObjectMapper mapper = new ObjectMapper();
-            response = mapper.readValue(json, response.getClass());
-            return response;
-        } catch (URISyntaxException ex) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Cannot open socket ISPlugin");
-            }
-            return null;
-        } catch (Exception ex) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Cannot open socket ISPlugin");
-            }
-            return null;
-        }        
-    }
+    //Read Identity card - PENDING
+//    private InterfaceCommunicationEID<InfoDetails> getInformationDetails(String token, InterfaceCommunicationEID object) {
+//        try {
+//            WebSocketEndpoint socket = WebSocketEndpoint.createWebSocket(token, new URI(URI));
+//            if (socket == null) {
+//                if (LogHandler.isShowErrorLog()) {
+//                    LOG.error("Cannot open socket ISPlugin");
+//                }
+//                return null;
+//            }
+//            socket.sendMessage(token, new ObjectMapper().writeValueAsString(object));
+//            String json = socket.getMessage(token);
+//            InterfaceCommunicationEID<InfoDetails> response = new InterfaceCommunicationEID<InfoDetails>();            
+//            ObjectMapper mapper = new ObjectMapper();
+//            response = mapper.readValue(json, response.getClass());
+//            return response;
+//        } catch (URISyntaxException ex) {
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("Cannot open socket ISPlugin");
+//            }
+//            return null;
+//        } catch (Exception ex) {
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("Cannot open socket ISPlugin");
+//            }
+//            return null;
+//        }        
+//    }
 
     //====================GET - SET=================================
     public String getLangVN() {

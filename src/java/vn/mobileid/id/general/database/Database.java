@@ -117,4 +117,8 @@ public interface Database {
     public DatabaseResponse getFile(
             int fileID
     );
+        
+    public DatabaseResponse getAsset(
+            int assetID
+    );
 }

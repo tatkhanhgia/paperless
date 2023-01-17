@@ -33,6 +33,11 @@ public class WebSocket {
     private Session userSession;
     private MessageHandler messageHandler;
 
+    public WebSocket() {
+    }
+
+    
+    
     public WebSocket(URI endpointURI) {
         try {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
@@ -48,6 +53,8 @@ public class WebSocket {
         }
     }
 
+    
+    
     @OnOpen   
     public void onOpen(Session userSession){        
         System.out.println("Open websocket");

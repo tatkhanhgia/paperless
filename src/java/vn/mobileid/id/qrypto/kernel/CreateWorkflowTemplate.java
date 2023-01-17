@@ -14,9 +14,9 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
-import vn.mobileid.id.qrypto.objects.WorkflowDetail_Item_JSNObject;
+import vn.mobileid.id.qrypto.objects.Item_JSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.WorkflowDetail_JSNObject;
+import vn.mobileid.id.qrypto.objects.ItemDetails;
 import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
 import vn.mobileid.id.utils.Utils;
 
@@ -24,12 +24,12 @@ import vn.mobileid.id.utils.Utils;
  *
  * @author GiaTK
  */
-public class CreateWorkflowDetail {
+public class CreateWorkflowTemplate {
 
     final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
-    public static InternalResponse checkDataWorkflowDetail(WorkflowDetail_Item_JSNObject workflow) {
-        for(WorkflowDetail_JSNObject detail : workflow.getItem()){
+    public static InternalResponse checkDataWorkflowTemplate(Item_JSNObject workflow) {
+        for(ItemDetails detail : workflow.getItems()){
             InternalResponse response = checkDataWorkflowDetail(detail);
             if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
                 return response;
@@ -43,7 +43,7 @@ public class CreateWorkflowDetail {
                         null));
     }
     
-    private static InternalResponse checkDataWorkflowDetail(WorkflowDetail_JSNObject workflow) {
+    public  static InternalResponse checkDataWorkflowDetail(ItemDetails workflow) {
         if (workflow == null) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
@@ -73,7 +73,7 @@ public class CreateWorkflowDetail {
                         null));
     }
 
-    public static InternalResponse processingCreateWorkflowDetail(int workflow_id, WorkflowDetail_Item_JSNObject workflow, String user_mail) {
+    public static InternalResponse processingCreateWorkflowTemplate(int workflow_id, Item_JSNObject workflow, String user_mail) {
         try {
             Database DB = new DatabaseImpl();
 

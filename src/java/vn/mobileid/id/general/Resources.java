@@ -107,8 +107,7 @@ public class Resources {
         Database db = new DatabaseImpl();
         List<ResponseCode> listOfResponseCode = db.getResponseCodes();
         for (ResponseCode responseCode : listOfResponseCode) {
-            String cal = responseCode.getName() + "." + responseCode.getCode();
-            responseCodes.put(cal, responseCode);
+            responseCodes.put(responseCode.getName(), responseCode);   
         }
     }
 //
