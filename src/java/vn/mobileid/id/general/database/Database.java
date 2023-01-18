@@ -61,14 +61,14 @@ public interface Database {
             String created_by
     );
 
-    public DatabaseResponse addEnterpriseUser(
-            String email_owner,
-            int enterprise_id,
-            String email_user,
-            String role,
-            int status,
-            String hmac
-    );
+//    public DatabaseResponse addEnterpriseUser(
+//            String email_owner,
+//            int enterprise_id,
+//            String email_user,
+//            String role,
+//            int status,
+//            String hmac
+//    );
 
     public DatabaseResponse createTransaction(
             String email,
@@ -119,6 +119,10 @@ public interface Database {
     );
         
     public DatabaseResponse getAsset(
+            int assetID
+    );
+    
+    public DatabaseResponse getFileAsset(
             int assetID
     );
 }

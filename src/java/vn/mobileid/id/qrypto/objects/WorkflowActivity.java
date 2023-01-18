@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class WorkflowActivity_JSNObject {
+public class WorkflowActivity {
     private String enterprise_name;
     private int enterprise_id;
     private int workflow_id = 0;

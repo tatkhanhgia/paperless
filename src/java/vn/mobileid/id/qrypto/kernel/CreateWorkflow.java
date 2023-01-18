@@ -14,7 +14,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
+import vn.mobileid.id.qrypto.objects.Workflow;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -25,7 +25,7 @@ public class CreateWorkflow {
 
     final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
-    public static InternalResponse checkDataWorkflow(Workflow_JSNObject workflow) {
+    public static InternalResponse checkDataWorkflow(Workflow workflow) {
         if (workflow == null) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
@@ -54,7 +54,7 @@ public class CreateWorkflow {
                         null));
     }
 
-    public static InternalResponse processingCreateWorkflow(Workflow_JSNObject workflow, User user) {
+    public static InternalResponse processingCreateWorkflow(Workflow workflow, User user) {
         try {
             Database DB = new DatabaseImpl();
 
@@ -75,7 +75,7 @@ public class CreateWorkflow {
                 );
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                    "{\"workflow_id\":\""+createWorkflow.getWorkflowID()+"\"}"
+                    "{\"workflow_id\":"+createWorkflow.getIDResponse()+"}"
             );
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {

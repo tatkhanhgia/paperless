@@ -14,31 +14,30 @@ import java.util.Date;
 public class DatabaseResponse {            
     private int status;
     private int remainingCounter;
-    private long ownerID;        
+    private long ownerID;                
     
-    private String workflowID;
-    
-    private int ID_Response;
-    private String TransactionID;
+    private int ID_Response_int;
+    private String ID_Response_String;
 
     //Test
     private Object object;        
 
-    public String getTransactionID() {
-        return TransactionID;
+  
+
+    public void setID_Response_int(int ID_Response_int) {
+        this.ID_Response_int = ID_Response_int;
     }
 
-    public void setTransactionID(String TransactionID) {
-        this.TransactionID = TransactionID;
-    }
-    
-    
-    public int getIDResponse() {
-        return ID_Response;
+    public String getIDResponse() {
+        if(ID_Response_String != null)
+        {
+            return ID_Response_String;
+        }
+        return String.valueOf(ID_Response_int);
     }
 
-    public void setIDResponse(int LOG_ID) {
-        this.ID_Response = LOG_ID;
+    public void setID_Response_String(String ID_Response_String) {
+        this.ID_Response_String = ID_Response_String;
     }
     
     
@@ -64,14 +63,6 @@ public class DatabaseResponse {
 
     public void setOwnerID(long ownerID) {
         this.ownerID = ownerID;
-    }
-
-    public String getWorkflowID() {
-        return workflowID;
-    }
-
-    public void setWorkflowID(String workflowID) {
-        this.workflowID = workflowID;
     }
 
     public Object getObject() {

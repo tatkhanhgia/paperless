@@ -26,7 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.qrypto.objects.FormDataBodyItem;
+//import vn.mobileid.id.qrypto.objects.FormDataBodyItem;
 
 import vn.mobileid.id.utils.Utils;
 
@@ -45,7 +45,7 @@ public class AWSV4Verify {
     private HttpServletRequest httpRequest;
     private String payload;
     private byte[] bodyReq;
-    private List<FormDataBodyItem> formDataBodyItemList;
+//    private List<FormDataBodyItem> formDataBodyItemList;
 
 
     /* Other variables */
@@ -69,7 +69,7 @@ public class AWSV4Verify {
         private HttpServletRequest httpRequest;
         private String payload;
         private byte[] bodyReq;
-        private List<FormDataBodyItem> formDataBodyItemList;
+//        private List<FormDataBodyItem> formDataBodyItemList;
 
         private AWSV4Store store;
 
@@ -109,10 +109,10 @@ public class AWSV4Verify {
             return this;
         }
 
-        public Builder formDataBodyItemList(List<FormDataBodyItem> formDataBodyItemList) {
-            this.formDataBodyItemList = formDataBodyItemList;
-            return this;
-        }
+//        public Builder formDataBodyItemList(List<FormDataBodyItem> formDataBodyItemList) {
+//            this.formDataBodyItemList = formDataBodyItemList;
+//            return this;
+//        }
 
         public AWSV4Verify build() {
             return new AWSV4Verify(this);
@@ -129,7 +129,7 @@ public class AWSV4Verify {
         httpRequest = builder.httpRequest;
         payload = builder.payload;
         bodyReq = builder.bodyReq;
-        formDataBodyItemList = builder.formDataBodyItemList;
+//        formDataBodyItemList = builder.formDataBodyItemList;
 
         store = builder.store;
 
@@ -172,27 +172,27 @@ public class AWSV4Verify {
                         return AWSV4ResponseCode.MISSING_POLICY_FORM_DATA;
                     }
                 }
-                FormDataBodyItem[] formDataBodyItem;
-                try {
-                    formDataBodyItem = objectMapper.readValue(Base64.getDecoder().decode(xPolicyFormData), FormDataBodyItem[].class);
-                } catch (IOException e) {
-                    return AWSV4ResponseCode.INVALID_POLICY_FORM_DATA;
-                }
-                if (this.formDataBodyItemList.size() != formDataBodyItem.length) {
-                    return AWSV4ResponseCode.INVALID_POLICY_FORM_DATA;
-                }
-                for (FormDataBodyItem fdbi1 : this.formDataBodyItemList) {
-                    boolean isValidItem = false;
-                    for (FormDataBodyItem fdbi2 : formDataBodyItem) {
-                        //LOG.error(fdbi1.getSha256Content() + "/" + fdbi2.getSha256Content());
-                        if (fdbi1.getSha256Content().compareToIgnoreCase(fdbi2.getSha256Content()) == 0) {
-                            isValidItem = true;
-                        }
-                    }
-                    if (!isValidItem) {
-                        return AWSV4ResponseCode.INVALID_POLICY_FORM_DATA;
-                    }
-                }
+//                FormDataBodyItem[] formDataBodyItem;
+//                try {
+//                    formDataBodyItem = objectMapper.readValue(Base64.getDecoder().decode(xPolicyFormData), FormDataBodyItem[].class);
+//                } catch (IOException e) {
+//                    return AWSV4ResponseCode.INVALID_POLICY_FORM_DATA;
+//                }
+//                if (this.formDataBodyItemList.size() != formDataBodyItem.length) {
+//                    return AWSV4ResponseCode.INVALID_POLICY_FORM_DATA;
+//                }
+//                for (FormDataBodyItem fdbi1 : this.formDataBodyItemList) {
+//                    boolean isValidItem = false;
+//                    for (FormDataBodyItem fdbi2 : formDataBodyItem) {
+//                        //LOG.error(fdbi1.getSha256Content() + "/" + fdbi2.getSha256Content());
+//                        if (fdbi1.getSha256Content().compareToIgnoreCase(fdbi2.getSha256Content()) == 0) {
+//                            isValidItem = true;
+//                        }
+//                    }
+//                    if (!isValidItem) {
+//                        return AWSV4ResponseCode.INVALID_POLICY_FORM_DATA;
+//                    }
+//                }
             }
         }
 

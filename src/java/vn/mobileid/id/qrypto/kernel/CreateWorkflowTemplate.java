@@ -17,7 +17,7 @@ import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.Item_JSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
 import vn.mobileid.id.qrypto.objects.ItemDetails;
-import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
+import vn.mobileid.id.qrypto.objects.Workflow;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -29,21 +29,21 @@ public class CreateWorkflowTemplate {
     final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
     public static InternalResponse checkDataWorkflowTemplate(Item_JSNObject workflow) {
-        for(ItemDetails detail : workflow.getItems()){
+        for (ItemDetails detail : workflow.getItems()) {
             InternalResponse response = checkDataWorkflowDetail(detail);
-            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
         }
-        
+
         return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
                 QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
                         QryptoConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
-    
-    public  static InternalResponse checkDataWorkflowDetail(ItemDetails workflow) {
+
+    public static InternalResponse checkDataWorkflowDetail(ItemDetails workflow) {
         if (workflow == null) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
@@ -51,21 +51,28 @@ public class CreateWorkflowTemplate {
                             "en",
                             null));
         }
-        if (workflow.getC() == null || workflow.getC().size() == 0) {
+        if (workflow.getField() == null || workflow.getField().isEmpty() || workflow.getField().length() <= 0) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-                            QryptoConstant.SUBCODE_MISSING_ARRAY_FIELD_C,
+                            QryptoConstant.SUBCODE_MISSING_INPUT_FIELD,
                             "en",
                             null));
         }
-//        if (Utils.isNullOrEmpty(workflow.getT())) {
-//            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-//                            QryptoConstant.SUBCODE_MISSING_WORKFLOW_USER_EMAIL_OR_ID,
-//                            "en",
-//                            null));
-//        }
-        
+        if (workflow.getType() <= 0 || workflow.getType() > QryptoConstant.NUMBER_OF_ITEMS_TYPE) {
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            QryptoConstant.SUBCODE_MISSING_OR_ERROR_FIELD_TYPE,
+                            "en",
+                            null));
+        }
+        if( workflow.getValue() == null){
+            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            QryptoConstant.SUBCODE_MISSING_OR_ERROR_VALUE,
+                            "en",
+                            null));
+        }
+
         return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
                 QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
                         QryptoConstant.SUBCODE_SUCCESS,
@@ -83,14 +90,14 @@ public class CreateWorkflowTemplate {
                     "HMAC",
                     user_mail
             );
-            
-            if(createWorkflow.getStatus() != QryptoConstant.CODE_SUCCESS ){
+
+            if (createWorkflow.getStatus() != QryptoConstant.CODE_SUCCESS) {
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         QryptoMessageResponse.getErrorMessage(
                                 QryptoConstant.CODE_FAIL,
                                 createWorkflow.getStatus(),
-                                "en"
-                                , null)
+                                "en",
+                                 null)
                 );
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
@@ -101,7 +108,7 @@ public class CreateWorkflowTemplate {
                 LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
             e.printStackTrace();
-            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
-        }        
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
     }
 }

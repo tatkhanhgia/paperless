@@ -17,9 +17,9 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.Item_JSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity;
 import vn.mobileid.id.qrypto.objects.ItemDetails;
-import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
+import vn.mobileid.id.qrypto.objects.Workflow;
 import vn.mobileid.id.qrypto.objects.response.Create_WorkflowActivity_MessageJSNObject;
 import vn.mobileid.id.utils.Utils;
 
@@ -31,7 +31,7 @@ public class CreateWorkflowActivity {
 
     final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
-    public static InternalResponse checkDataWorkflowActivity(WorkflowActivity_JSNObject workflowAc) {
+    public static InternalResponse checkDataWorkflowActivity(WorkflowActivity workflowAc) {
         if(workflowAc.getEnterprise_name() == null && workflowAc.getEnterprise_id() <= 0){
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                 QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
@@ -55,7 +55,7 @@ public class CreateWorkflowActivity {
     }
     
     
-    public static InternalResponse processingCreateWorkflowActivity(WorkflowActivity_JSNObject workflow, User user) {
+    public static InternalResponse processingCreateWorkflowActivity(WorkflowActivity workflow, User user) {
         try {
             Database DB = new DatabaseImpl();
             //Data
@@ -163,7 +163,7 @@ public class CreateWorkflowActivity {
     }
     
     public static void main(String[] args){
-        WorkflowActivity_JSNObject object = new WorkflowActivity_JSNObject();
+        WorkflowActivity object = new WorkflowActivity();
         object.setEnterprise_id(3);
         object.setWorkflow_id(8);
         object.setWorkflow_template_type(3);

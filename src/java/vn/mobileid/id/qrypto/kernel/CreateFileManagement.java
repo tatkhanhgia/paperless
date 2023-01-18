@@ -17,7 +17,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity;
 
 /**
  *
@@ -26,7 +26,7 @@ import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
 public class CreateFileManagement {
     final private static Logger LOG = LogManager.getLogger(CreateUserActivityLog.class);
     
-    public static boolean checkData(WorkflowActivity_JSNObject workflow){
+    public static boolean checkData(WorkflowActivity workflow){
         if(workflow == null){
             return false;
         }
@@ -41,7 +41,7 @@ public class CreateFileManagement {
     
     
     public static InternalResponse processingCreateFileManagement(
-            WorkflowActivity_JSNObject workflow,            
+            WorkflowActivity workflow,            
             String UUID,
             String nameFile,            
             String HMAC,
@@ -51,7 +51,7 @@ public class CreateFileManagement {
     }
     
     public static InternalResponse processingCreateFileManagement(
-            WorkflowActivity_JSNObject workflow,                        
+            WorkflowActivity workflow,                        
             String HMAC,
             byte[] fileData,
             User user) {
@@ -59,7 +59,7 @@ public class CreateFileManagement {
     }
     
     public static InternalResponse processingCreateFileManagement(
-            WorkflowActivity_JSNObject workflow,                        
+            WorkflowActivity workflow,                        
             int page,
             int size,
             int width,
@@ -71,7 +71,7 @@ public class CreateFileManagement {
     }
     
     public static InternalResponse processingCreateFileManagement(
-            WorkflowActivity_JSNObject workflow,            
+            WorkflowActivity workflow,            
             String nameFile,
             int page,
             int size,
@@ -84,7 +84,7 @@ public class CreateFileManagement {
     }
     
     private static InternalResponse processingCreateFileManagement(
-            WorkflowActivity_JSNObject workflow,
+            WorkflowActivity workflow,
             String UUID,
             String nameFile,
             int page,
@@ -123,7 +123,7 @@ public class CreateFileManagement {
                 );
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                    String.valueOf(callDB.getIDResponse()));
+                    callDB.getIDResponse());
     }catch(Exception e){
         if(LogHandler.isShowErrorLog()){
                     
@@ -136,7 +136,7 @@ public class CreateFileManagement {
     }
     
     public static void main(String[] args) throws IOException{
-        WorkflowActivity_JSNObject object = new WorkflowActivity_JSNObject();
+        WorkflowActivity object = new WorkflowActivity();
         object.setEnterprise_id(3);
         object.setCreated_by("GIATK");      
         User user = new User();

@@ -19,22 +19,14 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ItemDetails {
-    private List<String> c ;
+    private String field  ;
     private boolean mandatory_enable;
-    private String t;
+    private int type;
+    private Object value;
 
     public ItemDetails() {
     }
-
-    @JsonProperty("c")
-    public List getC() {
-        return c;
-    }
-
-    public void setC(List c) {
-        this.c = c;
-    }
-
+    
     @JsonProperty("mandatory_enable")
     public boolean isMandatory_enable() {
         return mandatory_enable;
@@ -44,30 +36,32 @@ public class ItemDetails {
         this.mandatory_enable = mandatory_enable;
     }
 
-    @JsonProperty("t")
-    public String getT() {
-        return t;
+    @JsonProperty("field")
+    public String getField() {
+        return field;
     }
 
-    public void setT(String t) {
-        this.t = t;
+    public void setField(String field) {
+        this.field = field;
     }
 
-//    @JsonProperty("c")
-//    public String getC() {
-//        return c;
-//    }
-//
-//    public void setC(String c) {
-//        this.c = c;
-//    }
-//
-//    @JsonProperty("mandatory_enable")
-//    public String getMandatory_enable() {
-//        return mandatory_enable;
-//    }
-//
-//    public void setMandatory_enable(String mandatory_enable) {
-//        this.mandatory_enable = mandatory_enable;
-//    }
+    @JsonProperty("type")
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    @JsonProperty("value")
+    public Object getValue() {
+        return value;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
+    }
+
+    
 }

@@ -14,7 +14,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity;
 
 /**
  *
@@ -23,7 +23,7 @@ import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
 public class CreateUserActivityLog {
     final private static Logger LOG = LogManager.getLogger(CreateUserActivityLog.class);
     
-    public static boolean checkData(WorkflowActivity_JSNObject workflow){
+    public static boolean checkData(WorkflowActivity workflow){
         if(workflow == null){
             return false;
         }
@@ -36,7 +36,7 @@ public class CreateUserActivityLog {
         return true;
     }    
     
-    public static InternalResponse processingCreateUserActivityLog(WorkflowActivity_JSNObject workflow, User user) {
+    public static InternalResponse processingCreateUserActivityLog(WorkflowActivity workflow, User user) {
     try {
             Database DB = new DatabaseImpl();
             
@@ -81,7 +81,7 @@ public class CreateUserActivityLog {
     }
     
     public static void main(String[] args){
-        WorkflowActivity_JSNObject object = new WorkflowActivity_JSNObject();
+        WorkflowActivity object = new WorkflowActivity();
         object.setEnterprise_id(3);
         object.setCreated_by("GIATK");      
         User user = new User();

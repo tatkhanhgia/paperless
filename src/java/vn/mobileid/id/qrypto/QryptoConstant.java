@@ -12,6 +12,7 @@ public class QryptoConstant {
     //System
     final public static long FEDERAL_ID = 0;
     final public static int NUMBER_OF_ACCESS_TOKEN = 63;
+    final public static int NUMBER_OF_ITEMS_TYPE = 3; //String - boolean - binary
     final public static String INTERNAL_EXP_MESS = "[\"Internal server exception\"]";
     final public static String DEFAULT_MESS = "Message is not defined";
 
@@ -66,7 +67,7 @@ public class QryptoConstant {
     final public static int SUBCODE_INVALID_PAYLOAD_STRUCTURE = 6;
     final public static int SUBCODE_INTERNAL_ERROR = -1;
     
-    //SUBCODE INVALID KEYCLOAK
+    //SUBCODE INVALID KEYCLOAK - 5000
     final public static int SUBCODE_INVALID_USER_CREDENTIALS = 2;
     final public static int SUBCODE_INVALID_CLIENT_SECRET = 3;
     final public static int SUBCODE_UNSUPPORTED_GRANT_TYPE = 4;
@@ -79,17 +80,16 @@ public class QryptoConstant {
     final public static int SUBCODE_TOKEN_EXPIRED = 12;
     final public static int SUBCODE_MISSING_ACCESS_TOKEN = 13;
     
-    //SUBCODE INVALID WORKFLOW
+    //SUBCODE INVALID WORKFLOW - 5001
     final public static int SUBCODE_MISSING_WORKFLOW_LABEL = 2;
     final public static int SUBCODE_MISSING_WORKFLOW_USER_EMAIL_OR_ID = 3;
     final public static int SUBCODE_MISSING_WORKFLOW_CREATED_BY = 4;
     final public static int SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE = 5;
-    final public static int SUBCODE_MISSING_ARRAY_FIELD_C = 7;    
+    final public static int SUBCODE_MISSING_INPUT_FIELD = 7;    
+    final public static int SUBCODE_MISSING_OR_ERROR_FIELD_TYPE = 8;    
+    final public static int SUBCODE_MISSING_OR_ERROR_VALUE = 9;    
     
-    //SUBCODE RESPONSE FROM DB
-
-    
-    //SUBCODE INVALID WORKFLOW ACTIVITY
+    //SUBCODE INVALID WORKFLOW ACTIVITY - 5002
     final public static int SUBCODE_MISSING_ENTERPRISE_DATA = 2;
     final public static int SUBCODE_MISSING_WORKFLOW_ID = 3;
     final public static int SUBCODE_MISSING_OR_ERROR_FILE_TYPE = 4;

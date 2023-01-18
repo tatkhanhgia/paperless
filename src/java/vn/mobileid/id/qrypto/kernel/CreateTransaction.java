@@ -17,7 +17,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity;
 
 /**
  *
@@ -26,7 +26,7 @@ import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
 public class CreateTransaction {
     final private static Logger LOG = LogManager.getLogger(CreateTransaction.class);
     
-    public static boolean checkData(WorkflowActivity_JSNObject workflow){
+    public static boolean checkData(WorkflowActivity workflow){
         if(workflow == null){
             return false;
         }
@@ -111,7 +111,7 @@ public class CreateTransaction {
                 );
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                    callDB.getTransactionID());
+                    callDB.getIDResponse());
     }catch(Exception e){
         if(LogHandler.isShowErrorLog()){
                     
@@ -124,7 +124,7 @@ public class CreateTransaction {
     }
     
     public static void main(String[] args) throws IOException{
-        WorkflowActivity_JSNObject object = new WorkflowActivity_JSNObject();
+        WorkflowActivity object = new WorkflowActivity();
         object.setEnterprise_id(3);
         object.setCreated_by("GIATK");      
         User user = new User();

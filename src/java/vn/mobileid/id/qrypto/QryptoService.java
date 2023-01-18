@@ -34,8 +34,8 @@ import vn.mobileid.id.qrypto.kernel.ProcessWorkflowActivity;
 import vn.mobileid.id.qrypto.objects.Item_JSNObject;
 import vn.mobileid.id.qrypto.objects.ProcessWorkflowActivity_JSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.WorkflowActivity_JSNObject;
-import vn.mobileid.id.qrypto.objects.Workflow_JSNObject;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity;
+import vn.mobileid.id.qrypto.objects.Workflow;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 
@@ -136,9 +136,9 @@ public class QryptoService {
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        Workflow_JSNObject workflow = new Workflow_JSNObject();
+        Workflow workflow = new Workflow();
         try {
-            workflow = mapper.readValue(payload, Workflow_JSNObject.class);
+            workflow = mapper.readValue(payload, Workflow.class);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot parse payload");
@@ -245,9 +245,9 @@ public class QryptoService {
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        WorkflowActivity_JSNObject workflow = new WorkflowActivity_JSNObject();
+        WorkflowActivity workflow = new WorkflowActivity();
         try {
-            workflow = mapper.readValue(payload, WorkflowActivity_JSNObject.class);
+            workflow = mapper.readValue(payload, WorkflowActivity.class);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot parse payload");
