@@ -4,6 +4,10 @@
  */
 package vn.mobileid.id.qrypto.objects;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -50,7 +54,7 @@ public class KYC {
         return FullName;
     }
 
-        @XmlElement(name = "BirthDate")
+    @XmlElement(name = "BirthDate")
     public String getBirthDate() {
         return BirthDate;
     }
@@ -80,24 +84,33 @@ public class KYC {
         return CurrentDate;
     }
 
-        @XmlElement(name = "DateAfterOneYear")
+    @XmlElement(name = "DateAfterOneYear")
     public String getDateAfterOneYear() {
         return DateAfterOneYear;
     }
 
-        @XmlElement(name = "PreviousDay")
+    @XmlElement(name = "PreviousDay")
     public String getPreviousDay() {
         return PreviousDay;
     }
 
-        @XmlElement(name = "PreviousMonth")
+    @XmlElement(name = "PreviousMonth")
     public String getPreviousMonth() {
         return PreviousMonth;
     }
 
-        @XmlElement(name = "PreviousYear")
+    @XmlElement(name = "PreviousYear")
     public String getPreviousYear() {
         return PreviousYear;
+    }   
+    
+    public void set(Field field, Object value) throws IllegalArgumentException, IllegalAccessException {
+        field.set(this, value);
+    }
+
+    public static Field[] getHashMapFieldName() {
+        Field[] fieldKYC = KYC.class.getDeclaredFields();
+        return fieldKYC;
     }
 
     public void setFullName(String FullName) {
@@ -143,5 +156,6 @@ public class KYC {
     public void setPreviousYear(String PreviousYear) {
         this.PreviousYear = PreviousYear;
     }
-
+    
+    
 }

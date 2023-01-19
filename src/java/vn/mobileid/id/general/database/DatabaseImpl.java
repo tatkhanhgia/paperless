@@ -654,23 +654,22 @@ public class DatabaseImpl implements Database {
         int numOfRetry = retryTimes;
         while (numOfRetry > 0) {
             try {
-                String str = "{ call USP_ENTERPRISE_GET_DATA_RESTFUL(?,?,?) }";
+                String str = "{ call USP_ENTERPRISE_GET_DATA_RESTFUL_FILE_P12(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setInt("pENTERPRISE_ID", enterprise_id);
-
-                cals.registerOutParameter("pDATA_RESTFUL", java.sql.Types.VARCHAR);
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
-                cals.execute();
+                rs = cals.executeQuery();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
-                    Enterprise temp = new Enterprise();
-                    String check = cals.getString("pDATA_RESTFUL");
-                    temp.setData(cals.getString("pDATA_RESTFUL"));
+                    rs.next();
+                    Enterprise temp = new Enterprise();                    
+                    temp.setData(rs.getString("DATA_RESTFUL"));
                     databaseResponse.setObject(temp);
                     databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
                 } else {

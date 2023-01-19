@@ -63,5 +63,13 @@ public class ItemDetails {
         this.value = value;
     }
 
-    
+    public static Object checkType(int i){
+        if(i == 1)
+            return "String";
+        if( i == 2)
+            return true;
+        if( i ==3 )
+            return 1;
+        return null;
+    }
 }

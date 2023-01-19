@@ -13,13 +13,13 @@ import java.util.TreeMap;
 import restful.sdk.API.HTTPUtils;
 import vn.mobileid.aws.client.AWSV4Auth;
 import vn.mobileid.aws.client.AWSV4Constants;
-import vn.mobileid.id.everification.object.CreateOwnerRequest;
 import vn.mobileid.id.everification.object.CreateOwnerResponse;
 import vn.mobileid.id.everification.object.EidVerifiRequest;
 import vn.mobileid.id.everification.object.EidVerifiResponse;
 import vn.mobileid.id.everification.object.GetChallengeRequest;
 import vn.mobileid.id.everification.object.GetChallengeResponse;
 import vn.mobileid.id.eid.object.TokenResponse;
+import vn.mobileid.id.everification.object.DataCreateOwner;
 import vn.mobileid.id.utils.HttpUtils;
 
 /**
@@ -184,12 +184,12 @@ public class AWSCall {
             String token) throws MalformedURLException, IOException {
 
         //Request
-        CreateOwnerRequest ownerRequest = new CreateOwnerRequest();
+        DataCreateOwner ownerRequest = new DataCreateOwner();
         ownerRequest.setUsername(username);
         ownerRequest.setEmail(email);
         ownerRequest.setPhone(phone);
         ownerRequest.setPa(pa);
-        ownerRequest.setFace_matching(face_matching);
+//        ownerRequest.setFace_matching(face_matching);
 //        ownerRequest.setFingerprint_verification(face_matching);
 
         //Convert Request To Json

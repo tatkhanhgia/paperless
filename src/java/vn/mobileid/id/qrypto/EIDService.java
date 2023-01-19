@@ -41,13 +41,13 @@ public class EIDService {
     private String secretKey;
     private String regionName;
     private String serviceName;
-    private static int timeOut = 3000;
+    private int timeOut = 3000;
     private String xApiKey;
     private String contentType = "application/json";
     private String sessionToken;
     private String URI = "ws://127.0.0.1:9505/ISPlugin";
 
-    private static EIDService instant;
+    public static EIDService instant;
 
     public static EIDService getInstant() {
         if (instant == null) {
@@ -105,7 +105,7 @@ public class EIDService {
     }
 
     //v1/e-verification/oidc/token    
-    private Object v1VeriOidcToken() {
+    public Object v1VeriOidcToken() {
         if (LogHandler.isShowDebugLog()) {
             LOG.debug("Get token from dtis");
         }
@@ -132,7 +132,7 @@ public class EIDService {
     }
 
     //v1/owner/challenge
-    private Object v1OwnerChallenge(DataGetChallenge dataGetChallenge, String token) {
+    public Object v1OwnerChallenge(DataGetChallenge dataGetChallenge, String token) {
         try {
             AWSCall aWSCallGetChallenge = new AWSCall(
                     methodName,
@@ -169,7 +169,7 @@ public class EIDService {
     }
 
     //v1/owner/create
-    private Object v1OwnerCreate(DataCreateOwner dataCreateOwner, String token) {
+    public Object v1OwnerCreate(DataCreateOwner dataCreateOwner, String token) {
         try {
             AWSCall aWSCallCreateOwner = new AWSCall(
                     methodName,
@@ -198,7 +198,7 @@ public class EIDService {
     }
 
     //v1/e-verification/eid/verify
-    private Object v1EidVerification(DataCreateOwner dataCreateOwner, String token) {
+    public Object v1EidVerification(DataCreateOwner dataCreateOwner, String token) {
         try {
             AWSCall aWSCallEidVerification = new AWSCall(
                     methodName,
@@ -273,138 +273,51 @@ public class EIDService {
 //            return null;
 //        }        
 //    }
-
-    //====================GET - SET=================================
-    public String getLangVN() {
-        return langVN;
-    }
-
-    public void setLangVN(String langVN) {
-        this.langVN = langVN;
-    }
-
-    public String getLangEN() {
-        return langEN;
-    }
-
-    public void setLangEN(String langEN) {
-        this.langEN = langEN;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
-    public String getAccessKey() {
-        return accessKey;
-    }
-
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
-    }
-
-    public String getSecretKey() {
-        return secretKey;
-    }
-
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
-
-    public String getRegionName() {
-        return regionName;
-    }
-
-    public void setRegionName(String regionName) {
-        this.regionName = regionName;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public static int getTimeOut() {
-        return timeOut;
-    }
-
-    public static void setTimeOut(int timeOut) {
-        EIDService.timeOut = timeOut;
-    }
-
-    public String getxApiKey() {
-        return xApiKey;
-    }
-
-    public void setxApiKey(String xApiKey) {
-        this.xApiKey = xApiKey;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public String getSessionToken() {
-        return sessionToken;
-    }
-
-    public void setSessionToken(String sessionToken) {
-        this.sessionToken = sessionToken;
-    }
+  
+  
 
     public static void main(String[] args) {
-        System.out.println(EIDService.getInstant().getAccessKey());
-        System.out.println(EIDService.getInstant().getRegionName());
-        System.out.println(EIDService.getInstant().getxApiKey());
-        System.out.println(EIDService.getInstant().getSessionToken());
-        System.out.println(EIDService.getInstant().getSecretKey());
+//        System.out.println(EIDService.getInstant().getAccessKey());
+//        System.out.println(EIDService.getInstant().getRegionName());
+//        System.out.println(EIDService.getInstant().getxApiKey());
+//        System.out.println(EIDService.getInstant().getSessionToken());
+//        System.out.println(EIDService.getInstant().getSecretKey());
 
         //Get Token
-        TokenResponse response =  (TokenResponse) EIDService.getInstant().v1VeriOidcToken();        
-        String token = "Bearer "+response.access_token;
-        System.out.println("Bearer Token:"+token);
-        
+        TokenResponse response = (TokenResponse) EIDService.getInstant().v1VeriOidcToken();
+        String token = "Bearer " + response.access_token;
+        System.out.println("Bearer Token:" + token);
+
         //Get Challenge
         DataGetChallenge data = new DataGetChallenge();
         data.challenge_type = "EID";
         data.transaction_data = "transactionData";
         GetChallengeResponse response2 = (GetChallengeResponse) EIDService.getInstant().v1OwnerChallenge(data, token);
         System.out.println("====Get Challenged====");
-        System.out.println("Transaction:"+response2.getTransactionId());
-        System.out.println("Message:"+response2.getMessage());
-        System.out.println("Card no:"+response2.getCard_no());
-        System.out.println("Challenged:"+response2.getChallenge());
-            //Get Challenged from a string contains it
-            String temp = response2.getChallenge();
-            String challenged = temp.substring(temp.indexOf("challengeValue")+17, temp.indexOf("transactionData")-3);
-            System.out.println("Challenged:"+challenged);
+        System.out.println("Transaction:" + response2.getTransactionId());
+        System.out.println("Message:" + response2.getMessage());
+        System.out.println("Card no:" + response2.getCard_no());
+        System.out.println("Challenged:" + response2.getChallenge());
+        //Get Challenged from a string contains it
+        String temp = response2.getChallenge();
+        String challenged = temp.substring(temp.indexOf("challengeValue") + 17, temp.indexOf("transactionData") - 3);
+        System.out.println("Challenged:" + challenged);
 
         //Read Document Details (read Identity card)
         InterfaceCommunicationEID<RequireInfoDetailsGet> data2 = new InterfaceCommunicationEID();
         data2.setCmdType("GetInfoDetails");
-        data2.setRequestID(Utils.generateTransactionID_noRP()); 
-            RequireInfoDetailsGet dataDetails = new RequireInfoDetailsGet();
-            dataDetails.setMrzEnabled(true);
-            dataDetails.setImageEnabled(true);
-            dataDetails.setDataGroupEnabled(true);
-            dataDetails.setOptionDetailsEnabled(true);
-            dataDetails.setCanValue("");
-            dataDetails.setChallenge(challenged);
-            dataDetails.setCaEnabled(true);
-            dataDetails.setTaEnabled(true);
-            dataDetails.setPaEnabled(true);
-            
+        data2.setRequestID(Utils.generateTransactionID_noRP());
+        RequireInfoDetailsGet dataDetails = new RequireInfoDetailsGet();
+        dataDetails.setMrzEnabled(true);
+        dataDetails.setImageEnabled(true);
+        dataDetails.setDataGroupEnabled(true);
+        dataDetails.setOptionDetailsEnabled(true);
+        dataDetails.setCanValue("");
+        dataDetails.setChallenge(challenged);
+        dataDetails.setCaEnabled(true);
+        dataDetails.setTaEnabled(true);
+        dataDetails.setPaEnabled(true);
+
         // 
     }
 }

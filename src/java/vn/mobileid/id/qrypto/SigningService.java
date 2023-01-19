@@ -91,7 +91,7 @@ public class SigningService {
 
         try {
             object = (Enterprise) callDB.getDataRP(enterprise_id).getObject();
-            object2 = (FileManagement) callDB.getFile(22).getObject();
+//            object2 = (FileManagement) callDB.getFile(22).getObject();
         } catch (ClassCastException ex) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot cast data - Details:" + ex);
@@ -118,13 +118,13 @@ public class SigningService {
         }
     }
 
-    private void signHashBussiness(String filename, byte[] content) {
+    public  List<byte[]> signHashBussiness(String filename, byte[] content) {
         try {
             IPdfSignFile signFile = new SignFileFactory().createPdfSignFile(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B);
 
             PdfProfile profile = signFile.getProfile();
             profile.setReason("Ký hợp đồng điện tử");
-            profile.setVisibleSignature("1", "-20,-130", "160,110", "DIGITAL SIGNATURE");
+            profile.setVisibleSignature("LAST", "-20,-130", "160,110", "NGƯỜI SỬ DỤNG LAO ĐỘNG");
             profile.setCheckText(false);
             profile.setCheckMark(false);
             profile.setFont(DefaultFont.Times, 9, 1.1f, TextAlignment.ALIGN_LEFT, Color.RED);
@@ -139,11 +139,14 @@ public class SigningService {
             List<byte[]> results = signFile.sign(agreementUUIDBussiness, credentialIDBussiness, "12345678", src, this.session);
 
             int i = 0;
+            List<byte[]> temp = new ArrayList<>();
             for (byte[] result : results) {
-                System.out.println("File name: " + "signed" + i + ".pdf");
-                Files.write(Paths.get("file/signed" + i + ".pdf"), result, StandardOpenOption.CREATE);
-                i++;
+                temp.add(result);
+//                System.out.println("File name: " + "signed" + i + ".pdf");
+//                Files.write(Paths.get("file/signed" + i + ".pdf"), result, StandardOpenOption.CREATE);
+//                i++;
             }
+            return temp;
         } catch (APIException ex) {
             System.out.println("Ex:"+ex);
             if (LogHandler.isShowErrorLog()) {
@@ -155,14 +158,12 @@ public class SigningService {
                 LOG.error(ex);
             }
         }
+        return null;
     }
 
-    private ValueSignHash signHashWitness(String fullNameWitness, String base64Evidence, String filename){
-        try{
-        System.out.println("file name : " + filename);
-        ValueSignHash valueSignHash = null;
-        
-        File imgFile = new File("");
+    public  List<byte[]> signHashWitness(String fullNameWitness, String base64Evidence, byte[] content){
+        try{                        
+        File imgFile = new File("D:\\NetBean\\QryptoServices\\file\\file\\MobileID-Signature.png");
         
         //Data
         String font_hand = "D:\\NetBean\\QryptoServices\\file\\file\\Fz-Jim-Sintergate.ttf";        
@@ -180,7 +181,7 @@ public class SigningService {
         IPdfSignFile signFile = new SignFileFactory().createPdfSignFile(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B );
 
         PdfProfile profile = signFile.getProfile();
-        profile.setReason("Ký hợp đồng điệnDĐ tử");
+        profile.setReason("Ký hợp đồng điện Đ/tử");
         profile.setTextContent("Signed by: " + fullNameWitness + "\nSigned at: {date}"
                 + "\nLocation: {location}"
                 + "\nReason: Witnessing " + fullNameWitness);
@@ -198,24 +199,19 @@ public class SigningService {
         System.out.println("-------font-byte-array: " + font);
 
         profile.setFont(font, BaseFont.IDENTITY_H, true, 8, 0, TextAlignment.ALIGN_LEFT, Color.BLACK);
-
-        File f = new File("D:\\NetBean\\QryptoServices\\file\\"+ filename);
-        byte[] fileContent = FileUtils.readFileToByteArray(f);
+        
         List<byte[]> src = new ArrayList<>();
-        src.add(fileContent);
+        src.add(content);
 
-        //=======================================================
-        valueSignHash = new ValueSignHash();
-        valueSignHash.setValueSignHash("-----");
-        valueSignHash.setHashAlgo(Algorithm.SHA256.name());
         //====================================================
 
         List<byte[]> results = signFile.sign(agreementUUID, credentials, "12345678", src, this.session);
-        OutputStream OS = new FileOutputStream("D:\\NetBean\\QryptoServices\\file\\signed." + filename);
-        IOUtils.write(results.get(0), OS);
-        OS.close();
-
-        return valueSignHash;
+        
+        return results;
+//        OutputStream OS = new FileOutputStream("D:\\NetBean\\QryptoServices\\file\\signed." + filename);
+//        IOUtils.write(results.get(0), OS);
+//        OS.close();
+//        return valueSignHash;
         } catch (Exception e){
             System.out.println("Ex:"+e);
             return null;
@@ -223,10 +219,15 @@ public class SigningService {
     }
     
     public static void main(String[] arhs) throws IOException {
-//        String path = "D:\\NetBean\\QryptoServices\\file\\sample.pdf";
-//        byte[] content = Files.readAllBytes(new File(path).toPath());
-//        SigningService.getInstant().signHashBussiness("hallo", content);
-        String filename = "";
-//        SigningService.getInstant().signHashWitness(filename, filename, filename)
+//        String filename = "resul.pdf";
+//        String CombineImage = "D:\\NetBean\\QryptoServices\\file\\file\\CombineImage.png";
+//        String base64Envidence = Base64.getEncoder().encodeToString(
+//                                        Files.readAllBytes(
+//                                                new File(CombineImage).toPath()));
+//        SigningService.getInstant(3).signHashWitness("gia", base64Envidence, filename);
+//        
+//        SigningService.getInstant(3).signHashBussiness(filename, 
+//                                    Files.readAllBytes(
+//                                            new File("D:\\NetBean\\QryptoServices\\file\\signed.resul.pdf").toPath()));
     }
 }

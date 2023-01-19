@@ -336,6 +336,7 @@ public class QryptoService {
             }
             return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
         }
+        return null;
     }
     
     //=================== INTERNAL FUNCTION - METHOD============================
