@@ -83,7 +83,6 @@ public class QryptoService {
 //        }
 //        return QryptoConstant.INTERNAL_EXP_MESS;
 //    }
-
     public static InternalResponse getToken(final HttpServletRequest request, String payload, int functionId) {
         if (functionId == 0) {
             ManageToken token = new ManageToken();
@@ -111,10 +110,10 @@ public class QryptoService {
     public static InternalResponse createWorkflow(final HttpServletRequest request, String payload) {
         //Check valid token
         InternalResponse response = verifyToken(request, payload);
-        if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null){
+        if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
-        
+
         User user_info = response.getUser();
 
         if (Utils.isNullOrEmpty(payload)) {
@@ -159,7 +158,7 @@ public class QryptoService {
 
         //Processing
         try {
-            return CreateWorkflow.processingCreateWorkflow(workflow,user_info);
+            return CreateWorkflow.processingCreateWorkflow(workflow, user_info);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot create new Workflow");
@@ -169,7 +168,11 @@ public class QryptoService {
     }
 
     public static InternalResponse createWorkflowTemplate(final HttpServletRequest request, String payload, int id) {
-        //Thiếu check content type - accessToken - header !!!!
+        //Check valid token
+        InternalResponse response = verifyToken(request, payload);
+        if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
 
         if (Utils.isNullOrEmpty(payload)) {
             LOG.info("No payload found");
@@ -185,9 +188,9 @@ public class QryptoService {
         payload = payload.replaceAll("[ ]{2,10}", "");
         ObjectMapper mapper = new ObjectMapper();
 
-        Item_JSNObject workflow = new Item_JSNObject();
+        Item_JSNObject data = new Item_JSNObject();
         try {
-            workflow = mapper.readValue(payload, Item_JSNObject.class);
+            data = mapper.readValue(payload, Item_JSNObject.class);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot parse payload");
@@ -201,14 +204,14 @@ public class QryptoService {
 
         //Check valid data 
         InternalResponse result = null;
-        result = CreateWorkflowTemplate.checkDataWorkflowTemplate(workflow);
+        result = CreateWorkflowTemplate.checkDataWorkflowTemplate(data);
         if (result.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
             return result;
         }
 
         //Processing
         try {
-            return CreateWorkflowTemplate.processingCreateWorkflowTemplate(id, workflow, "bcd@gmail.com");
+            return CreateWorkflowTemplate.processingCreateWorkflowTemplate(id, data, "bcd@gmail.com");
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot create new Workflow");
@@ -220,12 +223,12 @@ public class QryptoService {
     public static InternalResponse createWorkflowActivity(final HttpServletRequest request, String payload) {
         //Check valid token
         InternalResponse response = verifyToken(request, payload);
-        if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null){
+        if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
-        
+
         User user_info = response.getUser();
-                
+
         if (Utils.isNullOrEmpty(payload)) {
             LOG.info("No payload found");
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
@@ -276,23 +279,26 @@ public class QryptoService {
             return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
         }
     }
-            
+
     public static InternalResponse verifyToken(final HttpServletRequest request, String payload) {
-        ManageToken token = new ManageToken();        
+        ManageToken token = new ManageToken();
         InternalResponse response = token.verifyAccessToken(request, payload);
         return response;
     }
 
-    //Processing workflow activity
+    //Processing data activity
     public static InternalResponse processWorkflowActivity(final HttpServletRequest request, String payload, int id) {
         //Check valid token
         InternalResponse response = verifyToken(request, payload);
-        if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null){
+        if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
-        
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Check Token Successfully");
+        }
+
         User user_info = response.getUser();
-                
+
         //Check Data
         if (Utils.isNullOrEmpty(payload)) {
             LOG.info("No payload found");
@@ -301,13 +307,14 @@ public class QryptoService {
                             QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
-        }      
-        
+        }
+
         //Mapper Object
+//        LOG.warn("Payload:"+ payload);
         ObjectMapper mapper = new ObjectMapper();
-        ProcessWorkflowActivity_JSNObject workflow = new ProcessWorkflowActivity_JSNObject();
+        ProcessWorkflowActivity_JSNObject data = new ProcessWorkflowActivity_JSNObject();
         try {
-            workflow = mapper.readValue(payload, ProcessWorkflowActivity_JSNObject.class);
+            data = mapper.readValue(payload, ProcessWorkflowActivity_JSNObject.class);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot parse payload");
@@ -321,24 +328,22 @@ public class QryptoService {
 
         //Check valid data 
         InternalResponse result = null;
-        result = ProcessWorkflowActivity.checkData(workflow);
+        result = ProcessWorkflowActivity.checkData(data);
         if (result.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
             return result;
         }
 
         //Processing
         try {
-            
-//            return CreateWorkflowActivity.processingCreateWorkflowActivity(workflow, user_info);
+            return ProcessWorkflowActivity.process(id, "jwt", user_info, data);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot process a new Workflow Activity");
             }
             return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
         }
-        return null;
     }
-    
+
     //=================== INTERNAL FUNCTION - METHOD============================
     private static boolean checkTemplateTypeInRequest(String payload) {
         payload = payload.replaceAll("\n", "");
@@ -356,6 +361,6 @@ public class QryptoService {
     }
 
     public static void main(String[] args) {
-        
+
     }
 }

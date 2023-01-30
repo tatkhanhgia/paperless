@@ -58,22 +58,22 @@ public class SigningService {
     private static final Logger LOG = LogManager.getLogger(SigningService.class);
 
     private int enterprise_id_instant;
-    
-    private Property prop ;
+
+    private Property prop;
 
     private ISessionFactory sessionFactory;
     private IServerSession session;
 
     private static SigningService signingService;
 
-    public static SigningService getInstant(int i) {   
-        if(i<=0){
+    public static SigningService getInstant(int i) {
+        if (i <= 0) {
             return null;
         }
         if (SigningService.signingService == null) {
             SigningService.signingService = new SigningService(i);
         }
-        if(SigningService.signingService.enterprise_id_instant != i){
+        if (SigningService.signingService.enterprise_id_instant != i) {
             SigningService.signingService = new SigningService(i);
         }
         SigningService.signingService.enterprise_id_instant = i;
@@ -102,9 +102,9 @@ public class SigningService {
         //Test
         try {
             byte[] arr = Files.readAllBytes(new File("D:\\NetBean\\QryptoServices\\file\\rssp.p12").toPath());
-            prop = Utils.getDataRESTFromString2(object.getData(),arr);
+            prop = Utils.getDataRESTFromString2(object.getData(), arr);
             this.sessionFactory = SessionFactory.getInstance(
-//                    Utils.getDataRESTFromString(object.getData(),object2.getData()),
+                    //                    Utils.getDataRESTFromString(object.getData(),object2.getData()),
                     prop,
                     "EN");
             this.session = sessionFactory.getServerSession();
@@ -118,17 +118,23 @@ public class SigningService {
         }
     }
 
-    public  List<byte[]> signHashBussiness(String filename, byte[] content) {
+    public List<byte[]> signHashBussiness(byte[] content) {
         try {
             IPdfSignFile signFile = new SignFileFactory().createPdfSignFile(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B);
+
+            String imageBackground = "D:\\NetBean\\QryptoServices\\file\\file\\MobileID-Signature.png";
+            String font_Sign = "D:\\NetBean\\QryptoServices\\file\\file\\verdana.ttf";
+            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
 
             PdfProfile profile = signFile.getProfile();
             profile.setReason("Ký hợp đồng điện tử");
             profile.setVisibleSignature("LAST", "-20,-130", "160,110", "NGƯỜI SỬ DỤNG LAO ĐỘNG");
             profile.setCheckText(false);
             profile.setCheckMark(false);
-            profile.setFont(DefaultFont.Times, 9, 1.1f, TextAlignment.ALIGN_LEFT, Color.RED);
+            profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
+            profile.setFont(font, BaseFont.IDENTITY_H, true, 8, 0, TextAlignment.ALIGN_LEFT, Color.BLACK);
             profile.setBorder(Color.RED);
+            profile.setBackground(Files.readAllBytes(new File(imageBackground).toPath()));
 
             List<byte[]> src = new ArrayList<>();
             src.add(content);
@@ -148,12 +154,12 @@ public class SigningService {
             }
             return temp;
         } catch (APIException ex) {
-            System.out.println("Ex:"+ex);
+            ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
                 LOG.error(ex);
             }
         } catch (Exception ex) {
-            System.out.println("Ex:"+ex);
+            ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
                 LOG.error(ex);
             }
@@ -161,63 +167,52 @@ public class SigningService {
         return null;
     }
 
-    public  List<byte[]> signHashWitness(String fullNameWitness, String base64Evidence, byte[] content){
-        try{                        
-        File imgFile = new File("D:\\NetBean\\QryptoServices\\file\\file\\MobileID-Signature.png");
-        
-        //Data
-        String font_hand = "D:\\NetBean\\QryptoServices\\file\\file\\Fz-Jim-Sintergate.ttf";        
-        String font_Sign = "D:\\NetBean\\QryptoServices\\file\\file\\FunkySignature-Regular.ttf";
-        String logos = "D:\\NetBean\\QryptoServices\\file\\file\\MobileID-Signature.png";
-        String agreementUUID = "9E6FA0D0-6319-4D57-A760-99BBBECB35D0";
-        String credentials = "fc081a30-8ed5-40c0-93b3-7b9cbd8d40f2";
-        
-        String fullNameReplaceSpace = fullNameWitness.replaceAll(" ", "").toString();
-        byte[] picture = ImageGenerator.remoteSignWithPathFont("", font_hand, font_hand, fullNameReplaceSpace, "");
-        byte[] picture2 = Base64.getDecoder().decode(base64Evidence.getBytes());
-        ImageGenerator.combineImage(picture, picture2, imgFile.getAbsolutePath());
-        byte[] imgData = IOUtils.toByteArray(new FileInputStream(imgFile));
+    public List<byte[]> signHashWitness(String fullNameWitness, String base64Evidence, byte[] content) {
+        try {
+            //Data
+            String font_hand = "D:\\NetBean\\QryptoServices\\file\\file\\verdana.ttf";
+            String font_Sign = "D:\\NetBean\\QryptoServices\\file\\file\\verdana.ttf";
+            String agreementUUID = "9E6FA0D0-6319-4D57-A760-99BBBECB35D0";
+            String credentials = "fc081a30-8ed5-40c0-93b3-7b9cbd8d40f2";
 
-        IPdfSignFile signFile = new SignFileFactory().createPdfSignFile(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B );
+            String fullNameReplaceSpace = fullNameWitness.replaceAll(" ", "").toString();
+            byte[] picture = ImageGenerator.remoteSignWithPathFont("", font_hand, font_hand, fullNameReplaceSpace, "");
+            byte[] picture2 = Base64.getDecoder().decode(base64Evidence.getBytes());
+            byte[] imgData = ImageGenerator.combineImage(picture, picture2);
 
-        PdfProfile profile = signFile.getProfile();
-        profile.setReason("Ký hợp đồng điện Đ/tử");
-        profile.setTextContent("Signed by: " + fullNameWitness + "\nSigned at: {date}"
-                + "\nLocation: {location}"
-                + "\nReason: Witnessing " + fullNameWitness);
-        profile.setImage(imgData, ImageProfile.IMAGE_BOTTOM);
-        profile.setVisibleSignature("2", "-20,-130", "190,110", "NGƯỜI LAO ĐỘNG");
-        profile.setCheckText(false);
-        profile.setCheckMark(false);
+            IPdfSignFile signFile = new SignFileFactory().createPdfSignFile(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B);
 
-        profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
-        profile.setLocation("HCM");
+            PdfProfile profile = signFile.getProfile();
+            profile.setReason("Ký hợp đồng điện Đ/tử");
+            profile.setTextContent("Ký bởi: " + fullNameWitness + "\nNgày ký: {date}"
+                    + "\nNơi ký: {location}"
+                    + "\nLý do: Witnessing " + fullNameWitness);
+            profile.setImage(imgData, ImageProfile.IMAGE_BOTTOM);
+            profile.setVisibleSignature("2", "-20,-130", "190,110", "NGƯỜI LAO ĐỘNG");
+            profile.setCheckText(false);
+            profile.setCheckMark(false);
+            profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
+            profile.setLocation("HCM");
+            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
+            profile.setFont(font, BaseFont.IDENTITY_H, true, 8, 0, TextAlignment.ALIGN_LEFT, Color.BLACK);
 
-        byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
-        byte[] logo = IOUtils.toByteArray(new FileInputStream(logos));
-        System.out.println("-------font: " + font_Sign);
-        System.out.println("-------font-byte-array: " + font);
+            List<byte[]> src = new ArrayList<>();
+            src.add(content);
 
-        profile.setFont(font, BaseFont.IDENTITY_H, true, 8, 0, TextAlignment.ALIGN_LEFT, Color.BLACK);
-        
-        List<byte[]> src = new ArrayList<>();
-        src.add(content);
+            //====================================================
+            List<byte[]> results = signFile.sign(agreementUUID, credentials, "12345678", src, this.session);
 
-        //====================================================
-
-        List<byte[]> results = signFile.sign(agreementUUID, credentials, "12345678", src, this.session);
-        
-        return results;
+            return results;
 //        OutputStream OS = new FileOutputStream("D:\\NetBean\\QryptoServices\\file\\signed." + filename);
 //        IOUtils.write(results.get(0), OS);
 //        OS.close();
 //        return valueSignHash;
-        } catch (Exception e){
-            System.out.println("Ex:"+e);
+        } catch (Exception e) {
+            System.out.println("Ex:" + e);
             return null;
         }
     }
-    
+
     public static void main(String[] arhs) throws IOException {
 //        String filename = "resul.pdf";
 //        String CombineImage = "D:\\NetBean\\QryptoServices\\file\\file\\CombineImage.png";

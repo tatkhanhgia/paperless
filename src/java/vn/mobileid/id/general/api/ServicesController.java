@@ -238,6 +238,7 @@ public class ServicesController {
             }
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
+                e.printStackTrace();
                 LOG.error("Error - Detail:"+e);
             }
             return Response.status(500).entity("Internal Server Error").build();

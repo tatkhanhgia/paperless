@@ -266,9 +266,12 @@ public class ManageToken {
         KeycloakReq object = new KeycloakReq();      
 
         //Get Access Token
-        LOG.info("Checking Header!!");
         String token = request.getHeader("Authorization");
-        LOG.info("Token:"+token);
+        if(LogHandler.isShowDebugLog()){
+            LOG.info("Checking Header!!");            
+            LOG.info("Token:"+token);
+        }
+        
         if(token == null){
             return new InternalResponse(QryptoConstant.HTTP_CODE_UNAUTHORIZED,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK,

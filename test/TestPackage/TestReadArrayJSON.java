@@ -68,7 +68,7 @@ c = c.replaceAll("[ ]{2,10}", "");
         System.out.println("c:"+c);        
 Item_JSNObject langList = mapper.readValue(c,Item_JSNObject.class);
         for(ItemDetails temp : langList.getItems()){
-            System.out.println("T:"+temp.getT());
+//            System.out.println("T:"+temp.getT());
         }
     }
     

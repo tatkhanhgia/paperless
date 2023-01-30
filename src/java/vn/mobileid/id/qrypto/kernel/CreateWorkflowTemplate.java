@@ -30,7 +30,7 @@ public class CreateWorkflowTemplate {
 
     public static InternalResponse checkDataWorkflowTemplate(Item_JSNObject workflow) {
         for (ItemDetails detail : workflow.getItems()) {
-            InternalResponse response = checkDataWorkflowDetail(detail);
+            InternalResponse response = checkDataWorkflowTemplate(detail);
             if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
@@ -43,7 +43,7 @@ public class CreateWorkflowTemplate {
                         null));
     }
 
-    public static InternalResponse checkDataWorkflowDetail(ItemDetails workflow) {
+    public static InternalResponse checkDataWorkflowTemplate(ItemDetails workflow) {
         if (workflow == null) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,

@@ -127,7 +127,7 @@ public class XSLT_PDF_Processing {
     public static void main(String[] arhs) throws IOException {
         //Data get from DB
         String xslt = "D:\\NetBean\\QryptoServices\\file\\test.xslt";
-        String a = "D:\\NetBean\\QryptoServices\\file\\file\\CombineImage.png";
+        String a = "D:\\NetBean\\QryptoServices\\file\\file\\300x400.png";
         String image = Base64.getEncoder().encodeToString(Files.readAllBytes(new File(a).toPath()));
         byte[] xsltB = Files.readAllBytes(new File(xslt).toPath());
 
@@ -151,8 +151,8 @@ public class XSLT_PDF_Processing {
         List<byte[]> result1 = SigningService.getInstant(3).signHashWitness("TATKHANHGIA", image, pdf);
         
         for(byte[] temp : result1){
-            List<byte[]> result2 = SigningService.getInstant(3).signHashBussiness("haha", temp);
-            Files.write(new File("D:\\NetBean\\QryptoServices\\file\\resultll.pdf").toPath(), result2.get(0), StandardOpenOption.CREATE);
+            List<byte[]> result2 = SigningService.getInstant(3).signHashBussiness( temp);
+            Files.write(new File("D:\\NetBean\\QryptoServices\\file\\result.pdf").toPath(), result2.get(0), StandardOpenOption.CREATE);
             
         }
     }

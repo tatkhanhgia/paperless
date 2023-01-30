@@ -4,7 +4,13 @@
  */
 package vn.mobileid.id.qrypto.kernel;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +27,7 @@ import vn.mobileid.id.qrypto.EIDService;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.SigningService;
 import vn.mobileid.id.qrypto.objects.FileDataDetails;
+//import vn.mobileid.id.qrypto.objects.FileDataDetails.FileType;
 import vn.mobileid.id.qrypto.objects.ItemDetails;
 import vn.mobileid.id.qrypto.objects.KYC;
 import vn.mobileid.id.qrypto.objects.ProcessWorkflowActivity_JSNObject;
@@ -43,7 +50,7 @@ public class ProcessWorkflowActivity {
 
         //Check item details
         for (ItemDetails obj : listItem) {
-            result = CreateWorkflowTemplate.checkDataWorkflowDetail(obj);
+            result = CreateWorkflowTemplate.checkDataWorkflowTemplate(obj);
             if (result.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
                 return result;
             }
@@ -67,55 +74,99 @@ public class ProcessWorkflowActivity {
                         null));
     }
 
-    public static InternalResponse process(String id, String jwt, User uer_info, ProcessWorkflowActivity_JSNObject request) {
+    public static InternalResponse process(int id, String jwt, User uer_info, ProcessWorkflowActivity_JSNObject request) {
         try {
+            //Get Data from request
+            List<FileDataDetails> fileData = request.getFile_data();
+            List<ItemDetails> fileItem = request.getItem();
+            Object PDF = null, finger = null, card = null, photo = null;
+            for (FileDataDetails file : fileData) {
+                switch (file.getFile_type()) {
+                    case 1: {
+                        finger = file.getValue();
+                        break;
+                    }
+                    case 2: {
+                        card = file.getValue();
+                        break;
+                    }
+                    case 3: {
+                        photo = file.getValue();
+                        break;
+                    }
+                    case 4: {
+                        PDF = file.getValue();
+                        break;
+                    }
+                }
+            }
+
             Database DB = new DatabaseImpl();
 
             //Get Asset template file from DB
-            DatabaseResponse template = DB.getFileAsset(Integer.parseInt(id));
-            if (template.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(
-                                QryptoConstant.CODE_FAIL,
-                                template.getStatus(),
-                                "en",
-                                null)
-                );
-            }
-
+//            DatabaseResponse template = DB.getFileAsset(id);
+//            if (template.getStatus() != QryptoConstant.CODE_SUCCESS) {
+//                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+//                        QryptoMessageResponse.getErrorMessage(
+//                                QryptoConstant.CODE_FAIL,
+//                                template.getStatus(),
+//                                "en",
+//                                null)
+//                );
+//            }
             //Assign data into KYC object
             KYC object = new KYC();
             object = assignAllItem(request.getItem());
+            object.setCurrentDate(String.valueOf(LocalDate.now()));
+            object.setDateAfterOneYear(String.valueOf(LocalDate.now().plusYears(1)));
+            object.setPreviousDay(String.valueOf(LocalDate.now().plusDays(1).getDayOfMonth()));
+            object.setPreviousMonth(String.valueOf(LocalDate.now().minusMonths(1).getMonthValue()));
+            object.setPreviousYear(String.valueOf(LocalDate.now().minusYears(1).getYear()));
 
-            //Assign KYC Object into Template XSLT
-            XSLT_PDF_Processing.appendData(object);
+            //Read file XSLT - Assign KYC Object into Template XSLT
+            String xslt = "D:\\NetBean\\QryptoServices\\file\\test.xslt";
+            byte[] xsltB = Files.readAllBytes(new File(xslt).toPath());
+            byte[] html = XSLT_PDF_Processing.appendData(object, xsltB);
 
             //Convert from HTML to PDF
-            XSLT_PDF_Processing.convertHTMLtoPDF();
+            byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
 
             //Call Create Owner
-            DataCreateOwner createOwner = new DataCreateOwner();
-            createOwner.setEmail(uer_info.getEmail());
-            createOwner.setUsername(uer_info.getEmail());
-            createOwner.setPa(jwt);
-            TokenResponse token = (TokenResponse) EIDService.getInstant().v1VeriOidcToken();
-            String access_token = "Bearer " + token.access_token;
-            CreateOwnerResponse res = (CreateOwnerResponse) EIDService.getInstant().v1OwnerCreate(createOwner, access_token);
-
+//            DataCreateOwner createOwner = new DataCreateOwner();
+//            createOwner.setEmail(uer_info.getEmail());
+//            createOwner.setUsername(uer_info.getEmail());
+//            createOwner.setPa(jwt);
+//            TokenResponse token = (TokenResponse) EIDService.getInstant().v1VeriOidcToken();
+//            String access_token = "Bearer " + token.access_token;
+//            CreateOwnerResponse res = (CreateOwnerResponse) EIDService.getInstant().v1OwnerCreate(createOwner, access_token);
+            
             //Call SignHashWitness
-            SigningService.getInstant(3).signHashWitness("gia", base64Envidence, filename);
-            
-            //Thieeus buoc authenticate EID
-            
+            List<byte[]> result1 = null;
+            if (photo instanceof String) {
+                result1 = SigningService.getInstant(3).signHashWitness(object.getFullName(), (String) photo, pdf);                                
+            }
+            if (photo instanceof byte[]) {
+                String temp = Base64.getEncoder().encodeToString((byte[]) photo);
+                result1 = SigningService.getInstant(3).signHashWitness(object.getFullName(), temp, pdf);
+                LOG.warn("SignHashWitness Successfully22");
+            }
+
             //Call SignHashBusiness
+//            for (byte[] temp : result1) {                
+            List<byte[]> result2 = SigningService.getInstant(3).signHashBussiness(result1.get(0));
+            Files.write(new File("D:\\NetBean\\QryptoServices\\file\\result.pdf").toPath(), result2.get(0), StandardOpenOption.CREATE);
+//            }
+
+            //Write into DB
+            
             return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                    ""
+                    "Done!"
             );
         } catch (Exception e) {
+            e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            }            
             return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
         }
     }

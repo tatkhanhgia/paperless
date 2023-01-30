@@ -47,6 +47,6 @@ public class TestCallDB {
                 System.out.println("Mes:"+a.getMessage());
             }
             System.out.println("ID:"+callDB.getIDResponse());
-            System.out.println("ID:"+callDB.getTransactionID());
+//            System.out.println("ID:"+callDB.getTransactionID());
     }
 }

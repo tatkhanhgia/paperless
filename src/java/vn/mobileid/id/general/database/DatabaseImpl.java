@@ -23,7 +23,6 @@ import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.Asset;
 import vn.mobileid.id.qrypto.objects.Enterprise;
 import vn.mobileid.id.qrypto.objects.FileManagement;
-import vn.mobileid.id.utils.Crypto;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -108,9 +107,7 @@ public class DatabaseImpl implements Database {
                         int code = Integer.parseInt(rs.getString("NAME"));
 
                         ResponseCode responseCode = new ResponseCode();
-//                            responseCode.setId(rs.getInt("ID"));
                         responseCode.setName(rs.getString("NAME"));
-
                         responseCode.setCode_description(rs.getString("ERROR_DESCRIPTION"));
                         responseCodes.add(responseCode);
 
@@ -928,6 +925,11 @@ public class DatabaseImpl implements Database {
             LOG.debug("Execution time of insertAgreement in milliseconds: " + timeElapsed / 1000000);
         }
         return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse processWorkflowActivity() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }

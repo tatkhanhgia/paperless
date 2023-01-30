@@ -125,4 +125,8 @@ public interface Database {
     public DatabaseResponse getFileAsset(
             int assetID
     );
+    
+    public DatabaseResponse processWorkflowActivity(
+            
+    );
 }
