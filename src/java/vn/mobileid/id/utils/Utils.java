@@ -206,6 +206,18 @@ public class Utils {
         }
         return headerValue;
     }
+    
+    public static HashMap<String,String> getHashMapRequestHeader(final HttpServletRequest request) {
+        String headerValue = null;
+        HashMap<String,String> hashMap = new HashMap<>();
+        Enumeration headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String key = (String) headerNames.nextElement();
+            headerValue = request.getHeader(key);
+            hashMap.put(key, headerValue);
+        }
+        return hashMap;
+    }
 
     public static byte[] getBinaryStream(HttpServletRequest request) {
         byte[] stream = null;

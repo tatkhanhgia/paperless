@@ -212,3 +212,257 @@
 [DEBUG] 2023-01-30 17:25:42.176 [default task-16] HTTPUtils -- >>> SEND: {"agreementUUID":"OW06742145068696660080","credentialID":"0d8535f8-e54a-43f0-acbf-d88c8ae02cbc","SAD":"Af9zzPPKLSNT2xqJdauvUMSYokp6O5vrQUm_9qvpxBW7FX_N5dO2cnBBK6I7OSxE3eA9M3mLijFlGJ-Vw-7PWx9gRRKHvI+BOwJt+aOe-Jzy2yEEQb1PFSbgafXvCNGs","documentDigests":{"hashes":["9U++2ShZJa2RMmvsEugTWOBWXpxEDdyVosEB8i4j4Io="],"hashAlgorithmOID":"2.16.840.1.101.3.4.2.1"},"signAlgo":"1.2.840.113549.1.1.1","operationMode":"S","validityPeriod":300,"profile":"rssp-119.432-v2.0","lang":"EN"}
 [DEBUG] 2023-01-30 17:25:42.176 [HandshakeCompletedNotify-Thread] HTTPUtils -- CipherSuite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 [DEBUG] 2023-01-30 17:25:42.210 [default task-16] HTTPUtils -- <<< RECEIVE: {"signatures":["GRatg6sOOj/G1MGpJ/qmCD72M4QPLu52RrByh5j306mg8W1H3gkfuB7QMc6J+cMQUDYtDQqVDmjKB/DJKAqeO6jP6ZuAo/6dWtv62HKk1RoeQwcT7J4mpJ6uKSjxfEw3FGDNMt0sPpClK7M85I/15NBwEYXjQyN/f4EHm4ljRTbIo0AwvD6ak7SBsqgf6CIbIG7T94SFJuWm2L6w6zyetc107QTuJ2zy2S6u7DQmSY52ls0KObrYMOQGgQ6axNu9n0YA7DfHNqRTcxK57mCWhmcJMFTZwp2WlFOODolG0Pb14+F0JLinz+Mg+rKWvrVeTBkhImza2KiFYwlxoDNKew=="],"remainingSigningCounter":-1,"error":0,"errorDescription":"SUCCESSFULLY","responseID":"RSSP-230130172542-3004356-699685"}
+[ERROR] 2023-01-31 15:10:23.337 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: No parameter named 'pASSET_TYPE_ID'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.CallableStatement.getNamedParamIndex(CallableStatement.java:1332)
+	at com.mysql.cj.jdbc.CallableStatement.setInt(CallableStatement.java:2000)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.setInt(DelegatingCallableStatement.java:1125)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.setInt(DelegatingCallableStatement.java:1125)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:894)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:10:23.351 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: No parameter named 'pASSET_TYPE_ID'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.CallableStatement.getNamedParamIndex(CallableStatement.java:1332)
+	at com.mysql.cj.jdbc.CallableStatement.setInt(CallableStatement.java:2000)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.setInt(DelegatingCallableStatement.java:1125)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.setInt(DelegatingCallableStatement.java:1125)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:894)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:10:23.358 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: No parameter named 'pASSET_TYPE_ID'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.CallableStatement.getNamedParamIndex(CallableStatement.java:1332)
+	at com.mysql.cj.jdbc.CallableStatement.setInt(CallableStatement.java:2000)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.setInt(DelegatingCallableStatement.java:1125)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.setInt(DelegatingCallableStatement.java:1125)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:894)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:10:23.540 [main] UploadAsset -- Cannot get Asset - Detail:{
+  "error_description" : "NO_PAYLOAD_FOUND"
+}
+[ERROR] 2023-01-31 15:12:14.609 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: No parameter named 'pRESPONSE_CODE'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.CallableStatement.getNamedParamIndex(CallableStatement.java:1332)
+	at com.mysql.cj.jdbc.CallableStatement.registerOutParameter(CallableStatement.java:1786)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.registerOutParameter(DelegatingCallableStatement.java:821)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.registerOutParameter(DelegatingCallableStatement.java:821)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:905)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:12:14.620 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: No parameter named 'pRESPONSE_CODE'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.CallableStatement.getNamedParamIndex(CallableStatement.java:1332)
+	at com.mysql.cj.jdbc.CallableStatement.registerOutParameter(CallableStatement.java:1786)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.registerOutParameter(DelegatingCallableStatement.java:821)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.registerOutParameter(DelegatingCallableStatement.java:821)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:905)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:12:14.628 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: No parameter named 'pRESPONSE_CODE'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.CallableStatement.getNamedParamIndex(CallableStatement.java:1332)
+	at com.mysql.cj.jdbc.CallableStatement.registerOutParameter(CallableStatement.java:1786)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.registerOutParameter(DelegatingCallableStatement.java:821)
+	at org.apache.commons.dbcp2.DelegatingCallableStatement.registerOutParameter(DelegatingCallableStatement.java:821)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:905)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:12:14.798 [main] UploadAsset -- Cannot get Asset - Detail:{
+  "error_description" : "NO_PAYLOAD_FOUND"
+}
+[ERROR] 2023-01-31 15:13:33.909 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLSyntaxErrorException: Unknown column 'pASSET_TYPE_NAME' in 'where clause'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:120)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.execute(ClientPreparedStatement.java:354)
+	at com.mysql.cj.jdbc.CallableStatement.execute(CallableStatement.java:847)
+	at org.apache.commons.dbcp2.DelegatingPreparedStatement.execute(DelegatingPreparedStatement.java:94)
+	at org.apache.commons.dbcp2.DelegatingPreparedStatement.execute(DelegatingPreparedStatement.java:94)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:910)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:13:33.925 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLSyntaxErrorException: Unknown column 'pASSET_TYPE_NAME' in 'where clause'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:120)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.execute(ClientPreparedStatement.java:354)
+	at com.mysql.cj.jdbc.CallableStatement.execute(CallableStatement.java:847)
+	at org.apache.commons.dbcp2.DelegatingPreparedStatement.execute(DelegatingPreparedStatement.java:94)
+	at org.apache.commons.dbcp2.DelegatingPreparedStatement.execute(DelegatingPreparedStatement.java:94)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:910)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:13:33.940 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLSyntaxErrorException: Unknown column 'pASSET_TYPE_NAME' in 'where clause'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:120)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916)
+	at com.mysql.cj.jdbc.ClientPreparedStatement.execute(ClientPreparedStatement.java:354)
+	at com.mysql.cj.jdbc.CallableStatement.execute(CallableStatement.java:847)
+	at org.apache.commons.dbcp2.DelegatingPreparedStatement.execute(DelegatingPreparedStatement.java:94)
+	at org.apache.commons.dbcp2.DelegatingPreparedStatement.execute(DelegatingPreparedStatement.java:94)
+	at vn.mobileid.id.general.database.DatabaseImpl.uploadAsset(DatabaseImpl.java:910)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.uploadAsset(UploadAsset.java:35)
+	at vn.mobileid.id.qrypto.kernel.UploadAsset.main(UploadAsset.java:96)
+
+[ERROR] 2023-01-31 15:13:34.104 [main] UploadAsset -- Cannot get Asset - Detail:{
+  "error_description" : "NO_PAYLOAD_FOUND"
+}
+[ERROR] 2023-01-31 15:26:14.753 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLDataException: Cannot determine value type from string 'UUID'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:114)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:73)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:96)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getObject(ResultSetImpl.java:1431)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getInt(ResultSetImpl.java:830)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getInt(ResultSetImpl.java:851)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getInt(DelegatingResultSet.java:633)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getInt(DelegatingResultSet.java:633)
+	at vn.mobileid.id.general.database.DatabaseImpl.getAsset(DatabaseImpl.java:839)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.getAssetTemplate(GetAsset.java:115)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.main(GetAsset.java:147)
+Caused by: com.mysql.cj.exceptions.DataConversionException: Cannot determine value type from string 'UUID'
+	at com.mysql.cj.result.AbstractNumericValueFactory.createFromBytes(AbstractNumericValueFactory.java:65)
+	at com.mysql.cj.protocol.a.MysqlTextValueDecoder.decodeByteArray(MysqlTextValueDecoder.java:143)
+	at com.mysql.cj.protocol.result.AbstractResultsetRow.decodeAndCreateReturnValue(AbstractResultsetRow.java:135)
+	at com.mysql.cj.protocol.result.AbstractResultsetRow.getValueFromBytes(AbstractResultsetRow.java:243)
+	at com.mysql.cj.protocol.a.result.TextBufferRow.getValue(TextBufferRow.java:132)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getObject(ResultSetImpl.java:1324)
+	... 7 more
+
+[ERROR] 2023-01-31 15:26:14.771 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLDataException: Cannot determine value type from string 'UUID'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:114)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:73)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:96)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getObject(ResultSetImpl.java:1431)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getInt(ResultSetImpl.java:830)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getInt(ResultSetImpl.java:851)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getInt(DelegatingResultSet.java:633)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getInt(DelegatingResultSet.java:633)
+	at vn.mobileid.id.general.database.DatabaseImpl.getAsset(DatabaseImpl.java:839)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.getAssetTemplate(GetAsset.java:115)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.main(GetAsset.java:147)
+Caused by: com.mysql.cj.exceptions.DataConversionException: Cannot determine value type from string 'UUID'
+	at com.mysql.cj.result.AbstractNumericValueFactory.createFromBytes(AbstractNumericValueFactory.java:65)
+	at com.mysql.cj.protocol.a.MysqlTextValueDecoder.decodeByteArray(MysqlTextValueDecoder.java:143)
+	at com.mysql.cj.protocol.result.AbstractResultsetRow.decodeAndCreateReturnValue(AbstractResultsetRow.java:135)
+	at com.mysql.cj.protocol.result.AbstractResultsetRow.getValueFromBytes(AbstractResultsetRow.java:243)
+	at com.mysql.cj.protocol.a.result.TextBufferRow.getValue(TextBufferRow.java:132)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getObject(ResultSetImpl.java:1324)
+	... 7 more
+
+[ERROR] 2023-01-31 15:26:14.785 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLDataException: Cannot determine value type from string 'UUID'
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:114)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:73)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:96)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getObject(ResultSetImpl.java:1431)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getInt(ResultSetImpl.java:830)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getInt(ResultSetImpl.java:851)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getInt(DelegatingResultSet.java:633)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getInt(DelegatingResultSet.java:633)
+	at vn.mobileid.id.general.database.DatabaseImpl.getAsset(DatabaseImpl.java:839)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.getAssetTemplate(GetAsset.java:115)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.main(GetAsset.java:147)
+Caused by: com.mysql.cj.exceptions.DataConversionException: Cannot determine value type from string 'UUID'
+	at com.mysql.cj.result.AbstractNumericValueFactory.createFromBytes(AbstractNumericValueFactory.java:65)
+	at com.mysql.cj.protocol.a.MysqlTextValueDecoder.decodeByteArray(MysqlTextValueDecoder.java:143)
+	at com.mysql.cj.protocol.result.AbstractResultsetRow.decodeAndCreateReturnValue(AbstractResultsetRow.java:135)
+	at com.mysql.cj.protocol.result.AbstractResultsetRow.getValueFromBytes(AbstractResultsetRow.java:243)
+	at com.mysql.cj.protocol.a.result.TextBufferRow.getValue(TextBufferRow.java:132)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getObject(ResultSetImpl.java:1324)
+	... 7 more
+
+[ERROR] 2023-01-31 15:26:14.954 [main] GetAsset -- Cannot get Asset - Detail:{
+  "error_description" : "NO_PAYLOAD_FOUND"
+}
+[ERROR] 2023-01-31 15:27:42.148 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: Column 'MODIFIED_AT' not found.
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.findColumn(ResultSetImpl.java:584)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getString(ResultSetImpl.java:896)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getString(DelegatingResultSet.java:898)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getString(DelegatingResultSet.java:898)
+	at vn.mobileid.id.general.database.DatabaseImpl.getAsset(DatabaseImpl.java:842)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.getAssetTemplate(GetAsset.java:115)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.main(GetAsset.java:147)
+
+[ERROR] 2023-01-31 15:27:42.163 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: Column 'MODIFIED_AT' not found.
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.findColumn(ResultSetImpl.java:584)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getString(ResultSetImpl.java:896)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getString(DelegatingResultSet.java:898)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getString(DelegatingResultSet.java:898)
+	at vn.mobileid.id.general.database.DatabaseImpl.getAsset(DatabaseImpl.java:842)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.getAssetTemplate(GetAsset.java:115)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.main(GetAsset.java:147)
+
+[ERROR] 2023-01-31 15:27:42.173 [main] DatabaseImpl -- Error while inserting agreement. Details: java.sql.SQLException: Column 'MODIFIED_AT' not found.
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.findColumn(ResultSetImpl.java:584)
+	at com.mysql.cj.jdbc.result.ResultSetImpl.getString(ResultSetImpl.java:896)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getString(DelegatingResultSet.java:898)
+	at org.apache.commons.dbcp2.DelegatingResultSet.getString(DelegatingResultSet.java:898)
+	at vn.mobileid.id.general.database.DatabaseImpl.getAsset(DatabaseImpl.java:842)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.getAssetTemplate(GetAsset.java:115)
+	at vn.mobileid.id.qrypto.kernel.GetAsset.main(GetAsset.java:147)
+
+[ERROR] 2023-01-31 15:27:42.300 [main] GetAsset -- Cannot get Asset - Detail:{
+  "error_description" : "NO_PAYLOAD_FOUND"
+}
+[ERROR] 2023-01-31 16:27:15.822 [main] DatabaseImpl -- Error while getting Response Code. Details: java.sql.SQLException: Parameter pRESPONSE_CODE is not registered as an output parameter
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:89)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:63)
+	at com.mysql.cj.jdbc.CallableStatement.setOutParams(CallableStatement.java:2078)
+	at com.mysql.cj.jdbc.CallableStatement.execute(CallableStatement.java:845)
+	at org.apache.commons.dbcp2.DelegatingPreparedStatement.execute(DelegatingPreparedStatement.java:94)
+	at org.apache.commons.dbcp2.DelegatingPreparedStatement.execute(DelegatingPreparedStatement.java:94)
+	at vn.mobileid.id.general.database.DatabaseImpl.getListWorkflowActivity(DatabaseImpl.java:964)
+	at vn.mobileid.id.general.Resources.reloadListWorkflowActivity(Resources.java:62)
+	at vn.mobileid.id.qrypto.kernel.GetWorkflowActivity.getListWorkflowActivity(GetWorkflowActivity.java:31)
+	at vn.mobileid.id.qrypto.kernel.GetWorkflowActivity.main(GetWorkflowActivity.java:40)
+

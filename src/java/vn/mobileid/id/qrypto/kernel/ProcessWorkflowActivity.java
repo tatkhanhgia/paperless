@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +28,7 @@ import vn.mobileid.id.qrypto.EIDService;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.SigningService;
 import vn.mobileid.id.qrypto.objects.FileDataDetails;
+import vn.mobileid.id.qrypto.objects.FileManagement;
 //import vn.mobileid.id.qrypto.objects.FileDataDetails.FileType;
 import vn.mobileid.id.qrypto.objects.ItemDetails;
 import vn.mobileid.id.qrypto.objects.KYC;
@@ -74,7 +76,7 @@ public class ProcessWorkflowActivity {
                         null));
     }
 
-    public static InternalResponse process(int id, String jwt, User uer_info, ProcessWorkflowActivity_JSNObject request) {
+    public static InternalResponse process(int id, HashMap<String,String> header, User uer_info, ProcessWorkflowActivity_JSNObject request) {
         try {
             //Get Data from request
             List<FileDataDetails> fileData = request.getFile_data();
@@ -104,16 +106,17 @@ public class ProcessWorkflowActivity {
             Database DB = new DatabaseImpl();
 
             //Get Asset template file from DB
-//            DatabaseResponse template = DB.getFileAsset(id);
-//            if (template.getStatus() != QryptoConstant.CODE_SUCCESS) {
-//                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-//                        QryptoMessageResponse.getErrorMessage(
-//                                QryptoConstant.CODE_FAIL,
-//                                template.getStatus(),
-//                                "en",
-//                                null)
-//                );
-//            }
+            DatabaseResponse template = DB.getAsset(id);
+            if (template.getStatus() != QryptoConstant.CODE_SUCCESS) {
+                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(
+                                QryptoConstant.CODE_FAIL,
+                                template.getStatus(),
+                                "en",
+                                null)
+                );
+            }
+
             //Assign data into KYC object
             KYC object = new KYC();
             object = assignAllItem(request.getItem());
@@ -126,8 +129,12 @@ public class ProcessWorkflowActivity {
             //Read file XSLT - Assign KYC Object into Template XSLT
             String xslt = "D:\\NetBean\\QryptoServices\\file\\test.xslt";
             byte[] xsltB = Files.readAllBytes(new File(xslt).toPath());
+//            FileManagement fileAsset = (FileManagement) template.getObject();
+//            byte[] xsltC = fileAsset.getData();
+            
             byte[] html = XSLT_PDF_Processing.appendData(object, xsltB);
-
+            
+            
             //Convert from HTML to PDF
             byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
 

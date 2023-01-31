@@ -4,9 +4,11 @@
  */
 package vn.mobileid.id.qrypto.objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 
 /**
  *
@@ -26,8 +28,21 @@ public class WorkflowActivity {
     private boolean use_test_token = false;
     private boolean update_enable = false;
     private String created_by;
-    private boolean is_production = false;
+    private boolean is_production = false;        
+    private String id;    
+    private String file_id;    
+    private String CSV_id; //pending        
+    private int Generation_type;    
+    private int
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+        
     @JsonProperty("enterprise_name")
     public String getEnterprise_name() {
         return enterprise_name;

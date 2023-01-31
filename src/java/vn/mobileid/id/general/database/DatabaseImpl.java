@@ -23,6 +23,7 @@ import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.Asset;
 import vn.mobileid.id.qrypto.objects.Enterprise;
 import vn.mobileid.id.qrypto.objects.FileManagement;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -655,7 +656,7 @@ public class DatabaseImpl implements Database {
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setInt("pENTERPRISE_ID", enterprise_id);
-                
+
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
                 if (LogHandler.isShowDebugLog()) {
@@ -665,7 +666,7 @@ public class DatabaseImpl implements Database {
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
                     rs.next();
-                    Enterprise temp = new Enterprise();                    
+                    Enterprise temp = new Enterprise();
                     temp.setData(rs.getString("DATA_RESTFUL"));
                     databaseResponse.setObject(temp);
                     databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
@@ -816,32 +817,35 @@ public class DatabaseImpl implements Database {
         int numOfRetry = retryTimes;
         while (numOfRetry > 0) {
             try {
-                String str = "{ call USP_FILE_MANAGEMENT_GET(?,?) }";
+                String str = "{ call USP_ASSET_GET(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setInt("pFILE_ID", assetID);
+                cals.setInt("pASSET_ID", assetID);
 
-                cals.registerOutParameter("pRESPONE_CODE", java.sql.Types.VARCHAR);
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
                 rs = cals.executeQuery();
-                int mysqlResult = Integer.parseInt(cals.getString("pRESPONE_CODE"));
+                int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
                     rs.next();
-                    databaseResponse.setObject(new Asset(
-                            0,  //id
-                            "name", //name
-                            1, //type
-                            100, //size
-                            1, //file uuid
-                            "created_at", //created at
-                            "created by", //created by
-                            "modifued at", //modified at
-                            "modified by", //modified by
-                            "workflow_used" //used by
-                    ));
+                    Asset asset = new Asset(
+                            rs.getInt("ID"),
+                            rs.getString("FILE_NAME"),
+                            rs.getInt("TYPE"),
+                            rs.getLong("SIZE"),
+                            rs.getString("UUID"),
+                            rs.getString("CREATED_AT"),
+                            rs.getString("CREATED_BY"),
+                            rs.getString("LAST_MODIFIED_AT"),
+                            rs.getString("LAST_MODIFIED_BY"),
+                            rs.getString("USED_BY"),
+                            rs.getBytes("BINARY_DATA"),
+                            rs.getString("META_DATA")
+                    );
+                    databaseResponse.setObject(asset);
                     databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
                 } else {
                     databaseResponse.setStatus(mysqlResult);
@@ -867,8 +871,21 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public DatabaseResponse getFileAsset(int assetID) {
+    public DatabaseResponse uploadAsset(
+            String email,
+            int type,
+            String file_name,
+            long size,
+            String UUID,
+            String pDBMS_PROPERTY,
+            String metaData,
+            byte[] fileData,
+            String hmac,
+            String createdBy) {
         long startTime = System.nanoTime();
+        if (file_name == null) {
+            file_name = String.valueOf(startTime);
+        }
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
@@ -877,32 +894,34 @@ public class DatabaseImpl implements Database {
         int numOfRetry = retryTimes;
         while (numOfRetry > 0) {
             try {
-                String str = "{ call USP_FILE_MANAGEMENT_GET(?,?) }";
+                Blob blob = null;
+                if (fileData != null) {
+                    blob = new SerialBlob(fileData);
+                }
+                String str = "{ call USP_ASSET_ADD(?,?,?,?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setInt("pFILE_ID", assetID);
+                cals.setString("U_EMAIL", email);
+                cals.setInt("pASSET_TYPE", type);
+                cals.setString("pFILE_NAME", file_name);
+                cals.setInt("pSIZE", (int) size);
+                cals.setString("pUUID", UUID);
+                cals.setString("pDBMS_PROPERTY", pDBMS_PROPERTY);
+                cals.setString("pMETA_DATA", metaData);
+                cals.setBlob("pBINARY_DATA", blob);
+                cals.setString("pHMAC", hmac);
+                cals.setString("pCREATED_BY", createdBy);
 
-                cals.registerOutParameter("pRESPONE_CODE", java.sql.Types.VARCHAR);
+                cals.registerOutParameter("pASSET_ID", java.sql.Types.BIGINT);
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
-                rs = cals.executeQuery();
-                int mysqlResult = Integer.parseInt(cals.getString("pRESPONE_CODE"));
+                cals.execute();
+                int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
-                    rs.next();
-                    databaseResponse.setObject(new Asset(
-                            0,  //id
-                            "name", //name
-                            1, //type
-                            100, //size
-                            1, //file uuid
-                            "created_at", //created at
-                            "created by", //created by
-                            "modifued at", //modified at
-                            "modified by", //modified by
-                            "workflow_used" //used by
-                    ));
+                    databaseResponse.setID_Response_int(cals.getInt("pASSET_ID"));
                     databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
                 } else {
                     databaseResponse.setStatus(mysqlResult);
@@ -928,8 +947,74 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public DatabaseResponse processWorkflowActivity() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public List<WorkflowActivity> getListWorkflowActivity() {
+        List<WorkflowActivity> list = new ArrayList<>();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;        
+        try {
+            String str = "{ call USP_WORKFLOW_ACTIVITY_LIST(?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            cals.setString("U_EMAIL", "bcd@gmail.com");
+            cals.setInt("pENTERPRISE_ID", 3);
+            cals.setString("EMAIL_SEARCH", null);
+            cals.setDate("DATE_SEARCH", null);
+            cals.setString("G_TYPE", "1,2,3,4,5,6");
+            cals.setString("W_A_STATUS", "1,2,3");
+            cals.setInt("IS_TEST", 1);
+            cals.setInt("IS_PRODUCT", 1);
+            cals.setInt("IS_CUSTOM_RANGE", 0);
+            cals.setDate("FROM_DATE", null);
+            cals.setDate("TO_DATE", null);
+            cals.setString("pLANGUAGE_NAME", "ENG");
+            
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+            if (LogHandler.isShowDebugLog()) {
+                LOG.debug("[SQL] " + cals.toString());
+            }
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+            if (mysqlResult == 1) {
+                if (rs != null) {
+                    while (rs.next()) {
+                        WorkflowActivity wa = new WorkflowActivity();
+                        wa.setId(str);
+                        wa.setWorkflow_id(mysqlResult);
+                        wa.setWorkflow_label(str);
+                        wa.setUser_email(str);
+                        wa.setCreated_by(str);
+                        wa.setTransaction(str);
+                        wa.setRemark(str);
+                        wa.set
+                        list.add(wa);                        
+                    }
+                    return list;
+                }
+                return null;
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while getting Response Code. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of getResponseCodes in milliseconds: " + timeElapsed / 1000000);
+        }
+//        return responseCodes;
+        return null;
     }
 
 }

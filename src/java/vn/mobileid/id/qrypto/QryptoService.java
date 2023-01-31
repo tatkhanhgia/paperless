@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.logging.Level;
@@ -331,11 +332,11 @@ public class QryptoService {
         result = ProcessWorkflowActivity.checkData(data);
         if (result.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
             return result;
-        }
-
+        }               
+        
         //Processing
         try {
-            return ProcessWorkflowActivity.process(id, "jwt", user_info, data);
+            return ProcessWorkflowActivity.process(id, Utils.getHashMapRequestHeader(request), user_info, data);
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot process a new Workflow Activity");

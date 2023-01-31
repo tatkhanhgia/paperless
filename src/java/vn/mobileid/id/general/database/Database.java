@@ -8,6 +8,7 @@ package vn.mobileid.id.general.database;
 import java.util.List;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity;
 
 /**
  *
@@ -69,7 +70,6 @@ public interface Database {
 //            int status,
 //            String hmac
 //    );
-
     public DatabaseResponse createTransaction(
             String email,
             int logID,
@@ -117,16 +117,23 @@ public interface Database {
     public DatabaseResponse getFile(
             int fileID
     );
-        
+
     public DatabaseResponse getAsset(
             int assetID
+    );   
+
+    public DatabaseResponse uploadAsset(
+            String email,
+            int type,
+            String file_name,
+            long size,
+            String UUID,
+            String pDBMS_PROPERTY,           
+            String metaData,
+            byte[] fileData,                        
+            String hmac,
+            String createdBy
     );
     
-    public DatabaseResponse getFileAsset(
-            int assetID
-    );
-    
-    public DatabaseResponse processWorkflowActivity(
-            
-    );
+    public List<WorkflowActivity> getListWorkflowActivity();
 }

@@ -22,6 +22,10 @@ public class QryptoConstant {
     final public static int FLAG_FALSE_DB = 0;
     final public static int FLAG_TRUE_DB = 1;
     
+    final public static int ASSET_TYPE_BACKGROUND = 1;
+    final public static int ASSET_TYPE_APPEND = 2;
+    final public static int ASSET_TYPE_TEMPLATE = 3;
+    
     //Workflow Type    
     final public static int WORKFLOW_TYPE_QR = 1;
     final public static int WORKFLOW_TYPE_PDF_GENERATOR = 2;
