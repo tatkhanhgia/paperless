@@ -27,6 +27,7 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.EIDService;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.SigningService;
+import vn.mobileid.id.qrypto.objects.Asset;
 import vn.mobileid.id.qrypto.objects.FileDataDetails;
 import vn.mobileid.id.qrypto.objects.FileManagement;
 //import vn.mobileid.id.qrypto.objects.FileDataDetails.FileType;
@@ -34,6 +35,8 @@ import vn.mobileid.id.qrypto.objects.ItemDetails;
 import vn.mobileid.id.qrypto.objects.KYC;
 import vn.mobileid.id.qrypto.objects.ProcessWorkflowActivity_JSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
+import vn.mobileid.id.qrypto.objects.WorkflowActivity;
+import vn.mobileid.id.qrypto.objects.WorkflowDetail_Option;
 import vn.mobileid.id.utils.Utils;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
 
@@ -105,8 +108,37 @@ public class ProcessWorkflowActivity {
 
             Database DB = new DatabaseImpl();
 
+            //Get workflow Activity and check existed            
+            if(GetWorkflowActivity.checkExisted(id)){
+                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(
+                                QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                                QryptoConstant.SUBCODE_EXISTED_WORKFLOW_ACTIVITY,
+                                "en",
+                                null)
+                );
+            }
+            WorkflowActivity woAc = GetWorkflowActivity.getWorkflowActivity(id);
+            if(woAc == null){
+                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(
+                                QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                                QryptoConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
+                                "en",
+                                null)
+                );
+            }
+            
+            //Check Type Process
+            
+            //Get Workflow Detail to get Asset
+            InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(woAc.getWorkflow_id());
+            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+                return response;
+            }
+            
             //Get Asset template file from DB
-            DatabaseResponse template = DB.getAsset(id);
+            DatabaseResponse template = DB.getAsset(((WorkflowDetail_Option) response.getData()).getAsset_Template());
             if (template.getStatus() != QryptoConstant.CODE_SUCCESS) {
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         QryptoMessageResponse.getErrorMessage(
@@ -127,12 +159,13 @@ public class ProcessWorkflowActivity {
             object.setPreviousYear(String.valueOf(LocalDate.now().minusYears(1).getYear()));
 
             //Read file XSLT - Assign KYC Object into Template XSLT
-            String xslt = "D:\\NetBean\\QryptoServices\\file\\test.xslt";
-            byte[] xsltB = Files.readAllBytes(new File(xslt).toPath());
+//            String xslt = "D:\\NetBean\\QryptoServices\\file\\test.xslt";
+//            byte[] xsltB = Files.readAllBytes(new File(xslt).toPath());
 //            FileManagement fileAsset = (FileManagement) template.getObject();
 //            byte[] xsltC = fileAsset.getData();
             
-            byte[] html = XSLT_PDF_Processing.appendData(object, xsltB);
+            byte[] xsltC = ((Asset) template.getObject()).getBinaryData();
+            byte[] html = XSLT_PDF_Processing.appendData(object, xsltC);
             
             
             //Convert from HTML to PDF
@@ -154,15 +187,12 @@ public class ProcessWorkflowActivity {
             }
             if (photo instanceof byte[]) {
                 String temp = Base64.getEncoder().encodeToString((byte[]) photo);
-                result1 = SigningService.getInstant(3).signHashWitness(object.getFullName(), temp, pdf);
-                LOG.warn("SignHashWitness Successfully22");
+                result1 = SigningService.getInstant(3).signHashWitness(object.getFullName(), temp, pdf);                
             }
 
-            //Call SignHashBusiness
-//            for (byte[] temp : result1) {                
+            //Call SignHashBusiness        
             List<byte[]> result2 = SigningService.getInstant(3).signHashBussiness(result1.get(0));
             Files.write(new File("D:\\NetBean\\QryptoServices\\file\\result.pdf").toPath(), result2.get(0), StandardOpenOption.CREATE);
-//            }
 
             //Write into DB
             
@@ -231,6 +261,10 @@ public class ProcessWorkflowActivity {
         return oldValue;
     }
 
+    //Check template type of workflow activity
+    public static void checkTemplateType(int id){
+        
+    }
     public static void main(String[] arhs) {
 //        ItemDetails a = new ItemDetails();
 //        a.setField("FullName");

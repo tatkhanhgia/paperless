@@ -30,6 +30,7 @@ public class InternalResponse {
 
     //Data backend
     private User object;
+    private Object data;
     
     public InternalResponse(int status, String message) {
         this.status = status;
@@ -37,7 +38,11 @@ public class InternalResponse {
         this.processId = QryptoConstant.FEDERAL_ID;
         this.subjectId = QryptoConstant.FEDERAL_ID;
     }
-   
+
+    public InternalResponse(int status, Object data) {
+        this.status = status;
+        this.data = data;
+    }       
 
     public InternalResponse() {
     }
@@ -148,5 +153,22 @@ public class InternalResponse {
         this.object = object;
     }
 
+    public User getObject() {
+        return object;
+    }
+
+    public void setObject(User object) {
+        this.object = object;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setObject(Object data) {
+        this.data = data;
+    }
+
+    
     
 }

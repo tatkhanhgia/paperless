@@ -5,6 +5,7 @@
  */
 package vn.mobileid.id.general.database;
 
+import java.util.HashMap;
 import java.util.List;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
@@ -136,4 +137,14 @@ public interface Database {
     );
     
     public List<WorkflowActivity> getListWorkflowActivity();
+
+    public DatabaseResponse getWorkflowDetail(int id);
+
+    public DatabaseResponse updateWorkflowDetail(
+            int id,
+            HashMap<String, Object> hashMap,
+            String HMAC,
+            String created_by);
+    
+    public DatabaseResponse getTemplateType(int id);
 }

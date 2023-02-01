@@ -4,10 +4,19 @@
  */
 package vn.mobileid.id.qrypto.objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  *
  * @author GiaTK
  */
+//@JsonRootName("file")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class FileManagement extends Object{
     private byte[] data;
     private String name;
@@ -64,5 +73,10 @@ public class FileManagement extends Object{
         this.created_by = created_by;
     }
     
-    
+    public static void main(String[] args) throws JsonProcessingException{
+        FileManagement a = new FileManagement();
+        a.setName("hello");
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.writeValueAsString(a));
+    }
 }

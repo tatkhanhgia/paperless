@@ -40,7 +40,7 @@ public class Resources {
         if (ListWorkflowActivity.isEmpty()) {
             List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
             for (WorkflowActivity workflowAc : listOfWA) {
-                ListWorkflowActivity.put(workflowAc.getId(), workflowAc);
+                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
             }
         }
 
@@ -61,7 +61,7 @@ public class Resources {
         Database db = new DatabaseImpl();
         List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
             for (WorkflowActivity workflowAc : listOfWA) {
-                ListWorkflowActivity.put(workflowAc.getId(), workflowAc);
+                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
             }
     }
 

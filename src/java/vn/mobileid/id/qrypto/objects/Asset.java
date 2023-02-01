@@ -15,7 +15,7 @@ import jdk.nashorn.internal.ir.annotations.Ignore;
  * @author GiaTK
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Asset {
     private int id;
     private String name;
