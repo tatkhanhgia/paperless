@@ -7,9 +7,11 @@ package vn.mobileid.id.general;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.tls.HashAlgorithm;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.ResponseCode;
@@ -25,7 +27,7 @@ public class Resources {
     private static volatile Logger LOG = LogManager.getLogger(Resources.class);        
 
     private static volatile HashMap<String, ResponseCode> responseCodes = new HashMap<>();     
-    private static volatile HashMap<String, WorkflowActivity> ListWorkflowActivity = new HashMap<>(); 
+    private static volatile HashMap<String, WorkflowActivity> ListWorkflowActivity = new HashMap<>();         
     
     public static synchronized void init() {
         Database db = new DatabaseImpl();
@@ -51,6 +53,7 @@ public class Resources {
 
     public static void reloadResponseCodes() {
         Database db = new DatabaseImpl();
+        responseCodes = new HashMap<>();
         List<ResponseCode> listOfResponseCode = db.getResponseCodes();
         for (ResponseCode responseCode : listOfResponseCode) {
             responseCodes.put(responseCode.getName(), responseCode);   
@@ -59,11 +62,12 @@ public class Resources {
     
     public static void reloadListWorkflowActivity(){
         Database db = new DatabaseImpl();
+        ListWorkflowActivity = new HashMap();
         List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
             for (WorkflowActivity workflowAc : listOfWA) {
                 ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
             }
-    }
+    } 
 
     public static HashMap<String, ResponseCode> getResponseCodes() {
         return responseCodes;
@@ -72,5 +76,4 @@ public class Resources {
     public static HashMap<String, WorkflowActivity> getListWorkflowActivity() {
         return ListWorkflowActivity;
     }
-
 }

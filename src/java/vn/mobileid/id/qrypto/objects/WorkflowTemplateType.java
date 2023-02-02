@@ -10,6 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import vn.mobileid.id.general.LogHandler;
 
 /**
  *
@@ -18,6 +21,7 @@ import java.util.HashMap;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class WorkflowTemplateType {
+
     private int id;
     private String name;
     private int status;
@@ -30,9 +34,9 @@ public class WorkflowTemplateType {
     private String created_at;
     private String modified_by;
     private String modified_at;
-    
+
     private String raw;
-    
+
     public WorkflowTemplateType(int id, String name, int status, int workflowType, int ordinary, String code, HashMap<String, Integer> enableObjectMap, String HMAC, String created_by, String created_at, String modified_by, String modified_at) {
         this.id = id;
         this.name = name;
@@ -50,11 +54,11 @@ public class WorkflowTemplateType {
 
     public WorkflowTemplateType() {
     }
-    
+
     public int getId() {
         return id;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -74,8 +78,11 @@ public class WorkflowTemplateType {
     public String getCode() {
         return code;
     }
-    
+
     public HashMap<String, Integer> getEnableObjectMap() {
+        if (enableObjectMap == null) {
+            enableObjectMap = new HashMap<>();
+        }
         return enableObjectMap;
     }
 
@@ -98,14 +105,14 @@ public class WorkflowTemplateType {
     public String getModified_at() {
         return modified_at;
     }
-        
-    public String getRaw(){
+
+    public String getRaw() {
         return null;
     }
-    
-    public String setRaw(){
+
+    public String setRaw() {
         String temp = "{";
-        
+
         temp += "}";
         return temp;
     }
@@ -161,6 +168,25 @@ public class WorkflowTemplateType {
     public void setRaw(String raw) {
         this.raw = raw;
     }
-    
-    
+
+    public void appendData(String a, Integer b) {
+        if (enableObjectMap == null) {
+            enableObjectMap = new HashMap<>();
+        }
+        this.enableObjectMap.put(a, b);
+    }
+
+    public WorkflowDetail_Option convertToWLDetail_Option(){
+        WorkflowDetail_Option result = new WorkflowDetail_Option();
+        enableObjectMap.forEach((key, value) -> {
+            String temp_key = key.replace("ENABLE_", "");
+            String temp_value = String.valueOf(value); 
+            try{
+                result.set(temp_key, temp_value);            
+            }catch(Exception e){
+                
+            }
+        });
+        return result;
+    }
 }

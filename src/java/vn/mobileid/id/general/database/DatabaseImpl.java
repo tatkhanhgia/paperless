@@ -22,9 +22,11 @@ import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.qrypto.QryptoConstant;
+import vn.mobileid.id.qrypto.kernel.ProcessELaborContract;
 import vn.mobileid.id.qrypto.objects.Asset;
 import vn.mobileid.id.qrypto.objects.Enterprise;
 import vn.mobileid.id.qrypto.objects.FileManagement;
+import vn.mobileid.id.qrypto.objects.Workflow;
 import vn.mobileid.id.qrypto.objects.WorkflowActivity;
 import vn.mobileid.id.qrypto.objects.WorkflowDetail_Option;
 import vn.mobileid.id.qrypto.objects.WorkflowTemplateType;
@@ -367,7 +369,8 @@ public class DatabaseImpl implements Database {
             int height,
             byte[] fileData,
             String HMAC,
-            String created_by
+            String created_by,
+            String DBMS
     ) {
         long startTime = System.nanoTime();
         if (name == null) {
@@ -385,10 +388,11 @@ public class DatabaseImpl implements Database {
                 if (fileData != null) {
                     blob = new SerialBlob(fileData);
                 }
-                String str = "{ call USP_FILE_MANAGEMENT_ADD(?,?,?,?,?,?,?,?,?,?,?) }";
+                String str = "{ call USP_FILE_MANAGEMENT_ADD(?,?,?,?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setString("pUUID", UUID);
+                cals.setString("pDMS_PROPERTY", DBMS);
                 cals.setString("pNAME", name);
                 cals.setInt("PAGES", pages);
                 cals.setInt("pSIZE", size);
@@ -694,7 +698,7 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public DatabaseResponse getFile(int fileID) {
+    public DatabaseResponse getFileManagement(int fileID) {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
@@ -709,24 +713,29 @@ public class DatabaseImpl implements Database {
                 cals = conn.prepareCall(str);
                 cals.setInt("pFILE_ID", fileID);
 
-                cals.registerOutParameter("pRESPONE_CODE", java.sql.Types.VARCHAR);
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
                 rs = cals.executeQuery();
-                int mysqlResult = Integer.parseInt(cals.getString("pRESPONE_CODE"));
+                int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (mysqlResult == 1) {
                     rs.next();
-//                    Blob data = cals.getBlob("");
-                    databaseResponse.setObject(new FileManagement(
-                            //                            data.getBytes(1, (int) data.length()),
-                            null,
-                            rs.getString("NAME"),
-                            rs.getString("ID"),
-                            //                            rs.getString("CREATED_BY") 
-                            null
-                    ));
+//                    Blob data = rs.getBlob("BINARY_DATA");
+
+                    FileManagement file = new FileManagement();
+                    file.setID(rs.getString("ID"));
+                    file.setUUID(rs.getString("UUID"));
+                    file.setName(rs.getString("NAME"));
+                    file.setPages(rs.getInt("PAGES"));
+                    file.setSize(rs.getInt("SIZE"));
+                    file.setWidth(rs.getInt("WIDTH"));
+                    file.setHeight(rs.getInt("HEIGHT"));
+                    file.setStatus(rs.getInt("STATUS"));
+                    file.setData(rs.getBytes("BINARY_DATA"));
+
+                    databaseResponse.setObject(file);
                     databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
                 } else {
                     databaseResponse.setStatus(mysqlResult);
@@ -851,7 +860,7 @@ public class DatabaseImpl implements Database {
                 cals.setString("pFILE_NAME", file_name);
                 cals.setInt("pSIZE", (int) size);
                 cals.setString("pUUID", UUID);
-                cals.setString("pDBMS_PROPERTY", pDBMS_PROPERTY);
+                cals.setString("pDMS_PROPERTY", pDBMS_PROPERTY);
                 cals.setString("pMETA_DATA", metaData);
                 cals.setBlob("pBINARY_DATA", blob);
                 cals.setString("pHMAC", hmac);
@@ -936,7 +945,7 @@ public class DatabaseImpl implements Database {
                         wa.setTransaction(rs.getString("TRANSACTION_ID"));
 
                         FileManagement file = new FileManagement();
-//                        file.setID(str);
+                        file.setID(rs.getString("FILE_ID"));
                         file.setName(rs.getString("DOWNLOAD_LINK"));
                         file.setData(rs.getBytes("BINARY_DATA"));
                         wa.setFile(file);
@@ -1026,8 +1035,8 @@ public class DatabaseImpl implements Database {
             HashMap<String, Object> map,
             String hmac,
             String created_by) {
-        DatabaseResponse response = new DatabaseResponse();        
-        for(String temp : map.keySet()){
+        DatabaseResponse response = new DatabaseResponse();
+        for (String temp : map.keySet()) {
             long startTime = System.nanoTime();
             Connection conn = null;
             ResultSet rs = null;
@@ -1043,14 +1052,14 @@ public class DatabaseImpl implements Database {
                 cals.setString("pHMAC", hmac);
                 cals.setString("pCREATED_BY", created_by);
 
-                cals.registerOutParameter("pRESPONE_CODE", java.sql.Types.VARCHAR);
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
                 }
                 cals.execute();
-                int result = Integer.parseInt(cals.getString("pRESPONE_CODE"));
+                int result = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
                 if (result != 1) {
-                    response.setStatus(result);  
+                    response.setStatus(result);
                     return response;
                 }
             } catch (Exception e) {
@@ -1074,13 +1083,13 @@ public class DatabaseImpl implements Database {
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        ResponseCode responseCode = null;
+        DatabaseResponse response = new DatabaseResponse();
         try {
             String str = "{ call USP_WORKFLOW_GET_TEMPLATE_TYPE_INFO(?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
-            cals = conn.prepareCall(str);            
+            cals = conn.prepareCall(str);
             cals.setInt("pWORKFLOW_ID", id);
-            
+
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
             if (LogHandler.isShowDebugLog()) {
                 LOG.debug("[SQL] " + cals.toString());
@@ -1089,25 +1098,32 @@ public class DatabaseImpl implements Database {
             rs = cals.getResultSet();
             if (rs != null && cals.getString("pRESPONSE_CODE").equals("1")) {
                 while (rs.next()) {
-                    ResultSetMetaData rsmd = rs.getMetaData();
+                    ResultSetMetaData columns = rs.getMetaData();
                     WorkflowTemplateType templateType = new WorkflowTemplateType();
                     templateType.setId(Integer.parseInt(rs.getString("ID")));
                     templateType.setName(rs.getString("TYPE_NAME"));
                     templateType.setWorkflowType(rs.getInt("WORKFLOW_TYPE"));
-                    templateType.setStatus(rs.getInt(""));
-                    templateType.setOrdinary(rs.getInt(""));
-                    templateType.setCode(rs.getString("ID"));
+                    templateType.setStatus(rs.getInt("STATUS"));
+                    templateType.setOrdinary(rs.getInt("ORDINARY_ID"));
+                    templateType.setCode(rs.getString("CODE"));
                     templateType.setHMAC(rs.getString("HMAC"));
                     templateType.setCreated_by(rs.getString("CREATED_BY"));
                     templateType.setCreated_at(rs.getString("CREATED_AT"));
                     templateType.setModified_by(rs.getString("LAST_MODIFIED_BY"));
                     templateType.setModified_at(rs.getString("LAST_MODIFIED_AT"));
-                    break;
+                    for (int i = 1; i <= columns.getColumnCount(); i++) {
+                        String name = columns.getColumnName(i);
+                        if (name.contains("ENABLE")) {
+                            templateType.appendData(name, rs.getInt(name));
+                        }
+                    }
+                    response.setObject(templateType);
+                    response.setStatus(QryptoConstant.CODE_SUCCESS);
                 }
             }
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error while getting Response Code. Details: " + Utils.printStackTrace(e));
+                LOG.error("Error while getting Workflow Template Type. Details: " + Utils.printStackTrace(e));
             }
             e.printStackTrace();
         } finally {
@@ -1116,8 +1132,171 @@ public class DatabaseImpl implements Database {
         long endTime = System.nanoTime();
         long timeElapsed = endTime - startTime;
         if (LogHandler.isShowDebugLog()) {
-            LOG.debug("Execution time of getResponse in milliseconds: " + timeElapsed / 1000000);
+            LOG.debug("Execution time of get Workflow Template Type in milliseconds: " + timeElapsed / 1000000);
         }
-        return responseCode;        
+        return response;
+    }
+
+    @Override
+    public HashMap<Integer, String> initTemplateTypeForProcessClass() {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        HashMap<Integer, String> temp = new HashMap<>();
+        try {
+            String str = "{ call USP_TEMPLATE_TYPE_GET() }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            if (LogHandler.isShowDebugLog()) {
+                LOG.debug("[SQL] " + cals.toString());
+            }
+            cals.execute();
+            rs = cals.getResultSet();
+            if (rs != null) {
+                while (rs.next()) {
+                    temp.put(rs.getInt("ID"), rs.getString("TYPE_NAME"));
+                }
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while getting Workflow Template Type. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of get Workflow Template Type in milliseconds: " + timeElapsed / 1000000);
+        }
+        return temp;
+    }
+
+    @Override
+    public DatabaseResponse updateFileManagement(
+            int id,
+            String UUID,
+            String DBMS,
+            String name,
+            int pages,
+            int width,
+            int height,
+            int status,
+            String hmac,
+            String created_by,
+            String last_modified_by,
+            byte[] data) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse response = new DatabaseResponse();
+        try {
+            Blob blob = null;
+            if (data != null) {
+                blob = new SerialBlob(data);
+            }
+            String str = "{ call USP_FILE_MANAGEMENT_UPDATE(?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            cals.setString("pUUID", UUID);
+            cals.setString("pDMS_PROPERTY", DBMS);
+            cals.setString("pNAME", name);
+            cals.setInt("pPAGES", pages);
+            cals.setInt("pSIZE", width);
+            cals.setInt("pWIDTH", width);
+            cals.setInt("pHEIGHT", height);
+            cals.setInt("pSTATUS", status);
+            cals.setBlob("pBINARY_DATA", blob);
+            cals.setString("pHMAC", hmac);
+            cals.setString("pCREATED_BY", created_by);
+            cals.setInt("pFILE_ID", id);
+            cals.setString("pLAST_MODIFIED_BY", last_modified_by);
+
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+            if (LogHandler.isShowDebugLog()) {
+                LOG.debug("[SQL] " + cals.toString());
+            }
+            cals.execute();
+            if (cals.getString("pRESPONSE_CODE").equals("1")) {
+                response.setStatus(QryptoConstant.CODE_SUCCESS);
+            } else {
+                response.setStatus(QryptoConstant.CODE_FAIL);
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while update File Management. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of update File Management in milliseconds: " + timeElapsed / 1000000);
+        }
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getWorkflow(int id) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        boolean result = false;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        while (numOfRetry > 0) {
+            try {
+                String str = "{ call USP_WORKFLOW_GET(?,?) }";
+                conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+                cals = conn.prepareCall(str);
+                cals.setInt("pWORKFLOW_ID", id);
+
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+                if (LogHandler.isShowDebugLog()) {
+                    LOG.debug("[SQL] " + cals.toString());
+                }
+                rs = cals.executeQuery();
+                int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+                if (mysqlResult == 1) {
+                    rs.next();
+                    Workflow workflow = new Workflow();
+                    workflow.setWorkflow_id(rs.getString("ID"));
+                    workflow.setStatus(rs.getInt("STATUS"));
+                    workflow.setTemplate_type(rs.getInt("TEMPLATE_ID"));
+//                    workflow.setWorkflow_type(rs.getInt("WORKFLOW"));
+
+                    databaseResponse.setObject(workflow);
+                    databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
+                } else {
+                    databaseResponse.setStatus(mysqlResult);
+                }
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+                numOfRetry--;
+                databaseResponse.setStatus(QryptoConstant.CODE_FAIL);
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Error while getting Workflow. Details: " + Utils.printStackTrace(e));
+                }
+            } finally {
+                DatabaseConnectionManager.getInstance().close(conn);
+            }
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of get Workflow in milliseconds: " + timeElapsed / 1000000);
+        }
+        return databaseResponse;
+
     }
 }

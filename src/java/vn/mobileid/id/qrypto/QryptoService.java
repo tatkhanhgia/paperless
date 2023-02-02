@@ -30,6 +30,7 @@ import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.qrypto.kernel.CreateWorkflow;
 import vn.mobileid.id.qrypto.kernel.CreateWorkflowActivity;
 import vn.mobileid.id.qrypto.kernel.CreateWorkflowTemplate;
+import vn.mobileid.id.qrypto.kernel.GetDocument;
 import vn.mobileid.id.qrypto.kernel.ManageToken;
 import vn.mobileid.id.qrypto.kernel.ProcessWorkflowActivity;
 import vn.mobileid.id.qrypto.objects.Item_JSNObject;
@@ -110,7 +111,7 @@ public class QryptoService {
 
     public static InternalResponse createWorkflow(final HttpServletRequest request, String payload) {
         //Check valid token
-        InternalResponse response = verifyToken(request, payload);
+        InternalResponse response = verifyToken(request);
         if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
@@ -170,7 +171,7 @@ public class QryptoService {
 
     public static InternalResponse createWorkflowTemplate(final HttpServletRequest request, String payload, int id) {
         //Check valid token
-        InternalResponse response = verifyToken(request, payload);
+        InternalResponse response = verifyToken(request);
         if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
@@ -223,7 +224,7 @@ public class QryptoService {
 
     public static InternalResponse createWorkflowActivity(final HttpServletRequest request, String payload) {
         //Check valid token
-        InternalResponse response = verifyToken(request, payload);
+        InternalResponse response = verifyToken(request);
         if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
@@ -239,14 +240,14 @@ public class QryptoService {
                             null));
         }
 
-        //Check Workflow_Temlate_Type
-        if (!checkTemplateTypeInRequest(payload)) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-                            QryptoConstant.SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE,
-                            QryptoMessageResponse.getLangFromJson(payload),
-                            null));
-        }
+//        //Check Workflow_Temlate_Type
+//        if (!checkTemplateTypeInRequest(payload)) {
+//            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+//                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
+//                            QryptoConstant.SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE,
+//                            QryptoMessageResponse.getLangFromJson(payload),
+//                            null));
+//        }
 
         ObjectMapper mapper = new ObjectMapper();
         WorkflowActivity workflow = new WorkflowActivity();
@@ -281,16 +282,16 @@ public class QryptoService {
         }
     }
 
-    public static InternalResponse verifyToken(final HttpServletRequest request, String payload) {
+    public static InternalResponse verifyToken(final HttpServletRequest request) {
         ManageToken token = new ManageToken();
-        InternalResponse response = token.verifyAccessToken(request, payload);
+        InternalResponse response = token.verifyAccessToken(request);
         return response;
     }
 
     //Processing data activity
     public static InternalResponse processWorkflowActivity(final HttpServletRequest request, String payload, int id) {
         //Check valid token
-        InternalResponse response = verifyToken(request, payload);
+        InternalResponse response = verifyToken(request);
         if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
@@ -311,7 +312,6 @@ public class QryptoService {
         }
 
         //Mapper Object
-//        LOG.warn("Payload:"+ payload);
         ObjectMapper mapper = new ObjectMapper();
         ProcessWorkflowActivity_JSNObject data = new ProcessWorkflowActivity_JSNObject();
         try {
@@ -344,6 +344,30 @@ public class QryptoService {
             return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
         }
     }
+    
+    public static InternalResponse downloadsDocumentBase64(final HttpServletRequest request, int id) {
+        //Check valid token
+        InternalResponse response = verifyToken(request);
+        if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Check Token Successfully");
+        }
+
+        User user_info = response.getUser();                           
+        
+        //Processing
+        try {
+            return GetDocument.getDocument(id);
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot process a new Workflow Activity");
+            }
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
+    }
+    
 
     //=================== INTERNAL FUNCTION - METHOD============================
     private static boolean checkTemplateTypeInRequest(String payload) {

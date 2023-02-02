@@ -26,92 +26,91 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class GetAsset {
+
     final private static Logger LOG = LogManager.getLogger(GetAsset.class);
 
-    public static InternalResponse getAsset(int id){
+    public static InternalResponse getAsset(int id) {
         try {
             Database DB = new DatabaseImpl();
             //Data                        
             InternalResponse response = null;
-                    
+
             DatabaseResponse callDB = DB.getAsset(id);
-            
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
-                String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                    LOG.error("Cannot get Asset - Detail:"+message);
+
+            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
+                String message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                         null);
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Cannot get Asset - Detail:" + message);
                 }
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            
+
             Asset asset = (Asset) callDB.getObject();
-            
+
             return new InternalResponse(
-                    QryptoConstant.CODE_SUCCESS,
+                    QryptoConstant.HTTP_CODE_SUCCESS,
                     new ObjectMapper().writeValueAsString(asset));
-            
+
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
-            e.printStackTrace();
-            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
-        }     
+//            e.printStackTrace();
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
     }
-    
-    public static byte[] getAssetBackground(int id){
+
+    public static byte[] getAssetBackground(int id) {
         return null;
     }
-    
-    public static InternalResponse getAssetTemplate(int id){
+
+    public static InternalResponse getAssetTemplate(int id) {
         try {
             Database DB = new DatabaseImpl();
             //Data                        
             InternalResponse response = null;
-                    
+
             DatabaseResponse callDB = DB.getAsset(id);
-            
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
+
+            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
                 String message = null;
-                if(LogHandler.isShowErrorLog()){
+                if (LogHandler.isShowErrorLog()) {
                     message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                    LOG.error("Cannot get Asset - Detail:"+message);
+                            callDB.getStatus(),
+                            "en",
+                             null);
+                    LOG.error("Cannot get Asset - Detail:" + message);
                 }
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            
+
             Asset asset = (Asset) callDB.getObject();
-            
+
             return new InternalResponse(
                     QryptoConstant.CODE_SUCCESS,
                     new ObjectMapper().writeValueAsString(asset));
-            
+
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
             e.printStackTrace();
-            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
-        }  
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
     }
-    
-    
-    public static byte[] getAssetX(int id){
+
+    public static byte[] getAssetX(int id) {
         return null;
     }
-       
-    public static void main(String[] args) throws IOException{
+
+    public static void main(String[] args) throws IOException {
 //        Asset resposne = GetAsset.getAssetTemplate(7);        
 //        Files.write(new File("D:\\NetBean\\QryptoServices\\file\\asset.xslt").toPath(), resposne.getBinaryData(), StandardOpenOption.CREATE);
     }

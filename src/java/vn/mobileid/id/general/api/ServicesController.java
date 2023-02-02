@@ -5,6 +5,7 @@
  */
 package vn.mobileid.id.general.api;
 
+import java.util.Base64;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -21,6 +22,7 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoService;
 import vn.mobileid.id.qrypto.QryptoConstant;
+import vn.mobileid.id.qrypto.objects.FileManagement;
 
 /**
  *
@@ -176,6 +178,39 @@ public class ServicesController {
             return Response.status(500).entity("Internal Server Error").build();
         }
     }
+    
+    //Create workflow option
+//    @POST
+//    @Path("/v1/workflow/{id}")
+//    public Response createWorkflowDetail_Option(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
+//        try {
+//            InternalResponse response;
+//            response = QryptoService.createWorkflowTemplate(request, payload, id);
+//            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+//                return Response
+//                        .status(200)
+//                        .entity(response.getMessage())
+//                        .type(MediaType.APPLICATION_JSON_TYPE)
+//                        .build();
+//            } else {
+//                if (LOG.isDebugEnabled()) {
+//                    LOG.debug("Request fail");
+//                    LOG.debug("Status:" + response.getStatus());
+//                    LOG.debug("Message:" + response.getMessage());
+//                }
+//                return Response
+//                        .status(response.getStatus())
+//                        .entity(response.getMessage())
+//                        .type(MediaType.APPLICATION_JSON_TYPE)
+//                        .build();
+//            }
+//        } catch (Exception e) {
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("Error Parsing ObjectMapper");
+//            }
+//            return Response.status(500).entity("Internal Server Error").build();
+//        }
+//    }
 
     // WORKFLOW ACTIVITY ===============================================
     // Create workflow activity
@@ -244,6 +279,78 @@ public class ServicesController {
             return Response.status(500).entity("Internal Server Error").build();
         }
     }
+        
+    //DOWNLOAD FILE
+    @GET
+    @Path("/v1/workflowactivity/{id}/downloads")
+    public Response DownloadDocument(@Context final HttpServletRequest request, @PathParam("id") int id) {
+        try {
+            InternalResponse response;
+            response = QryptoService.downloadsDocumentBase64(request, id);
+            
+            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS){
+                FileManagement file = (FileManagement) response.getData();
+                return Response
+                        .status(200)                        
+                        .type(MediaType.APPLICATION_OCTET_STREAM)
+                        .entity(file.getData())
+                        .build();
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Request fail");
+                    LOG.debug("Status:" + response.getStatus());
+                    LOG.debug("Message:" + response.getMessage());
+                }
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                e.printStackTrace();
+                LOG.error("Error - Detail:"+e);
+            }
+            return Response.status(500).entity("Internal Server Error").build();
+        }
+    }
+    
+    @GET
+    @Path("/v1/workflowactivity/{id}/downloads/base64")
+    public Response DownloadDocumentBase64(@Context final HttpServletRequest request, @PathParam("id") int id) {
+        try {
+            InternalResponse response;
+            response = QryptoService.downloadsDocumentBase64(request, id);
+            
+            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS){
+                FileManagement file = (FileManagement) response.getData();
+                String temp = "{"+Base64.getEncoder().encodeToString(file.getData())+"}";
+                return Response
+                        .status(200)                        
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(temp)
+                        .build();
+            } else {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Request fail");
+                    LOG.debug("Status:" + response.getStatus());
+                    LOG.debug("Message:" + response.getMessage());
+                }
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                e.printStackTrace();
+                LOG.error("Error - Detail:"+e);
+            }
+            return Response.status(500).entity("Internal Server Error").build();
+        }
+    }
     
     //Test Verify token
     @POST
@@ -251,7 +358,7 @@ public class ServicesController {
     public Response verify(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response;
-            response = QryptoService.verifyToken(request, payload);
+            response = QryptoService.verifyToken(request);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)

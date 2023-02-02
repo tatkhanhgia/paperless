@@ -17,10 +17,8 @@ public class QryptoConstant {
     final public static String DEFAULT_MESS = "Message is not defined";
 
     final public static String TOKEN_TYPE_BEARER = "Bearer";
-    final public static String TOKEN_TYPE_BASIC = "Basic";
-    
-    final public static int FLAG_FALSE_DB = 0;
-    final public static int FLAG_TRUE_DB = 1;
+    final public static String TOKEN_TYPE_BASIC = "Basic";        
+        
     
     final public static int ASSET_TYPE_BACKGROUND = 1;
     final public static int ASSET_TYPE_APPEND = 2;
@@ -36,13 +34,13 @@ public class QryptoConstant {
     
     //Template Type
     final public static int NUMBER_WORKFLOW_TEMPLATE_TYPE = 7;
-    final public static int TEMPLATE_TYPE_ID_CARD_SECURE_QR_TEMPLATE = 1;
-    final public static int TEMPLATE_TYPE_SECURE_QR_TEMPLATE = 2;
-    final public static int TEMPLATE_TYPE_COURSE_CERTIFICATE_PDF_TEMPLATE = 3;
-    final public static int TEMPLATE_TYPE_SIMPLE_PDF_STAMPING_TEMPLATE = 4;
-    final public static int TEMPLATE_TYPE_PDF_STAMPING_TEMPLATE = 5;
-    final public static int TEMPLATE_TYPE_FILE_sTAMPING_TEMPLATE = 6;
-    final public static int TEMPLATE_TYPE_EIDCONTRACT = 7;
+//    final public static int TEMPLATE_TYPE_ID_CARD_SECURE_QR_TEMPLATE = 1;
+//    final public static int TEMPLATE_TYPE_SECURE_QR_TEMPLATE = 2;
+//    final public static int TEMPLATE_TYPE_COURSE_CERTIFICATE_PDF_TEMPLATE = 3;
+//    final public static int TEMPLATE_TYPE_SIMPLE_PDF_STAMPING_TEMPLATE = 4;
+//    final public static int TEMPLATE_TYPE_PDF_STAMPING_TEMPLATE = 5;
+//    final public static int TEMPLATE_TYPE_FILE_sTAMPING_TEMPLATE = 6;
+//    final public static int TEMPLATE_TYPE_EIDCONTRACT = 7;
     
     //Internal - HTTP CODE
     final public static int HTTP_CODE_SUCCESS = 200;
@@ -58,7 +56,7 @@ public class QryptoConstant {
     final public static int CODE_INVALID_PARAMS_KEYCLOAK = 5000;
     final public static int CODE_INVALID_PARAMS_WORKFLOW = 5001;
     final public static int CODE_INVALID_PARAMS_WORKFLOWACTIVITY = 5002;
-    
+//    final public static int CODE_INVALID_PARAMS_WORKFLOW_TEMPLATE = 5003;
     
     
     final public static int CODE_FUNCTION_ACCESS_DENIED = 5005;
@@ -99,4 +97,8 @@ public class QryptoConstant {
     final public static int SUBCODE_MISSING_OR_ERROR_FILE_TYPE = 4;
     final public static int SUBCODE_EXISTED_WORKFLOW_ACTIVITY = 5;
     final public static int SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED = 7;
+    final public static int SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET = 8;
+
+    //SUBCPDE INVALID WORKFLOW TEMPLATE - 5003
+//    final public static int SUBCODE_WORKFLOW_TEMPLATE_ALREADY_EXISTED = 2;
 }

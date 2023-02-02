@@ -47,7 +47,7 @@ public class CreateFileManagement {
             String HMAC,
             byte[] fileData,
             User user) {
-        return processingCreateFileManagement(workflow,UUID, nameFile, 0, 0, 0, 0, HMAC, fileData, user);
+        return processingCreateFileManagement(workflow,UUID, nameFile, 0, 0, 0, 0, HMAC, fileData, user, "DBMS");
     }
     
     public static InternalResponse processingCreateFileManagement(
@@ -55,7 +55,7 @@ public class CreateFileManagement {
             String HMAC,
             byte[] fileData,
             User user) {
-        return processingCreateFileManagement(workflow,"UUID", null, 0, 0, 0, 0, HMAC, fileData, user);
+        return processingCreateFileManagement(workflow,"UUID", null, 0, 0, 0, 0, HMAC, fileData, user, "DBMS");
     }
     
     public static InternalResponse processingCreateFileManagement(
@@ -67,7 +67,7 @@ public class CreateFileManagement {
             String HMAC,
             byte[] fileData,
             User user) {
-        return processingCreateFileManagement(workflow,"UUID", null, page, size, width, height, HMAC, fileData, user);
+        return processingCreateFileManagement(workflow,"UUID", null, page, size, width, height, HMAC, fileData, user, "DBMS");
     }
     
     public static InternalResponse processingCreateFileManagement(
@@ -80,7 +80,7 @@ public class CreateFileManagement {
             String HMAC,
             byte[] fileData,
             User user) {
-        return processingCreateFileManagement(workflow,"UUID", nameFile, page, size, width, height, HMAC, fileData, user);
+        return processingCreateFileManagement(workflow,"UUID", nameFile, page, size, width, height, HMAC, fileData, user,"DBMS");
     }
     
     private static InternalResponse processingCreateFileManagement(
@@ -93,7 +93,8 @@ public class CreateFileManagement {
             int height,
             String HMAC,
             byte[] fileData,
-            User user) {
+            User user,
+            String DBMS) {
     try {
             Database DB = new DatabaseImpl();
             
@@ -107,7 +108,8 @@ public class CreateFileManagement {
                     height,      //height
                     fileData, //file data
                     HMAC, //HMAC
-                    workflow.getCreated_by());          
+                    workflow.getCreated_by(),
+                    DBMS);          
                         
             if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){
                 String message = null;

@@ -262,7 +262,7 @@ public class ManageToken {
         return QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE;
     }
 
-    public InternalResponse verifyAccessToken(final HttpServletRequest request, String payload){
+    public InternalResponse verifyAccessToken(final HttpServletRequest request){
         KeycloakReq object = new KeycloakReq();      
 
         //Get Access Token

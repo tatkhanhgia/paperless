@@ -4,7 +4,6 @@
  */
 package vn.mobileid.id.qrypto.kernel;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
@@ -13,56 +12,56 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
-import vn.mobileid.id.qrypto.objects.Asset;
+import vn.mobileid.id.qrypto.objects.FileManagement;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
-import vn.mobileid.id.qrypto.objects.Workflow;
-import vn.mobileid.id.utils.Utils;
 
 /**
  *
  * @author GiaTK
  */
-public class GetWorkflow {
-    final private static Logger LOG = LogManager.getLogger(GetWorkflow.class);
+public class GetFileManagement {
+    final private static Logger LOG = LogManager.getLogger(GetFileManagement.class);
     
-    public static InternalResponse getWorkflow(int id){
+    public static InternalResponse getFileManagement(int id){
         try {
             Database DB = new DatabaseImpl();
             //Data                        
             InternalResponse response = null;
-                    
-            DatabaseResponse callDB = DB.getWorkflow(id);
-            
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
-                String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                    LOG.error("Cannot get Asset - Detail:"+message);
+
+            DatabaseResponse callDB = DB.getFileManagement(id);
+
+            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
+                String message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                         null);
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Cannot get File Management - Detail:" + message);
                 }
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            
-            Workflow workflow = (Workflow) callDB.getObject();
+
+            FileManagement file = (FileManagement) callDB.getObject();
             
             return new InternalResponse(
                     QryptoConstant.HTTP_CODE_SUCCESS,
-                    workflow);
-            
+                    file);
+
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+//                e.printStackTrace();
+                LOG.error("UNKNOWN EXCEPTION. Details: " + e);
             }
-            e.printStackTrace();
-            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
-        }  
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
     }
     
     public static void main(String[] args){
-         
+        InternalResponse res = GetFileManagement.getFileManagement(27
+        );
+        FileManagement a = (FileManagement) res.getData();
+        System.out.println("A:"+a.getData());
     }
 }

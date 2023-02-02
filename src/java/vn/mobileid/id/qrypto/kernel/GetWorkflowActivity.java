@@ -4,14 +4,23 @@
  */
 package vn.mobileid.id.qrypto.kernel;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
+import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
+import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.general.objects.InternalResponse;
+import vn.mobileid.id.qrypto.QryptoConstant;
+import vn.mobileid.id.qrypto.objects.Asset;
+import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
 import vn.mobileid.id.qrypto.objects.WorkflowActivity;
+import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -22,14 +31,6 @@ public class GetWorkflowActivity {
 
     public static List<WorkflowActivity> getListWorkflowActivity(){
         List<WorkflowActivity> list = new ArrayList<>();
-        if(!Resources.getListWorkflowActivity().isEmpty() ||                
-                Resources.getListWorkflowActivity().size() > 0)  {
-            Resources.getListWorkflowActivity().forEach(
-                    (key, value) -> {
-                    list.add(value);
-                });
-            return list;
-        }
         Resources.reloadListWorkflowActivity();
         Resources.getListWorkflowActivity().forEach(
                     (key, value) -> {
@@ -43,15 +44,42 @@ public class GetWorkflowActivity {
         return Resources.getListWorkflowActivity().get(String.valueOf(id));
     }
     
-    public static boolean checkExisted(int id){
-        
-        HashMap<String, WorkflowActivity> list = Resources.getListWorkflowActivity();
-        if(!Resources.getListWorkflowActivity().isEmpty() ||                
-                Resources.getListWorkflowActivity().size() > 0)  {
-           return Resources.getListWorkflowActivity().containsKey(id);
-        }
-        Resources.reloadListWorkflowActivity();
-        return Resources.getListWorkflowActivity().containsKey(id);
+    public static boolean isContains(int id){    
+        return true;
+//        try {
+//            Database DB = new DatabaseImpl();
+//            //Data                        
+//            InternalResponse response = null;
+//                    
+//            DatabaseResponse callDB = DB.getAsset(id);
+//            
+//            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
+//                String message = null;
+//                if(LogHandler.isShowErrorLog()){
+//                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+//                                callDB.getStatus(),
+//                                "en"
+//                                , null);
+//                    LOG.error("Cannot get Asset - Detail:"+message);
+//                }
+//                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+//                        message
+//                );
+//            }
+//            
+//            Asset asset = (Asset) callDB.getObject();
+//            
+//            return new InternalResponse(
+//                    QryptoConstant.CODE_SUCCESS,
+//                    new ObjectMapper().writeValueAsString(asset));
+//            
+//        } catch (Exception e) {
+//            if (LogHandler.isShowErrorLog()) {
+//                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+//            }
+//            e.printStackTrace();
+//            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
+//        } 
     }
     
     public static void main(String[] args){
@@ -60,5 +88,6 @@ public class GetWorkflowActivity {
         for(WorkflowActivity temp : list){
             System.out.println("A:"+temp.getId());
         }
+        System.out.println(GetWorkflowActivity.isContains(30));
     }
 }

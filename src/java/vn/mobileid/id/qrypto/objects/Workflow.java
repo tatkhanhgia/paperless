@@ -42,7 +42,8 @@ public class Workflow {
     public Workflow() {
         this.workflow_id = null;
         this.status = 0;        
-        this.template_type = QryptoConstant.TEMPLATE_TYPE_COURSE_CERTIFICATE_PDF_TEMPLATE;
+//        this.template_type = QryptoConstant.TEMPLATE_TYPE_COURSE_CERTIFICATE_PDF_TEMPLATE;
+        this.template_type = 0;
         this.label = null;
         this.workflow_type = QryptoConstant.WORKFLOW_TYPE_PDF_GENERATOR;
         this.created_by = null;

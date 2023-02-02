@@ -6,6 +6,16 @@ package vn.mobileid.id.qrypto.kernel;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.database.Database;
+import vn.mobileid.id.general.database.DatabaseImpl;
+import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.general.objects.InternalResponse;
+import vn.mobileid.id.qrypto.QryptoConstant;
+import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
+import vn.mobileid.id.qrypto.objects.WorkflowDetail_Option;
+import vn.mobileid.id.qrypto.objects.WorkflowTemplateType;
+import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -14,7 +24,49 @@ import org.apache.logging.log4j.Logger;
 public class GetWorkflowTemplateType {
     final private static Logger LOG = LogManager.getLogger(GetWorkflowTemplateType.class);
     
-    public static void getWorkflowTemplateType(int id){
-        
+    /**
+     * Get the workflow template type of the workflow input
+     * @param id ID of workflow
+     * @return InternalResponse with WorkflowTemplateType(setObject)
+     */
+    public static InternalResponse getWorkflowTemplateType(int id){
+        try {
+            Database DB = new DatabaseImpl();                                   
+                    
+            DatabaseResponse callDB = DB.getTemplateType(id);
+            
+            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
+                String message = null;
+                if(LogHandler.isShowErrorLog()){
+                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                                callDB.getStatus(),
+                                "en"
+                                , null);
+                    LOG.error("Cannot get Workflow Template Type  - Detail:"+message);
+                }
+                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                        message
+                );
+            }
+            
+            WorkflowTemplateType templateType = (WorkflowTemplateType) callDB.getObject();
+            
+            return new InternalResponse(
+                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    templateType);
+            
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
+        }
+    }
+    
+    public static void main (String[] args){
+        InternalResponse a = GetWorkflowTemplateType.getWorkflowTemplateType(12);
+        WorkflowTemplateType b = (WorkflowTemplateType) a.getData();
+        System.out.println(b.getName());
     }
 }

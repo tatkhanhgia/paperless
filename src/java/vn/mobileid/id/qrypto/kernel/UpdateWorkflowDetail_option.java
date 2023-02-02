@@ -42,7 +42,7 @@ public class UpdateWorkflowDetail_option {
                             "en",
                             null);
                 if (LogHandler.isShowErrorLog()) {                    
-                    LOG.error("Cannot get Workflow Detail - Detail:" + message);
+                    LOG.error("Cannot update Workflow Detail - Detail:" + message);
                 }
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         message

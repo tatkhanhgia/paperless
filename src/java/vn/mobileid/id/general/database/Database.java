@@ -60,7 +60,8 @@ public interface Database {
             int height,
             byte[] fileData,
             String HMAC,
-            String created_by
+            String created_by,
+            String DBMS
     );
 
 //    public DatabaseResponse addEnterpriseUser(
@@ -115,7 +116,7 @@ public interface Database {
             String created_by
     );
 
-    public DatabaseResponse getFile(
+    public DatabaseResponse getFileManagement(
             int fileID
     );
 
@@ -147,4 +148,24 @@ public interface Database {
             String created_by);
     
     public DatabaseResponse getTemplateType(int id);
+
+    public HashMap<Integer, String> initTemplateTypeForProcessClass();
+
+    public DatabaseResponse updateFileManagement(
+            int id,
+            String UUID,
+            String DBMS,
+            String name,
+            int pages,
+            int width,
+            int height,
+            int status,
+            String hmac,
+            String created_by,            
+            String last_modified_by,                    
+            byte[] data);
+    
+    public DatabaseResponse getWorkflow(int id);
+    
 }
+
