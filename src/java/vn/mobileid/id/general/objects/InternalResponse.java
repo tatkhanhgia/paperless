@@ -165,7 +165,7 @@ public class InternalResponse {
         return data;
     }
 
-    public void setObject(Object data) {
+    public void setData(Object data) {
         this.data = data;
     }
 

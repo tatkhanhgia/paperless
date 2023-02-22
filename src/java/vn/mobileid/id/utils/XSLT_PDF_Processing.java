@@ -4,6 +4,7 @@
  */
 package vn.mobileid.id.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.kernel.geom.PageSize;
@@ -22,21 +23,32 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Base64;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.api.ServicesController;
 import vn.mobileid.id.qrypto.SigningService;
+import vn.mobileid.id.qrypto.objects.ItemDetails;
+import vn.mobileid.id.qrypto.objects.Item_JSNObject;
 import vn.mobileid.id.qrypto.objects.KYC;
 
 /**
@@ -45,6 +57,8 @@ import vn.mobileid.id.qrypto.objects.KYC;
  */
 public class XSLT_PDF_Processing {
 
+     final private static Logger LOG = LogManager.getLogger(XSLT_PDF_Processing.class);
+    
     public static void genSchema(Object ob) throws JAXBException, IOException {
         JAXBContext jc = JAXBContext.newInstance(ob.getClass());
         jc.generateSchema(new SchemaOutputResolver() {
@@ -62,9 +76,6 @@ public class XSLT_PDF_Processing {
 
     public static byte[] appendData(Object ob, byte[] xslt) {
         try {
-            //Test data            
-
-//            String fileResult = "D:\\NetBean\\QryptoServices\\file\\result.html";                                    
             ByteArrayInputStream inputStream = new ByteArrayInputStream(xslt);
 
             JAXBContext jc = JAXBContext.newInstance(ob.getClass());
@@ -90,20 +101,15 @@ public class XSLT_PDF_Processing {
                 e.printStackTrace();
             }
         } catch (JAXBException ex) {
-            Logger.getLogger(XSLT_PDF_Processing.class.getName()).log(Level.SEVERE, null, ex);
+            if(LogHandler.isShowErrorLog()){
+                LOG.error("Error while append User Data into XSLT! - Detail"+ex);
+            }
         }
         return null;
     }
 
     public static byte[] convertHTMLtoPDF(byte[] contentHTML) {
         try {
-
-//            List<String> list = Files.readAllLines(path)
-//            
-//            String temp = "";
-//            for(String a : list){
-//                temp+= a;
-//            }
             String temp = new String(contentHTML, StandardCharsets.UTF_8);
 
 //            FileOutputStream outputStream = new FileOutputStream(new File("D:\\NetBean\\QryptoServices\\file\\resul.pdf"));
@@ -119,41 +125,88 @@ public class XSLT_PDF_Processing {
             return outputStream.toByteArray();
 //            document.close();
         } catch (Exception ex) {
-            Logger.getLogger(XSLT_PDF_Processing.class.getName()).log(Level.SEVERE, null, ex);
+            if(LogHandler.isShowErrorLog()){
+                LOG.error("Error while append User Data into XSLT! - Detail"+ex);
+            }
+        }
+        return null;
+    }
+
+    public static Item_JSNObject getValueFromXSLT(byte[] xslt) {
+        try {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(xslt);
+
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            org.w3c.dom.Document doc = db.parse(inputStream);
+            
+            Item_JSNObject item  = new Item_JSNObject();
+            doc.getDocumentElement().normalize();            
+            NodeList map = doc.getElementsByTagName("xsl:value-of");            
+            for(int i = 0 ; i<map.getLength();i++){
+                ItemDetails detail = new ItemDetails();
+                String value = map.item(i).getAttributes().item(0).getFirstChild().getNodeValue();
+                detail.setField(value);
+                detail.setMandatory_enable(true);
+                detail.setType(1);
+                detail.setValue(value);
+                item.appendData(detail);
+            }         
+            return item;
+        } catch (SAXException ex) {
+            ex.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error Parsing ObjectMapper");
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error Parsing ObjectMapper");
+            }
+        } catch (ParserConfigurationException ex) {
+            ex.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error Parsing ObjectMapper");
+            }
         }
         return null;
     }
 
     public static void main(String[] arhs) throws IOException {
+        Item_JSNObject item = XSLT_PDF_Processing.getValueFromXSLT(Files.readAllBytes(new File("D:\\NetBean\\qrypto\\file\\test.xslt").toPath()));
+        System.out.println(new ObjectMapper().writeValueAsString(item));
+        
+        
         //Data get from DB
-        String xslt = "D:\\NetBean\\QryptoServices\\file\\test.xslt";
-        String a = "D:\\NetBean\\QryptoServices\\file\\file\\300x400.png";
-        String image = Base64.getEncoder().encodeToString(Files.readAllBytes(new File(a).toPath()));
-        byte[] xsltB = Files.readAllBytes(new File(xslt).toPath());
+//        String xslt = "D:\\NetBean\\qrypto\\file\\test.xslt";
+//        String a = "D:\\NetBean\\qrypto\\file\\file\\300x400.png";
+//        String image = Base64.getEncoder().encodeToString(Files.readAllBytes(new File(a).toPath()));
+//        byte[] xsltB = Files.readAllBytes(new File(xslt).toPath());
 
-        
         //Begin flow 
-        KYC object = new KYC("TATKHANHGIA",
-                "07/09/2000",
-                "VN",
-                "079200011188",
-                "IssuanceDate",
-                "PlaceOfResidence",
-                "19/01/2023",
-                "19/01/2024",
-                "18",
-                "01",
-                "2022");
-
-        byte[] html = XSLT_PDF_Processing.appendData(object, xsltB);
-        
-        byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
-        List<byte[]> result1 = SigningService.getInstant(3).signHashWitness("TATKHANHGIA", image, pdf);
-        
-        for(byte[] temp : result1){
-            List<byte[]> result2 = SigningService.getInstant(3).signHashBussiness( temp);
-            Files.write(new File("D:\\NetBean\\QryptoServices\\file\\result.pdf").toPath(), result2.get(0), StandardOpenOption.CREATE);
-            
-        }
+//        KYC object = new KYC("TATKHANHGIA",
+//                "07/09/2000",
+//                "VN",
+//                "079200011188",
+//                "IssuanceDate",
+//                "PlaceOfResidence",
+//                "19/01/2023",
+//                "19/01/2024",
+//                "18",
+//                "01",
+//                "2022");
+//        KYC object = new KYC();
+//
+//        byte[] html = XSLT_PDF_Processing.appendData(object, xsltB);
+//
+//        byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
+//        Files.write(new File("D:\\NetBean\\qrypto\\file\\result.pdf").toPath(), pdf, StandardOpenOption.CREATE);
+//        List<byte[]> result1 = SigningService.getInstant(3).signHashWitness("TATKHANHGIA", image, pdf);
+//        
+//        for(byte[] temp : result1){
+//            List<byte[]> result2 = SigningService.getInstant(3).signHashBussiness( temp);
+//            Files.write(new File("D:\\NetBean\\qrypto\\file\\result.pdf").toPath(), result2.get(0), StandardOpenOption.CREATE);
+//            
+//        }
     }
 }

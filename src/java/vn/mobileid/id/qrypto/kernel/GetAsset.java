@@ -54,7 +54,7 @@ public class GetAsset {
 
             return new InternalResponse(
                     QryptoConstant.HTTP_CODE_SUCCESS,
-                    new ObjectMapper().writeValueAsString(asset));
+                    asset);
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
@@ -63,12 +63,9 @@ public class GetAsset {
 //            e.printStackTrace();
             return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
         }
-    }
-
-    public static byte[] getAssetBackground(int id) {
-        return null;
-    }
-
+    }   
+    
+    
     public static InternalResponse getAssetTemplate(int id) {
         try {
             Database DB = new DatabaseImpl();
@@ -95,7 +92,7 @@ public class GetAsset {
 
             return new InternalResponse(
                     QryptoConstant.CODE_SUCCESS,
-                    new ObjectMapper().writeValueAsString(asset));
+                    asset.getMetadata());
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {

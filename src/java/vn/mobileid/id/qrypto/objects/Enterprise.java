@@ -10,7 +10,9 @@ package vn.mobileid.id.qrypto.objects;
  */
 
 public class Enterprise extends Object{
-    private String data;
+    private int id;   //Id of enterprise
+    private String name; //name of enterprise
+    private String data; //Data Handshake
     private String fileP12_id;
     
     public Enterprise() {
@@ -41,4 +43,22 @@ public class Enterprise extends Object{
     public Enterprise build(){
         return this;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    
 }

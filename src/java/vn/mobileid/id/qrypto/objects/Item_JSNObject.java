@@ -7,6 +7,7 @@ package vn.mobileid.id.qrypto.objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,5 +22,16 @@ public class Item_JSNObject {
     @JsonProperty("items")
     public List<ItemDetails> getItems() {
         return items;
-    }        
+    }      
+
+    public void setItems(List<ItemDetails> items) {
+        this.items = items;
+    }
+    
+    public void appendData(ItemDetails item){
+        if (items == null){
+            items = new ArrayList<>();
+        }
+        items.add(item);
+    }
 }

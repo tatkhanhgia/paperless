@@ -21,7 +21,8 @@ public interface Database {
             int template_type,
             String label,
             String created_by,
-            String email
+            String email,
+            int enterprise_id
     );
 
     public DatabaseResponse createWorkflowTemplate(
@@ -126,6 +127,7 @@ public interface Database {
 
     public DatabaseResponse uploadAsset(
             String email,
+            int enterprise_id,
             int type,
             String file_name,
             long size,
@@ -141,7 +143,7 @@ public interface Database {
 
     public DatabaseResponse getWorkflowDetail(int id);
 
-    public DatabaseResponse updateWorkflowDetail(
+    public DatabaseResponse createWorkflowDetail(
             int id,
             HashMap<String, Object> hashMap,
             String HMAC,
@@ -167,5 +169,37 @@ public interface Database {
     
     public DatabaseResponse getWorkflow(int id);
     
+    public DatabaseResponse getAllWorkflowTemplateType();
+    
+    public DatabaseResponse getAssetType();
+    
+    public DatabaseResponse getListWorkflow(
+            String email,
+            int enterprise_id,
+            String status,
+            String type,
+            boolean use_metadata,
+            String metadata,
+            int offset,
+            int rowcount            
+    );
+    
+    public DatabaseResponse getWorkflowTemplate(int id);
+    
+    public DatabaseResponse updateWorkflowDetail_Option(int id,
+            HashMap<String, Object> map,
+            String hmac,
+            String created_by);
+    
+    public DatabaseResponse login(
+            String email,
+            String pass
+    );
+    
+    public DatabaseResponse getWorkflowActivity(int id);
+
+    public DatabaseResponse getEnterpriseInfoOfUser(String email);
+
+    public DatabaseResponse getListWorkflowTemplateType();
 }
 

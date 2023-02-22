@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import vn.mobileid.id.general.email.SMTPProperties;
 
 /**
  *
@@ -25,6 +26,7 @@ public class Configuration {
     private Properties keycloakprop = new Properties();
 //    private Properties QryptoDescription = new Properties();  
     private Properties appInfo = new Properties();
+    private Properties propSMTP = new Properties();
 
     private String dbUrl;
     private String dbUsername;
@@ -70,6 +72,19 @@ public class Configuration {
     private String keycloakRealm;    
     private String keycloakClient_secret;
     
+    //SMTP
+    private boolean ssl_enable;
+    private boolean tsl_enable;
+    private boolean auth;
+    private String host;
+    private int port;
+    private String username;
+    private String password;
+    private String sendFromAddr;
+    private String sendFromName;
+    
+    
+    
     public static Configuration getInstance() {
         if (instance == null) {
             instance = new Configuration();
@@ -84,11 +99,11 @@ public class Configuration {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
             //Load Qrypto Services Properties-----------------------------------
 //            if (Utils.isNullOrEmpty(System.getenv("DTIS_DB_URL"))) {            
-                InputStream appProperties = loader.getResourceAsStream("app.properties");
+                InputStream appProperties = loader.getResourceAsStream("resources/config/app.properties");
                 if (appProperties != null) {
                     prop.load(appProperties);
                     if (prop.keySet() == null) {
-                        String propertiesFile = Utils.getPropertiesFile("app.properties");
+                        String propertiesFile = Utils.getPropertiesFile("resources/config/app.properties");
                         if (propertiesFile != null) {
                             LOG.info("Read the configuation file from " + propertiesFile);
                             InputStream in = new FileInputStream(propertiesFile);
@@ -100,7 +115,7 @@ public class Configuration {
                     }
                     appProperties.close();
                 } else {
-                    String propertiesFile = Utils.getPropertiesFile("app.properties");
+                    String propertiesFile = Utils.getPropertiesFile("resources/config/app.properties");
                     if (propertiesFile != null) {
                         LOG.info("Read the configuation file from " + propertiesFile);
                         prop.load(new FileInputStream(propertiesFile));
@@ -112,11 +127,11 @@ public class Configuration {
 //                LOG.debug("Using getenv to obtain configuration values");
 //            }
             //Load Info Properties----------------------------------------------
-            InputStream appInfoProperties = loader.getResourceAsStream("info.properties");
+            InputStream appInfoProperties = loader.getResourceAsStream("resources/config/info.properties");
             if (appInfoProperties != null) {
                 appInfo.load(appInfoProperties);
                 if (appInfo.keySet() == null) {
-                    String propertiesFile = Utils.getPropertiesFile("info.properties");
+                    String propertiesFile = Utils.getPropertiesFile("resources/config/info.properties");
                     if (propertiesFile != null) {
                         LOG.info("Read the configuation file from " + propertiesFile);
                         InputStream in = new FileInputStream(propertiesFile);
@@ -128,7 +143,7 @@ public class Configuration {
                 }
                 appInfoProperties.close();
             } else {
-                String propertiesFile = Utils.getPropertiesFile("info.properties");
+                String propertiesFile = Utils.getPropertiesFile("resources/config/info.properties");
                 if (propertiesFile != null) {
                     LOG.info("Read the configuation file from " + propertiesFile);
                     appInfo.load(new FileInputStream(propertiesFile));
@@ -138,11 +153,11 @@ public class Configuration {
             }
             
             // Load Keycloak properties-----------------------------------------
-            InputStream keycloakProperties = loader.getResourceAsStream("keycloak.properties");
+            InputStream keycloakProperties = loader.getResourceAsStream("resources/config/keycloak.properties");
             if (keycloakProperties != null) {
                 keycloakprop.load(keycloakProperties);
                 if (keycloakprop.keySet() == null) {
-                    String propertiesFile = Utils.getPropertiesFile("keycloak.properties");
+                    String propertiesFile = Utils.getPropertiesFile("resources/config/keycloak.properties");
                     if (propertiesFile != null) {
                         LOG.info("Read the configuation file from " + propertiesFile);
                         InputStream in = new FileInputStream(propertiesFile);
@@ -154,10 +169,36 @@ public class Configuration {
                 }
                 appInfoProperties.close();
             } else {
-                String propertiesFile = Utils.getPropertiesFile("keycloak.properties");
+                String propertiesFile = Utils.getPropertiesFile("resources/config/keycloak.properties");
                 if (propertiesFile != null) {
                     LOG.info("Read the configuation file from " + propertiesFile);
                     keycloakprop.load(new FileInputStream(propertiesFile));
+                } else {
+                    LOG.error("Cannot find any configuation file. This is a big problem");
+                }
+            }
+            
+            //Load SMTP PROPERTIES====================================
+            InputStream SMTP = loader.getResourceAsStream("resources/config/smtp.properties");
+            if (SMTP != null) {
+                propSMTP.load(SMTP);
+                if (propSMTP.keySet() == null) {
+                    String propertiesFile = Utils.getPropertiesFile("resources/config/smtp.properties");
+                    if (propertiesFile != null) {
+                        LOG.info("Read the configuation file from " + propertiesFile);
+                        InputStream in = new FileInputStream(propertiesFile);
+                        propSMTP.load(in);
+                        in.close();
+                    } else {
+                        LOG.error("Cannot find any configuation file. This is a big problem");
+                    }
+                }
+                SMTP.close();
+            } else {
+                String propertiesFile = Utils.getPropertiesFile("resources/config/smtp.properties");
+                if (propertiesFile != null) {
+                    LOG.info("Read the configuation file from " + propertiesFile);
+                    propSMTP.load(new FileInputStream(propertiesFile));
                 } else {
                     LOG.error("Cannot find any configuation file. This is a big problem");
                 }
@@ -204,6 +245,17 @@ public class Configuration {
             keycloakURL = keycloakprop.getProperty("dtis.keycloak.url") == null ? System.getenv("DTIS_KEYCLOAK_URL") : keycloakprop.getProperty("dtis.keycloak.url");
             keycloakRealm = keycloakprop.getProperty("dtis.keycloak.realm") == null ? System.getenv("DTIS_KEYCLOAK_REALM") : keycloakprop.getProperty("dtis.keycloak.realm");
             keycloakClient_secret = keycloakprop.getProperty("dtis.keycloak.clientsecret") == null ? System.getenv("DTIS_KEYCLOAK_CLIENTSECRET") : keycloakprop.getProperty("dtis.keycloak.clientsecret");
+            
+            ssl_enable = Boolean.parseBoolean(propSMTP.getProperty("mail.smtp.ssl.enable") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.ssl.enable"));
+            tsl_enable = Boolean.parseBoolean(propSMTP.getProperty("mail.smtp.starttls.enable") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.starttls.enable"));
+            auth = Boolean.parseBoolean(propSMTP.getProperty("mail.smtp.auth") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.auth"));
+            host = propSMTP.getProperty("mail.smtp.host") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.host");
+            port = Integer.parseInt(propSMTP.getProperty("mail.smtp.port") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.port"));
+            username = propSMTP.getProperty("mail.smtp.username") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.username");
+            password = propSMTP.getProperty("mail.smtp.password") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.password");
+            sendFromAddr = propSMTP.getProperty("mail.smtp.sendfromaddr") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.sendfromaddr");
+            sendFromName = propSMTP.getProperty("mail.smtp.sendfromname") == null ? System.getenv("SERVER_TIME_TYPE") : propSMTP.getProperty("mail.smtp.sendfromname");
+            SMTPProperties.setProp(propSMTP);
             
             if (serverTimeType == null) {
                 serverTimeType = "";

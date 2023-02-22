@@ -46,7 +46,7 @@ public class UserSession implements IUserSession {
     }
 
     public void login() throws Throwable {
-        System.out.println("____________auth/login____________");
+//        System.out.println("____________auth/login____________");
         String authHeader;
         if (refreshToken != null) {
             authHeader = refreshToken;
@@ -55,7 +55,7 @@ public class UserSession implements IUserSession {
             String basic = UserType.USERNAME.toString()+ ":" + username + ":" + password;
             authHeader = property.getAuthorization() + ", Basic " + Utils.base64Encode(basic);
         }
-        System.out.println("Login-retry: " + retryLogin);
+//        System.out.println("Login-retry: " + retryLogin);
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setRememberMeEnabled(true);
         loginRequest.setRelyingParty(property.getRelyingParty());

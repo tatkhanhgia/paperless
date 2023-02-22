@@ -27,21 +27,38 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class GetWorkflowActivity {
-    final private static Logger LOG = LogManager.getLogger(GetWorkflowActivity.class);
-
-    public static List<WorkflowActivity> getListWorkflowActivity(){
-        List<WorkflowActivity> list = new ArrayList<>();
-        Resources.reloadListWorkflowActivity();
-        Resources.getListWorkflowActivity().forEach(
-                    (key, value) -> {
-                    list.add(value);
-                });
-            return list;
+    final private static Logger LOG = LogManager.getLogger(GetWorkflowActivity.class);   
+    
+    public static WorkflowActivity getWorkflowActivity(int id){  
+        if(Resources.getListWorkflowActivity().isEmpty()){
+                Resources.reloadListWorkflowActivity();
+        }
+        WorkflowActivity check =  Resources.getListWorkflowActivity().get(String.valueOf(id));
+        if(check == null){            
+            WorkflowActivity get = getWorkflowActivityFromDB(id);
+            if(get == null){
+                return null;
+            }
+            Resources.getListWorkflowActivity().put(String.valueOf(get.getId()), get);
+            return get;
+        }        
+        return check;
     }
     
-    public static WorkflowActivity getWorkflowActivity(int id){                
-        Resources.reloadListWorkflowActivity();
-        return Resources.getListWorkflowActivity().get(String.valueOf(id));
+    public  static WorkflowActivity getWorkflowActivityFromDB(int id){
+        try{
+            Database db = new DatabaseImpl();
+            DatabaseResponse res = db.getWorkflowActivity(id);
+            if(res.getStatus() != QryptoConstant.CODE_SUCCESS){
+                return null;
+            }
+            return (WorkflowActivity) res.getObject();
+        } catch (Exception e){
+            if(LogHandler.isShowErrorLog()){
+                LOG.error("Cannot get WoAC!");
+            }
+            return null;
+        }
     }
     
     public static boolean isContains(int id){    
@@ -84,10 +101,10 @@ public class GetWorkflowActivity {
     
     public static void main(String[] args){
 //        DatabaseImpl db = new DatabaseImpl();
-        List<WorkflowActivity> list = GetWorkflowActivity.getListWorkflowActivity();
-        for(WorkflowActivity temp : list){
-            System.out.println("A:"+temp.getId());
-        }
-        System.out.println(GetWorkflowActivity.isContains(30));
+//        List<WorkflowActivity> list = GetWorkflowActivity.getListWorkflowActivity();
+//        for(WorkflowActivity temp : list){
+//            System.out.println("A:"+temp.getId());
+//        }
+//        System.out.println(GetWorkflowActivity.isContains(30));
     }
 }

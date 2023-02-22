@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 
 /**
@@ -22,9 +23,9 @@ public class Asset {
     private int type;
     private long size;
     private String file_uuid;
-    private String created_at;
+    private Date created_at;
     private String created_by;
-    private String modified_at;
+    private Date modified_at;
     private String modified_by;
     private String used_by;
     @JsonIgnore
@@ -34,7 +35,7 @@ public class Asset {
     private String hmac;
     
 
-    public Asset(int id, String name, int type, long size, String file_uuid, String created_at, String created_by, String modified_at, String modified_by, String used_by) {
+    public Asset(int id, String name, int type, long size, String file_uuid, Date created_at, String created_by, Date modified_at, String modified_by, String used_by) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -47,7 +48,7 @@ public class Asset {
         this.used_by = used_by;
     }   
 
-    public Asset(int id, String name, int type, long size, String file_uuid, String created_at, String created_by, String modified_at, String modified_by, String used_by, byte[] data, String metadata) {
+    public Asset(int id, String name, int type, long size, String file_uuid, Date created_at, String created_by, Date modified_at, String modified_by, String used_by, byte[] data, String metadata) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -88,7 +89,7 @@ public class Asset {
     }
 
     @JsonProperty("created_at")
-    public String getCreated_at() {
+    public Date getCreated_at() {
         return created_at;
     }
 
@@ -98,7 +99,7 @@ public class Asset {
     }
 
     @JsonProperty("modified_at")
-    public String getModified_at() {
+    public Date getModified_at() {
         return modified_at;
     }
 
@@ -142,6 +143,46 @@ public class Asset {
 
     public void setHmac(String hmac) {
         this.hmac = hmac;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public void setFile_uuid(String file_uuid) {
+        this.file_uuid = file_uuid;
+    }
+
+    public void setCreated_at(Date created_at) {
+        this.created_at = created_at;
+    }
+
+    public void setCreated_by(String created_by) {
+        this.created_by = created_by;
+    }
+
+    public void setModified_at(Date modified_at) {
+        this.modified_at = modified_at;
+    }
+
+    public void setModified_by(String modified_by) {
+        this.modified_by = modified_by;
+    }
+
+    public void setUsed_by(String used_by) {
+        this.used_by = used_by;
     }
     
     

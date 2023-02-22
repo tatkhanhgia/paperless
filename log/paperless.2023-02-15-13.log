@@ -1,0 +1,280 @@
+2023-02-15 13:33:51,238 DEBUG v.m.i.g.a.ServicesController [default task-41] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    "grant_type":"password",
+    "client_id":"qryptoUser",
+    "username":"user2",
+    "password":"thienthan123"
+}
+2023-02-15 13:33:51,582 DEBUG v.m.i.g.d.DatabaseImpl [default task-41] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('user2','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:33:51,594 DEBUG v.m.i.g.d.DatabaseImpl [default task-41] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_RESPONSE_GET_LIST() 
+2023-02-15 13:33:51,598 DEBUG v.m.i.g.d.DatabaseImpl [default task-41] Execution time of getResponseCodes in milliseconds: 8
+2023-02-15 13:33:54,082 DEBUG v.m.i.g.a.ServicesController [default task-42] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    "grant_type":"password",
+    "client_id":"qryptoUser",
+    "username":"giatk@mobile-id.vn"
+}
+2023-02-15 13:35:48,401 DEBUG v.m.i.g.a.ServicesController [default task-43] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    "grant_type":"password",
+    "client_id":"qryptoUser",
+    "username":"giatk@mobile-id.vn"
+}
+2023-02-15 13:35:48,759 DEBUG v.m.i.g.d.DatabaseImpl [default task-43] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_RESPONSE_GET_LIST() 
+2023-02-15 13:35:48,766 DEBUG v.m.i.g.d.DatabaseImpl [default task-43] Execution time of getResponseCodes in milliseconds: 307
+2023-02-15 13:36:00,993 DEBUG v.m.i.g.a.ServicesController [default task-44] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    "grant_type":"password",
+    "client_id":"qryptoUser",
+    "username":"giatk@mobile-id.vn"
+}
+2023-02-15 13:37:19,105 DEBUG v.m.i.g.a.ServicesController [default task-45] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:null
+	Body:
+2023-02-15 13:37:19,105 ERROR v.m.i.g.a.ServicesController [default task-45] Error 
+2023-02-15 13:37:38,343 DEBUG v.m.i.g.a.ServicesController [default task-46] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:null
+	Body:
+2023-02-15 13:37:38,356 ERROR v.m.i.g.a.ServicesController [default task-46] Error 
+2023-02-15 13:38:56,967 DEBUG v.m.i.g.a.ServicesController [default task-47] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:null
+	Body:
+2023-02-15 13:38:56,979 ERROR v.m.i.g.a.ServicesController [default task-47] Error 
+2023-02-15 13:38:59,826 DEBUG v.m.i.g.a.ServicesController [default task-48] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:null
+	Body:
+2023-02-15 13:38:59,827 ERROR v.m.i.g.a.ServicesController [default task-48] Error 
+2023-02-15 13:41:08,661 DEBUG v.m.i.g.a.ServicesController [default task-1] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:null
+	Body:
+2023-02-15 13:41:08,675 ERROR v.m.i.g.a.ServicesController [default task-1] Error 
+2023-02-15 13:41:18,507 DEBUG v.m.i.g.a.ServicesController [default task-2] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:null
+	Body:
+2023-02-15 13:41:18,508 ERROR v.m.i.g.a.ServicesController [default task-2] Error 
+2023-02-15 13:42:29,328 DEBUG v.m.i.g.a.ServicesController [default task-3] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:null
+	Body:
+2023-02-15 13:42:29,381 ERROR v.m.i.g.a.ServicesController [default task-3] Error java.lang.NullPointerException
+2023-02-15 13:43:39,912 DEBUG v.m.i.g.a.ServicesController [default task-4] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:
+2023-02-15 13:43:45,378 DEBUG v.m.i.g.d.DatabaseImpl [default task-4] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_RESPONSE_GET_LIST() 
+2023-02-15 13:43:45,385 DEBUG v.m.i.g.d.DatabaseImpl [default task-4] Execution time of getResponseCodes in milliseconds: 344
+2023-02-15 13:43:51,477 DEBUG v.m.i.g.a.ServicesController [default task-5] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    "grant_type":"password",
+    "client_id":"qryptoUser",
+    "username":"giatk@mobile-id.vn"
+}
+2023-02-15 13:44:03,971 DEBUG v.m.i.g.a.ServicesController [default task-6] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    "grant_type":"password",
+    "client_id":"qryptoUser",
+    "username":"giatk@mobile-id.vn",
+    "password":"thienthan123"
+}
+2023-02-15 13:44:04,025 DEBUG v.m.i.g.d.DatabaseImpl [default task-6] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk@mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:45:22,756 DEBUG v.m.i.g.a.ServicesController [default task-7] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&username=user2&password=thienthan123
+2023-02-15 13:45:22,756 INFO v.m.i.u.Utils [default task-7] Payload URL Encoded:client_id=qryptoUser&grant_type=password&username=user2&password=thienthan123
+2023-02-15 13:45:22,764 DEBUG v.m.i.g.d.DatabaseImpl [default task-7] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('user2','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:45:28,826 DEBUG v.m.i.g.a.ServicesController [default task-8] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&password=thienthan123
+2023-02-15 13:45:28,826 INFO v.m.i.u.Utils [default task-8] Payload URL Encoded:client_id=qryptoUser&grant_type=password&password=thienthan123
+2023-02-15 13:45:37,644 DEBUG v.m.i.g.a.ServicesController [default task-9] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:45:37,645 INFO v.m.i.u.Utils [default task-9] Payload URL Encoded:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:45:37,657 DEBUG v.m.i.g.d.DatabaseImpl [default task-9] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk%40mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:50:25,593 DEBUG v.m.i.g.a.ServicesController [default task-10] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:50:25,635 INFO v.m.i.u.Utils [default task-10] Payload URL Encoded:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:50:25,943 DEBUG v.m.i.g.d.DatabaseImpl [default task-10] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk%2540mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:50:25,955 DEBUG v.m.i.g.d.DatabaseImpl [default task-10] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_RESPONSE_GET_LIST() 
+2023-02-15 13:50:25,960 DEBUG v.m.i.g.d.DatabaseImpl [default task-10] Execution time of getResponseCodes in milliseconds: 8
+2023-02-15 13:50:29,099 DEBUG v.m.i.g.a.ServicesController [default task-11] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:50:29,101 INFO v.m.i.u.Utils [default task-11] Payload URL Encoded:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:50:29,120 DEBUG v.m.i.g.d.DatabaseImpl [default task-11] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk%2540mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:52:25,487 DEBUG v.m.i.g.a.ServicesController [default task-12] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:52:25,487 INFO v.m.i.u.Utils [default task-12] Payload URL Encoded:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:52:25,502 DEBUG v.m.i.g.d.DatabaseImpl [default task-12] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk%2540mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:52:43,195 DEBUG v.m.i.g.a.ServicesController [default task-13] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    "grant_type":"password",
+    "client_id":"qryptoUser",
+    "username":"giatk@mobile-id.vn",
+    "password":"thienthan123"
+}
+2023-02-15 13:52:43,535 DEBUG v.m.i.g.d.DatabaseImpl [default task-13] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk@mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:52:46,049 DEBUG v.m.i.g.a.ServicesController [default task-14] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:52:46,051 INFO v.m.i.u.Utils [default task-14] Payload URL Encoded:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:52:46,072 DEBUG v.m.i.g.d.DatabaseImpl [default task-14] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk@mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:52:50,198 DEBUG v.m.i.g.a.ServicesController [default task-15] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&password=thienthan123
+2023-02-15 13:52:50,198 INFO v.m.i.u.Utils [default task-15] Payload URL Encoded:client_id=qryptoUser&grant_type=password&password=thienthan123
+2023-02-15 13:52:50,222 DEBUG v.m.i.g.d.DatabaseImpl [default task-15] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_RESPONSE_GET_LIST() 
+2023-02-15 13:52:50,229 DEBUG v.m.i.g.d.DatabaseImpl [default task-15] Execution time of getResponseCodes in milliseconds: 16
+2023-02-15 13:52:53,229 DEBUG v.m.i.g.a.ServicesController [default task-16] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan1231
+2023-02-15 13:52:53,229 INFO v.m.i.u.Utils [default task-16] Payload URL Encoded:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan1231
+2023-02-15 13:52:53,246 DEBUG v.m.i.g.d.DatabaseImpl [default task-16] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk@mobile-id.vn','thienthan1231',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:52:56,028 DEBUG v.m.i.g.a.ServicesController [default task-17] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/x-www-form-urlencoded
+	Body:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:52:56,028 INFO v.m.i.u.Utils [default task-17] Payload URL Encoded:client_id=qryptoUser&grant_type=password&username=giatk%40mobile-id.vn&password=thienthan123
+2023-02-15 13:52:56,040 DEBUG v.m.i.g.d.DatabaseImpl [default task-17] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk@mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:53:05,341 DEBUG v.m.i.g.a.ServicesController [default task-18] 
+---------
+CreateWorkflow request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    
+    "workflow_label": "Label 20230202 - ELabor Contract",
+    "created_by": "GiaTK",
+    "workflow_template_type": 7,
+    "user_email": "bcd@gmail.com"
+    
+}
+2023-02-15 13:53:05,342 INFO v.m.i.q.k.ManageTokenWithDB [default task-18] Checking Header!!
+2023-02-15 13:53:05,342 INFO v.m.i.q.k.ManageTokenWithDB [default task-18] Token:Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzY0NDQyNjM1NTMsImlhdCI6MTY3NjQ0Mzk2MzU1MywiaXNzIjoiZW50ZXJwcmlzZWlkIiwiYXVkIjoiYWNjb3VudCIsInR5cCI6IkJlYXJlciIsIm5hbWUiOiJUP3QgS2jhbmggR2lhIiwiZW1haWwiOiJnaWF0a0Btb2JpbGUtaWQudm4iLCJhenAiOiJlbnRlcnByaXNlTmFtZSIsIm1vYmlsZSI6IjA1NjY0Nzc4NDcifQ.EWf2EsTaQfmTkdpaNd_RpeWWNaz6gIFerZh5AgWYX8ttIJ551SoB_UQddmVakzvB_J7zHtT6uuDFBCzuc6wgrW4y3BBQWE7ykMg6eN0OQXedPIOZr5Oqo1VpyTr7TORcBLbPey_sf_ZYhZTnzAnifleROMFEhmNIb4rrt1MFrqNlCSzc2beb25RkPOVq7uCJNzI7AyaMvZQCUxVksvcXSYAhOryj21M7p9RqVBoTBojLiGHAB2kyUbAljoioqVgp1_IZWHCBbL2itQh90RDIB2tiYMPk0zXWLHoi_dY3f78Kn-nIMH5n-sOcpO-U0Xc-sd5YvkKZKEyEIlCbD7zUzg
+2023-02-15 13:53:05,343 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Verify accessToken
+2023-02-15 13:53:05,343 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Before decode token
+2023-02-15 13:53:05,343 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Header:eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+2023-02-15 13:53:05,343 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Payload:eyJleHAiOjE2NzY0NDQyNjM1NTMsImlhdCI6MTY3NjQ0Mzk2MzU1MywiaXNzIjoiZW50ZXJwcmlzZWlkIiwiYXVkIjoiYWNjb3VudCIsInR5cCI6IkJlYXJlciIsIm5hbWUiOiJUP3QgS2jhbmggR2lhIiwiZW1haWwiOiJnaWF0a0Btb2JpbGUtaWQudm4iLCJhenAiOiJlbnRlcnByaXNlTmFtZSIsIm1vYmlsZSI6IjA1NjY0Nzc4NDcifQ
+2023-02-15 13:53:05,344 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Signature:EWf2EsTaQfmTkdpaNd_RpeWWNaz6gIFerZh5AgWYX8ttIJ551SoB_UQddmVakzvB_J7zHtT6uuDFBCzuc6wgrW4y3BBQWE7ykMg6eN0OQXedPIOZr5Oqo1VpyTr7TORcBLbPey_sf_ZYhZTnzAnifleROMFEhmNIb4rrt1MFrqNlCSzc2beb25RkPOVq7uCJNzI7AyaMvZQCUxVksvcXSYAhOryj21M7p9RqVBoTBojLiGHAB2kyUbAljoioqVgp1_IZWHCBbL2itQh90RDIB2tiYMPk0zXWLHoi_dY3f78Kn-nIMH5n-sOcpO-U0Xc-sd5YvkKZKEyEIlCbD7zUzg
+2023-02-15 13:53:05,344 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Header:{"alg":"RS256","typ":"JWT"}
+2023-02-15 13:53:05,344 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Alg:RS256
+2023-02-15 13:53:05,345 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Payload:{"exp":1676444263553,"iat":1676443963553,"iss":"enterpriseid","aud":"account","typ":"Bearer","name":"T?t Khánh Gia","email":"giatk@mobile-id.vn","azp":"enterpriseName","mobile":"0566477847"}
+2023-02-15 13:53:05,345 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-18] Signature:EWf2EsTaQfmTkdpaNd_RpeWWNaz6gIFerZh5AgWYX8ttIJ551SoB_UQddmVakzvB_J7zHtT6uuDFBCzuc6wgrW4y3BBQWE7ykMg6eN0OQXedPIOZr5Oqo1VpyTr7TORcBLbPey_sf_ZYhZTnzAnifleROMFEhmNIb4rrt1MFrqNlCSzc2beb25RkPOVq7uCJNzI7AyaMvZQCUxVksvcXSYAhOryj21M7p9RqVBoTBojLiGHAB2kyUbAljoioqVgp1_IZWHCBbL2itQh90RDIB2tiYMPk0zXWLHoi_dY3f78Kn-nIMH5n-sOcpO-U0Xc-sd5YvkKZKEyEIlCbD7zUzg
+2023-02-15 13:53:05,363 INFO v.m.i.q.k.ManageTokenWithDB [default task-18] Verify Token
+2023-02-15 13:53:05,369 WARN v.m.i.q.QryptoService [default task-18] WorkflowTemplateType:7
+2023-02-15 13:53:05,460 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_ADD('giatk@mobile-id.vn',7,'Label 20230202 - ELabor Contract','null','GiaTK',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 13:53:05,463 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] Execution time of createWorkflow in milliseconds: 85
+2023-02-15 13:53:05,470 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'qr_type','1','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,476 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'CSV_email','false','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,483 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'QR_placement','false','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,489 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'metadata','a:1;b:2;c:3','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,494 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'disable_CSV_task_notification_email','false','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,500 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'omit_if_empty','false','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,505 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'qr_background','WHITE','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,510 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'qr_size','4','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,516 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'asset_Template','7','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,521 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'show_domain','false','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,527 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'url_code','false','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:05,532 DEBUG v.m.i.g.d.DatabaseImpl [default task-18] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_WORKFLOW_DETAIL_ADD(87,'email_notification','false','HMAC','giatk@mobile-id.vn',** NOT SPECIFIED **) 
+2023-02-15 13:53:09,534 DEBUG v.m.i.g.a.ServicesController [default task-19] 
+---------
+Get WorkflowTemplateType request:
+	METHOD:GET
+	ContentType:null
+	Body:null
+2023-02-15 13:53:09,534 INFO v.m.i.q.k.ManageTokenWithDB [default task-19] Checking Header!!
+2023-02-15 13:53:09,534 INFO v.m.i.q.k.ManageTokenWithDB [default task-19] Token:Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzY0NDQyNjM1NTMsImlhdCI6MTY3NjQ0Mzk2MzU1MywiaXNzIjoiZW50ZXJwcmlzZWlkIiwiYXVkIjoiYWNjb3VudCIsInR5cCI6IkJlYXJlciIsIm5hbWUiOiJUP3QgS2jhbmggR2lhIiwiZW1haWwiOiJnaWF0a0Btb2JpbGUtaWQudm4iLCJhenAiOiJlbnRlcnByaXNlTmFtZSIsIm1vYmlsZSI6IjA1NjY0Nzc4NDcifQ.EWf2EsTaQfmTkdpaNd_RpeWWNaz6gIFerZh5AgWYX8ttIJ551SoB_UQddmVakzvB_J7zHtT6uuDFBCzuc6wgrW4y3BBQWE7ykMg6eN0OQXedPIOZr5Oqo1VpyTr7TORcBLbPey_sf_ZYhZTnzAnifleROMFEhmNIb4rrt1MFrqNlCSzc2beb25RkPOVq7uCJNzI7AyaMvZQCUxVksvcXSYAhOryj21M7p9RqVBoTBojLiGHAB2kyUbAljoioqVgp1_IZWHCBbL2itQh90RDIB2tiYMPk0zXWLHoi_dY3f78Kn-nIMH5n-sOcpO-U0Xc-sd5YvkKZKEyEIlCbD7zUzg
+2023-02-15 13:53:09,534 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Verify accessToken
+2023-02-15 13:53:09,534 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Before decode token
+2023-02-15 13:53:09,534 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Header:eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+2023-02-15 13:53:09,534 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Payload:eyJleHAiOjE2NzY0NDQyNjM1NTMsImlhdCI6MTY3NjQ0Mzk2MzU1MywiaXNzIjoiZW50ZXJwcmlzZWlkIiwiYXVkIjoiYWNjb3VudCIsInR5cCI6IkJlYXJlciIsIm5hbWUiOiJUP3QgS2jhbmggR2lhIiwiZW1haWwiOiJnaWF0a0Btb2JpbGUtaWQudm4iLCJhenAiOiJlbnRlcnByaXNlTmFtZSIsIm1vYmlsZSI6IjA1NjY0Nzc4NDcifQ
+2023-02-15 13:53:09,534 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Signature:EWf2EsTaQfmTkdpaNd_RpeWWNaz6gIFerZh5AgWYX8ttIJ551SoB_UQddmVakzvB_J7zHtT6uuDFBCzuc6wgrW4y3BBQWE7ykMg6eN0OQXedPIOZr5Oqo1VpyTr7TORcBLbPey_sf_ZYhZTnzAnifleROMFEhmNIb4rrt1MFrqNlCSzc2beb25RkPOVq7uCJNzI7AyaMvZQCUxVksvcXSYAhOryj21M7p9RqVBoTBojLiGHAB2kyUbAljoioqVgp1_IZWHCBbL2itQh90RDIB2tiYMPk0zXWLHoi_dY3f78Kn-nIMH5n-sOcpO-U0Xc-sd5YvkKZKEyEIlCbD7zUzg
+2023-02-15 13:53:09,534 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Header:{"alg":"RS256","typ":"JWT"}
+2023-02-15 13:53:09,534 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Alg:RS256
+2023-02-15 13:53:09,534 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Payload:{"exp":1676444263553,"iat":1676443963553,"iss":"enterpriseid","aud":"account","typ":"Bearer","name":"T?t Khánh Gia","email":"giatk@mobile-id.vn","azp":"enterpriseName","mobile":"0566477847"}
+2023-02-15 13:53:09,535 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-19] Signature:EWf2EsTaQfmTkdpaNd_RpeWWNaz6gIFerZh5AgWYX8ttIJ551SoB_UQddmVakzvB_J7zHtT6uuDFBCzuc6wgrW4y3BBQWE7ykMg6eN0OQXedPIOZr5Oqo1VpyTr7TORcBLbPey_sf_ZYhZTnzAnifleROMFEhmNIb4rrt1MFrqNlCSzc2beb25RkPOVq7uCJNzI7AyaMvZQCUxVksvcXSYAhOryj21M7p9RqVBoTBojLiGHAB2kyUbAljoioqVgp1_IZWHCBbL2itQh90RDIB2tiYMPk0zXWLHoi_dY3f78Kn-nIMH5n-sOcpO-U0Xc-sd5YvkKZKEyEIlCbD7zUzg
+2023-02-15 13:53:09,538 INFO v.m.i.q.k.ManageTokenWithDB [default task-19] Verify Token
+2023-02-15 13:53:09,540 DEBUG v.m.i.q.QryptoService [default task-19] Check Token Successfully
+2023-02-15 13:53:09,546 DEBUG v.m.i.g.d.DatabaseImpl [default task-19] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_TEMPLATE_TYPE_GET() 
+2023-02-15 13:53:09,549 DEBUG v.m.i.g.d.DatabaseImpl [default task-19] Execution time of get Workflow template in milliseconds: 7

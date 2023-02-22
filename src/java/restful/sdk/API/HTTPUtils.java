@@ -103,6 +103,7 @@ public class HTTPUtils {
 
             return invokeHttpRequest(null, endpointUrl, httpMethod, timeout, headers, requestBody);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Request failed. " + e.getMessage(), e);
         }
     }
@@ -114,7 +115,7 @@ public class HTTPUtils {
             String requestBody) {
 
         HttpURLConnection connection = null;
-        try {
+        try {            
             URL url = new URL(endpointUrl);
             connection = createHttpConnection(truststore, url, httpMethod, timeout, timeout, headers);
             HttpURLConnection.setFollowRedirects(true);
@@ -356,6 +357,7 @@ public class HTTPUtils {
 
             return connection;
         } catch (IOException | KeyManagementException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            e.printStackTrace();
             throw new RuntimeException("Cannot create connection. " + e.getMessage(), e);
         }
     }

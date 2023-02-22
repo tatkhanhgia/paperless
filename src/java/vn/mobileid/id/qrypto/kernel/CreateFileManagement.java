@@ -108,7 +108,7 @@ public class CreateFileManagement {
                     height,      //height
                     fileData, //file data
                     HMAC, //HMAC
-                    workflow.getCreated_by(),
+                    user.getName(),
                     DBMS);          
                         
             if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){

@@ -4,6 +4,9 @@
  */
 package vn.mobileid.id.qrypto.objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,13 +14,15 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import vn.mobileid.id.eid.object.JWT_Authenticate;
 
 /**
  *
  * @author GiaTK
  */
 @XmlRootElement(name = "KYC")
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class KYC {
 
     private String FullName;
@@ -32,24 +37,25 @@ public class KYC {
     private String PreviousMonth;
     private String PreviousYear;
 
-    public KYC(String FullName, String BirthDate, String Nationality, String PersonalNumber, String IssuanceDate, String PlaceOfResidence, String CurrentDate, String DateAfterOneYear, String PreviousDay, String PreviousMonth, String PreviousYear) {
-        this.FullName = FullName;
-        this.BirthDate = BirthDate;
-        this.Nationality = Nationality;
-        this.PersonalNumber = PersonalNumber;
-        this.IssuanceDate = IssuanceDate;
-        this.PlaceOfResidence = PlaceOfResidence;
-        this.CurrentDate = CurrentDate;
-        this.DateAfterOneYear = DateAfterOneYear;
-        this.PreviousDay = PreviousDay;
-        this.PreviousMonth = PreviousMonth;
-        this.PreviousYear = PreviousYear;
-    }
+//    public KYC(String FullName, String BirthDate, String Nationality, String PersonalNumber, String IssuanceDate, String PlaceOfResidence, String CurrentDate, String DateAfterOneYear, String PreviousDay, String PreviousMonth, String PreviousYear) {
+//        this.FullName = FullName;
+//        this.BirthDate = BirthDate;
+//        this.Nationality = Nationality;
+//        this.PersonalNumber = PersonalNumber;
+//        this.IssuanceDate = IssuanceDate;
+////        this.PlaceOfResidence = PlaceOfResidence;
+//        this.CurrentDate = CurrentDate;
+//        this.DateAfterOneYear = DateAfterOneYear;
+//        this.PreviousDay = PreviousDay;
+//        this.PreviousMonth = PreviousMonth;
+//        this.PreviousYear = PreviousYear;
+//    }
 
-    public KYC() {
-    }
+    public KYC() {        
+    }        
 
     @XmlElement(name = "FullName")
+    @JsonProperty("name")
     public String getFullName() {
         return FullName;
     }
@@ -60,11 +66,13 @@ public class KYC {
     }
 
     @XmlElement(name = "Nationality")
+    @JsonProperty("nationality")
     public String getNationality() {
         return Nationality;
     }
 
     @XmlElement(name = "PersonalNumber")
+    @JsonProperty("phone_number")
     public String getPersonalNumber() {
         return PersonalNumber;
     }
@@ -75,6 +83,7 @@ public class KYC {
     }
 
     @XmlElement(name = "PlaceOfResidence")
+    @JsonProperty("place_of_residence")
     public String getPlaceOfResidence() {
         return PlaceOfResidence;
     }
@@ -155,7 +164,6 @@ public class KYC {
 
     public void setPreviousYear(String PreviousYear) {
         this.PreviousYear = PreviousYear;
-    }
-    
-    
+    }    
+        
 }

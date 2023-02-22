@@ -57,8 +57,13 @@ import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import com.google.gson.Gson;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import restful.sdk.API.Property;
 
@@ -1055,7 +1060,9 @@ public class Utils {
             for (String temp2 : temp) {
                 StringTokenizer token = new StringTokenizer(temp2, "=", false);
                 while (token.hasMoreElements()) {
-                    map.put(token.nextToken(), token.nextToken());
+                    String name = token.nextToken();
+                    String value = URLDecoder.decode(token.nextToken(),StandardCharsets.UTF_8.toString());                    
+                    map.put(name, value);
                 }
             }
             return map;
@@ -1068,7 +1075,6 @@ public class Utils {
     }
     
     public static Property getDataRESTFromString(String dataREST, byte[] p12){
-//        dataREST = dataREST.replaceAll("\r", "");
         HashMap<String, String> map = new HashMap<>();
         StringTokenizer token = new StringTokenizer(dataREST,";", false);
         while(token.hasMoreTokens()){
@@ -1104,7 +1110,6 @@ public class Utils {
     }
     
     public static Property getDataRESTFromString2(String dataREST, byte[] p12){
-//        dataREST = dataREST.replaceAll("\r", "");
         ArrayList<String> list = new ArrayList();
         StringTokenizer token = new StringTokenizer(dataREST,";", false);
         while(token.hasMoreTokens()){
@@ -1126,8 +1131,18 @@ public class Utils {
                 list.get(3),
                 list.get(4),
                 relyingPartyKeyStoreData,
-                list.get(5));
-        
-        
+                list.get(5));                
     }
+    
+    public static String hashMD5(String input){
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(input.getBytes());
+            byte[] digest = md.digest();
+            return DatatypeConverter.printHexBinary(digest).toUpperCase();
+        } catch (NoSuchAlgorithmException ex) {
+            return null;
+        }        
+    }
+        
 }

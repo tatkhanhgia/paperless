@@ -8,6 +8,7 @@ import vn.mobileid.id.qrypto.QryptoConstant;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 
 /**
  *
@@ -16,18 +17,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Workflow {
-    private String workflow_id;
+    private int workflow_id;
     private int status; //0 - inactive  1 - active    
     private int template_type;
+    private String template_type_name;
     private String label;
     private int workflow_type;
+    private String workflow_type_name;
+    private String note;
     private String created_by;
-    private String created_at;
+    private Date created_at;
     private String last_modified_by;
-    private String last_modified_at;
-        
+    private Date last_modified_at;
+    private String metadata;
+    private int initiator_id;
 
-    public Workflow(String workflow_id, int status, int template_type, String label, int workflow_type, String created_by, String created_at, String last_modified_by, String last_modified_at ) {
+    public Workflow(int workflow_id, int status, int template_type, String label, int workflow_type, String created_by, Date created_at, String last_modified_by, Date last_modified_at ) {
         this.workflow_id = workflow_id;
         this.status = status;        
         this.template_type = template_type;
@@ -39,25 +44,15 @@ public class Workflow {
         this.last_modified_at = last_modified_at;        
     }
 
-    public Workflow() {
-        this.workflow_id = null;
-        this.status = 0;        
-//        this.template_type = QryptoConstant.TEMPLATE_TYPE_COURSE_CERTIFICATE_PDF_TEMPLATE;
-        this.template_type = 0;
-        this.label = null;
-        this.workflow_type = QryptoConstant.WORKFLOW_TYPE_PDF_GENERATOR;
-        this.created_by = null;
-        this.created_at = null;
-        this.last_modified_by = null;
-        this.last_modified_at = null;    
+    public Workflow() {    
     }
 
     @JsonProperty("workflow_id")
-    public String getWorkflow_id() {
+    public int getWorkflow_id() {
         return workflow_id;
     }
 
-    public void setWorkflow_id(String workflow_id) {
+    public void setWorkflow_id(int workflow_id) {
         this.workflow_id = workflow_id;
     }
 
@@ -107,11 +102,11 @@ public class Workflow {
     }
 
     @JsonProperty("created_at")
-    public String getCreated_at() {
+    public Date getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(String created_at) {
+    public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
 
@@ -125,13 +120,59 @@ public class Workflow {
     }
 
     @JsonProperty("modified_at")
-    public String getLast_modified_at() {
+    public Date getLast_modified_at() {
         return last_modified_at;
     }
 
-    public void setLast_modified_at(String last_modified_at) {
+    public void setLast_modified_at(Date last_modified_at) {
         this.last_modified_at = last_modified_at;
     }
+
+    @JsonProperty("note")
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    @JsonProperty("metadata")
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
+
+    @JsonProperty("template_type_name")
+    public String getTemplate_type_name() {
+        return template_type_name;
+    }
+
+    public void setTemplate_type_name(String template_type_name) {
+        this.template_type_name = template_type_name;
+    }
+
+    @JsonProperty("workflow_type_name")
+    public String getWorkflow_type_name() {
+        return workflow_type_name;
+    }
+
+    public void setWorkflow_type_name(String workflow_type_name) {
+        this.workflow_type_name = workflow_type_name;
+    }
+
+    @JsonProperty("initiator_id")
+    public int getInitiator_id() {
+        return initiator_id;
+    }
+
+    public void setInitiator_id(int initiator_id) {
+        this.initiator_id = initiator_id;
+    }
+    
     
     
 }

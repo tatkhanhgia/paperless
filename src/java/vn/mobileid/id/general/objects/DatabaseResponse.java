@@ -28,6 +28,10 @@ public class DatabaseResponse {
         this.ID_Response_int = ID_Response_int;
     }
 
+    public int getIDResponse_int(){
+        return this.ID_Response_int;
+    }
+    
     public String getIDResponse() {
         if(ID_Response_String != null)
         {

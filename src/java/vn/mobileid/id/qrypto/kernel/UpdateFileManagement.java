@@ -55,7 +55,7 @@ public class UpdateFileManagement {
             fileOriginal.setStatus( status <0 || status >1 ? fileOriginal.getStatus() : status);
             fileOriginal.setHmac( hmac == null ? fileOriginal.getHmac() : hmac);
             fileOriginal.setCreated_by( created_by == null ? fileOriginal.getCreated_by() : created_by);
-            fileOriginal.setLastmodified_by(last_modified_by);
+            fileOriginal.setLastmodified_by(last_modified_by);            
             
             DatabaseResponse callDB = DB.updateFileManagement(
                     id,

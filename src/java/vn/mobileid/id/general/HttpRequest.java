@@ -79,15 +79,15 @@ public class HttpRequest {
 
                 Header[] responseHeaders = httpresponse.getAllHeaders();
                 if (responseHeaders != null) {
-                    if (LogHandler.isShowDebugLog()) {
-                        LOG.debug("Headers in IAM response");
-                    }
-                    for (Header header : responseHeaders) {
-                        if (LogHandler.isShowDebugLog()) {
-                            LOG.debug("\t" + header.getName() + ":" + header.getValue());
-                        }
-                        responseHeader.put(header.getName(), header.getValue());
-                    }
+//                    if (LogHandler.isShowDebugLog()) {
+//                        LOG.debug("Headers in IAM response");
+//                    }
+//                    for (Header header : responseHeaders) {
+//                        if (LogHandler.isShowDebugLog()) {
+//                            LOG.debug("\t" + header.getName() + ":" + header.getValue());
+//                        }
+//                        responseHeader.put(header.getName(), header.getValue());
+//                    }
                 } else {
                     if (LogHandler.isShowDebugLog()) {
                         LOG.debug("No header in IAM response");

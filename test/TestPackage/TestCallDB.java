@@ -4,14 +4,21 @@
  */
 package TestPackage;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import org.apache.commons.dbcp2.BasicDataSource;
+import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.database.DataSourceReadOnly;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseConnectionManager;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
+import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
+import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -20,33 +27,41 @@ import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
 public class TestCallDB {
 
     public static void main(String[] args) {
-        Database DB = new DatabaseImpl();
-        DatabaseResponse callDB = DB.createWorkflowActivity(
-                3, //enterpriseID
-                8, //workflowID
-                "bcd@gmail.com",    //useremail
-                "23--1", //transactionid
-                1,  //file link
-                QryptoConstant.FLAG_FALSE_DB,  //csv
-                "remakr not", //remark
-                QryptoConstant.FLAG_FALSE_DB,  //use test token
-                QryptoConstant.FLAG_FALSE_DB,  //is production
-                QryptoConstant.FLAG_FALSE_DB,  //is update
-                QryptoConstant.WORKFLOW_TYPE_PDF_GENERATOR,  //workflow type
-                "request data",  //request data
-                "hmac",   //hmac
-                "GIATK");  //created by
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
-                InternalResponse a =  new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(
-                                QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null)
-                );
-                System.out.println("Mes:"+a.getMessage());
+    
+        long startTime = System.nanoTime();
+        
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        ResponseCode responseCode = null;
+        try {
+            String str = "{ call TEST(?,?) }";
+            Connection conn = null;
+            try {
+                BasicDataSource bds = DataSourceReadOnly.getInstance().getBds();
+                conn = bds.getConnection();
+            } catch (Exception e) {
+                
+                e.printStackTrace();
             }
-            System.out.println("ID:"+callDB.getIDResponse());
-//            System.out.println("ID:"+callDB.getTransactionID());
+            cals = conn.prepareCall(str);
+            cals.setString("P", "'METADATA' OR 1=1");
+           
+            cals.execute();
+            rs = cals.getResultSet();
+            
+            if (rs != null) {
+                System.out.println(rs.getString("WORKFLOW_ID"));
+            }
+        } catch (Exception e) {
+           
+            e.printStackTrace();
+        } finally {
+//            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        
+        
+    
     }
 }

@@ -38,8 +38,16 @@ public class GetDocument {
                                 "en",
                                 null)
                 );
+            }            
+            
+            response = GetFileManagement.getFileManagement(Integer.parseInt(woAc.getFile().getID()));
+            
+            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+                return response;
             }
-            if(woAc.getFile().getData() == null ){
+            FileManagement file = (FileManagement) response.getData();
+                    
+            if(file.getData() == null ){
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         QryptoMessageResponse.getErrorMessage(
                                 QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
@@ -48,15 +56,6 @@ public class GetDocument {
                                 null)
                 );
             }
-
-            response = GetFileManagement.getFileManagement(Integer.parseInt(woAc.getFile().getID()));
-            
-            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
-                return response;
-            }
-            FileManagement file = (FileManagement) response.getData();
-                    
-            //Base64.getEncoder().encodeToString(file.getData())
             return new InternalResponse(
                     QryptoConstant.HTTP_CODE_SUCCESS,
                     file);

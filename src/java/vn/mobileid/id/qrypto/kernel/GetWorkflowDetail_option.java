@@ -25,6 +25,11 @@ import vn.mobileid.id.utils.Utils;
 public class GetWorkflowDetail_option {
     final private static Logger LOG = LogManager.getLogger(GetWorkflowDetail_option.class);
     
+    /**
+     * Get Workflow Detail/Option of the workflow input
+     * @param id Workflow ID
+     * @return InternalReponse with WorkflowDetail_Option(Object).
+     */
     public static InternalResponse getWorkflowDetail(int id){
         try {
             Database DB = new DatabaseImpl();

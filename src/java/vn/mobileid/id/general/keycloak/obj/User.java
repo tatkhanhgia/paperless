@@ -13,8 +13,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author GiaTK
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class User {
+    //Format JWT
     private long exp;
     private long iat;
     private String jti;
@@ -34,6 +35,10 @@ public class User {
     private String given_name;
     private String family_name;
     private String email;
+    private String azp;
+    //DB
+    private String mobile;
+    private int id;
 
     @JsonProperty("exp")
     public long getExp() {
@@ -205,6 +210,34 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    @JsonProperty("azp")
+    public String getAzp() {
+        return azp;
+    }
+
+    public void setAzp(String azp) {
+        this.azp = azp;
+    }
+
+    @JsonProperty("mobile")
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    @JsonProperty("id")
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+    
     
     
 }

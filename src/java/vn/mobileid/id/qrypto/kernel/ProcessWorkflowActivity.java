@@ -9,16 +9,19 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.eid.object.TokenResponse;
 import vn.mobileid.id.everification.object.CreateOwnerResponse;
 import vn.mobileid.id.everification.object.DataCreateOwner;
 import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
@@ -48,9 +51,8 @@ public class ProcessWorkflowActivity {
 
     final private static Logger LOG = LogManager.getLogger(ProcessWorkflowActivity.class);
 
-    public static InternalResponse checkData(ProcessWorkflowActivity_JSNObject request) {
+    public static InternalResponse checkItem(ProcessWorkflowActivity_JSNObject request) {
         List<ItemDetails> listItem = request.getItem();
-        List<FileDataDetails> listFile = request.getFile_data();
         InternalResponse result;
 
         //Check item details
@@ -60,6 +62,16 @@ public class ProcessWorkflowActivity {
                 return result;
             }
         }
+        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
+                QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
+                        QryptoConstant.SUBCODE_SUCCESS,
+                        "en",
+                        null));
+    }
+
+    public static InternalResponse checkFile_Data(ProcessWorkflowActivity_JSNObject request) {
+        List<FileDataDetails> listFile = request.getFile_data();
+        InternalResponse result;
 
         //Check file details
         for (FileDataDetails obj : listFile) {
@@ -79,38 +91,45 @@ public class ProcessWorkflowActivity {
                         null));
     }
 
-    public static InternalResponse process(int id, HashMap<String,String> header, User uer_info, ProcessWorkflowActivity_JSNObject request) {
+    public static InternalResponse process(
+            int id,
+            String filename,
+            JWT_Authenticate jwt,
+            User uer_info,
+            ProcessWorkflowActivity_JSNObject request,
+            boolean isAssigned) {
         try {
             //Get Data from request
             List<FileDataDetails> fileData = request.getFile_data();
             List<ItemDetails> fileItem = request.getItem();
             Object PDF = null, finger = null, card = null, photo = null;
-            for (FileDataDetails file : fileData) {
-                switch (file.getFile_type()) {
-                    case 1: {
-                        finger = file.getValue();
-                        break;
-                    }
-                    case 2: {
-                        card = file.getValue();
-                        break;
-                    }
-                    case 3: {
-                        photo = file.getValue();
-                        break;
-                    }
-                    case 4: {
-                        PDF = file.getValue();
-                        break;
+            if (fileData != null) {
+                for (FileDataDetails file : fileData) {
+                    switch (file.getFile_type()) {
+                        case 1: {
+                            finger = file.getValue();
+                            break;
+                        }
+                        case 2: {
+                            card = file.getValue();
+                            break;
+                        }
+                        case 3: {
+                            photo = file.getValue();
+                            break;
+                        }
+                        case 4: {
+                            PDF = file.getValue();
+                            break;
+                        }
                     }
                 }
             }
-
             Database DB = new DatabaseImpl();
 
             //Get workflow Activity and check existed            
             WorkflowActivity woAc = GetWorkflowActivity.getWorkflowActivity(id);
-            if(woAc == null){
+            if (woAc == null) {
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         QryptoMessageResponse.getErrorMessage(
                                 QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
@@ -119,39 +138,116 @@ public class ProcessWorkflowActivity {
                                 null)
                 );
             }
-            if(woAc.getFile().getData() != null ){
+            InternalResponse response = GetFileManagement.getFileManagement(Integer.parseInt(woAc.getFile().getID()));
+
+            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                return response;
+            }
+            FileManagement file = (FileManagement) response.getData();
+            if (file.getData() != null) {
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         QryptoMessageResponse.getErrorMessage(
                                 QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                QryptoConstant.SUBCODE_EXISTED_WORKFLOW_ACTIVITY,
+                                QryptoConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
                                 "en",
                                 null)
                 );
             }
-            
+
             //Check Type Process
-            InternalResponse response = GetWorkflowTemplateType.getWorkflowTemplateType(woAc.getWorkflow_id());
-            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+            woAc = GetWorkflowActivity.getWorkflowActivityFromDB(id);
+            response = GetWorkflowTemplateType.getWorkflowTemplateType(woAc.getWorkflow_template_type());
+            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
-            WorkflowTemplateType templateType = (WorkflowTemplateType)response.getData();
-            
-            switch(templateType.getName()){
-                case "EID CONTRACT":{
-                    return ProcessELaborContract.processELaborContract(woAc, fileItem, photo,uer_info);                    
+
+            WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
+
+            switch (templateType.getName()) {
+                case "EID CONTRACT": {
+                    if (isAssigned) {
+                        return ProcessELaborContract.assignELaborContract(woAc, fileItem, uer_info, filename);
+                    }
+//                    return ProcessELaborContract.processELaborContract(woAc, fileItem, photo, uer_info, filename, jwt);
+                    return new InternalResponse(500, "Pending");
                 }
-                default:{
-                        return new InternalResponse(500, "NOT PROVIDED YET");
-                        }
+                default: {
+                    return new InternalResponse(500, "NOT PROVIDED YET");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("UNKNOWN EXCEPTION. Details: " + e);
-            }            
+            }
             return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
         }
 //        return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+    }
+
+    public static InternalResponse processAuthen(
+            User user,
+            int idWA,
+            JWT_Authenticate jwt,
+            ProcessWorkflowActivity_JSNObject request,
+            HashMap<String,String> headers) {
+        try {
+            List<FileDataDetails> fileData = request.getFile_data();
+
+            Database DB = new DatabaseImpl();
+
+            //Get workflow Activity and check existed            
+            WorkflowActivity woAc = GetWorkflowActivity.getWorkflowActivity(idWA);
+            if (woAc == null) {
+                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(
+                                QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                                QryptoConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
+                                "en",
+                                null)
+                );
+            }
+
+            InternalResponse response = GetFileManagement.getFileManagement(Integer.parseInt(woAc.getFile().getID()));
+
+            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                return response;
+            }
+            FileManagement file = (FileManagement) response.getData();
+            if (file.getData() == null) {
+                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(
+                                QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                                QryptoConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
+                                "en",
+                                null)
+                );
+            }
+
+            InternalResponse res = ProcessELaborContract.processELaborContractWithAuthen(
+                    user,
+                    Integer.parseInt(woAc.getFile().getID()),
+                    woAc.getFile(),
+                    woAc.getRequestData(),
+                    jwt,
+                    fileData);
+            if (res.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                return res;
+            }
+            res.setData(woAc);
+
+            //After Signing Success. Replace Data WorkflowAc in listWorkflow Resources
+            WorkflowActivity temp = GetWorkflowActivity.getWorkflowActivityFromDB(idWA);
+            Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), temp);
+            return res;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("UNKNOWN EXCEPTION. Details: " + ex);
+            }
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
+
     }
 
     //==================INTERAL METHOD/FUNCTION===================
@@ -160,8 +256,8 @@ public class ProcessWorkflowActivity {
             return false;
         }
         return true;
-    }               
-    
+    }
+
     //=========================MAIN================================
     public static void main(String[] arhs) {
 //        ItemDetails a = new ItemDetails();

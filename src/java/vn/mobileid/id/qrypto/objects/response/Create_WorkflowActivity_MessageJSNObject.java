@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties("status")
 public class Create_WorkflowActivity_MessageJSNObject {    
     private int status;
-    private String workflow_activity_id;
+    private int workflow_activity_id;
     
 
     @JsonProperty("status")
@@ -27,11 +27,11 @@ public class Create_WorkflowActivity_MessageJSNObject {
     }
 
     @JsonProperty("workflow_activity_id")
-    public String getWorkflowActivityID() {
+    public int getWorkflowActivityID() {
         return workflow_activity_id;
     }
 
-    public void setWorkflowActivityID(String workflow_activity_id) {
+    public void setWorkflowActivityID(int workflow_activity_id) {
         this.workflow_activity_id = workflow_activity_id;
     }
 }

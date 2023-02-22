@@ -1,0 +1,73 @@
+2023-02-15 10:01:42,584 DEBUG v.m.i.g.a.ServicesController [default task-24] 
+---------
+CreateWorkflow request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    
+    "workflow_label": "Label 20230202 - ELabor Contract",
+    "created_by": "GiaTK",
+    "workflow_template_type": 7,
+    "user_email": "bcd@gmail.com"
+    
+}
+2023-02-15 10:01:42,621 INFO v.m.i.q.k.ManageTokenWithDB [default task-24] Checking Header!!
+2023-02-15 10:01:42,621 INFO v.m.i.q.k.ManageTokenWithDB [default task-24] Token:Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzY0Mjk5MzYwMjAsImlhdCI6MTY3NjQyOTkzNTcyMCwiaXNzIjoiZW50ZXJwcmlzZWlkIiwiYXVkIjoiYWNjb3VudCIsInR5cCI6IkJlYXJlciIsIm5hbWUiOiJUP3QgS2jhbmggR2lhIiwiZW1haWwiOiJnaWF0a0Btb2JpbGUtaWQudm4iLCJhenAiOiJlbnRlcnByaXNlTmFtZSIsIm1vYmlsZSI6IjA1NjY0Nzc4NDcifQ.fu7DyTHoIL5u2dKaEmcDxnxliLOParhsS9rKyleN8eXTvxZs6ONXWLyVjBSROsb3n7rFccTMOZNN3XhFmpFIGfSZlgO60FV5Op_4qkaR1tq1WpoHtxzB02GX9XaNB4oGRknvBYXe3kiTErDGC5WgYsV8oId3m01RsJS-j0Q86MAknhAK9H4p3goWjviOhDRCCbDfcUTi-EPCdjvnbQz3izqLRZPECvjcc3k5zff4k9ES0Zw2v0pJZcwCeD1AbW6ZvTfyJJ8FSj1Le30bxjloN8ptRsCSM3KrqtWy7gveHboeImM4Xmp7NuHBShzCrYvYB98L7wLj2yTQo6nElGZX6Q
+2023-02-15 10:01:42,621 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Verify accessToken
+2023-02-15 10:01:42,622 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Before decode token
+2023-02-15 10:01:42,622 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Header:eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+2023-02-15 10:01:42,622 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Payload:eyJleHAiOjE2NzY0Mjk5MzYwMjAsImlhdCI6MTY3NjQyOTkzNTcyMCwiaXNzIjoiZW50ZXJwcmlzZWlkIiwiYXVkIjoiYWNjb3VudCIsInR5cCI6IkJlYXJlciIsIm5hbWUiOiJUP3QgS2jhbmggR2lhIiwiZW1haWwiOiJnaWF0a0Btb2JpbGUtaWQudm4iLCJhenAiOiJlbnRlcnByaXNlTmFtZSIsIm1vYmlsZSI6IjA1NjY0Nzc4NDcifQ
+2023-02-15 10:01:42,622 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Signature:fu7DyTHoIL5u2dKaEmcDxnxliLOParhsS9rKyleN8eXTvxZs6ONXWLyVjBSROsb3n7rFccTMOZNN3XhFmpFIGfSZlgO60FV5Op_4qkaR1tq1WpoHtxzB02GX9XaNB4oGRknvBYXe3kiTErDGC5WgYsV8oId3m01RsJS-j0Q86MAknhAK9H4p3goWjviOhDRCCbDfcUTi-EPCdjvnbQz3izqLRZPECvjcc3k5zff4k9ES0Zw2v0pJZcwCeD1AbW6ZvTfyJJ8FSj1Le30bxjloN8ptRsCSM3KrqtWy7gveHboeImM4Xmp7NuHBShzCrYvYB98L7wLj2yTQo6nElGZX6Q
+2023-02-15 10:01:42,622 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Header:{"alg":"RS256","typ":"JWT"}
+2023-02-15 10:01:42,622 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Alg:RS256
+2023-02-15 10:01:42,622 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Payload:{"exp":1676429936020,"iat":1676429935720,"iss":"enterpriseid","aud":"account","typ":"Bearer","name":"T?t Khánh Gia","email":"giatk@mobile-id.vn","azp":"enterpriseName","mobile":"0566477847"}
+2023-02-15 10:01:42,622 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-24] Signature:fu7DyTHoIL5u2dKaEmcDxnxliLOParhsS9rKyleN8eXTvxZs6ONXWLyVjBSROsb3n7rFccTMOZNN3XhFmpFIGfSZlgO60FV5Op_4qkaR1tq1WpoHtxzB02GX9XaNB4oGRknvBYXe3kiTErDGC5WgYsV8oId3m01RsJS-j0Q86MAknhAK9H4p3goWjviOhDRCCbDfcUTi-EPCdjvnbQz3izqLRZPECvjcc3k5zff4k9ES0Zw2v0pJZcwCeD1AbW6ZvTfyJJ8FSj1Le30bxjloN8ptRsCSM3KrqtWy7gveHboeImM4Xmp7NuHBShzCrYvYB98L7wLj2yTQo6nElGZX6Q
+2023-02-15 10:01:42,627 INFO v.m.i.q.k.ManageTokenWithDB [default task-24] Verify Token
+2023-02-15 10:01:42,704 ERROR v.m.i.q.k.ManageTokenWithDB [default task-24] Token is invalid! - Details:com.auth0.jwt.exceptions.SignatureVerificationException: The Token's Signature resulted invalid when verified using the Algorithm: SHA256withRSA
+2023-02-15 10:01:42,997 DEBUG v.m.i.g.d.DatabaseImpl [default task-24] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_RESPONSE_GET_LIST() 
+2023-02-15 10:01:43,004 DEBUG v.m.i.g.d.DatabaseImpl [default task-24] Execution time of getResponseCodes in milliseconds: 291
+2023-02-15 10:01:43,005 DEBUG v.m.i.g.a.ServicesController [default task-24] Request fail
+2023-02-15 10:01:43,005 DEBUG v.m.i.g.a.ServicesController [default task-24] Status:401
+2023-02-15 10:01:43,005 DEBUG v.m.i.g.a.ServicesController [default task-24] Message:{
+  "error_description" : "INVALID_TOKEN"
+}
+2023-02-15 10:59:02,146 DEBUG v.m.i.g.a.ServicesController [default task-25] 
+---------
+Authenticate request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    "grant_type":"password",
+    "client_id":"qryptoUser",
+    "username":"giatk@mobile-id.vn",
+    "password":"thienthan123"
+}
+2023-02-15 10:59:02,483 DEBUG v.m.i.g.d.DatabaseImpl [default task-25] [SQL] com.mysql.cj.jdbc.CallableStatement: CALL USP_LOGIN('giatk@mobile-id.vn','thienthan123',** NOT SPECIFIED **,** NOT SPECIFIED **) 
+2023-02-15 10:59:05,428 DEBUG v.m.i.g.a.ServicesController [default task-26] 
+---------
+CreateWorkflow request:
+	METHOD:POST
+	ContentType:application/json
+	Body:{
+    
+    "workflow_label": "Label 20230202 - ELabor Contract",
+    "created_by": "GiaTK",
+    "workflow_template_type": 7,
+    "user_email": "bcd@gmail.com"
+    
+}
+2023-02-15 10:59:05,429 INFO v.m.i.q.k.ManageTokenWithDB [default task-26] Checking Header!!
+2023-02-15 10:59:05,429 INFO v.m.i.q.k.ManageTokenWithDB [default task-26] Token:Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzY0MzM1NDI3OTAsImlhdCI6MTY3NjQzMzU0MjQ5MCwiaXNzIjoiZW50ZXJwcmlzZWlkIiwiYXVkIjoiYWNjb3VudCIsInR5cCI6IkJlYXJlciIsIm5hbWUiOiJUP3QgS2jhbmggR2lhIiwiZW1haWwiOiJnaWF0a0Btb2JpbGUtaWQudm4iLCJhenAiOiJlbnRlcnByaXNlTmFtZSIsIm1vYmlsZSI6IjA1NjY0Nzc4NDcifQ.ZFTU_WZhQ8X5afT8-x0zAzIBugqjYeS4sZNLzWP_g4l8rzhAsSzRRqNoDtfdRvnnj-DK7e81nD7MY7mPYEi2VZVWKyeNFw-FILj2rEtp2tRwDxEXLnHCxHMRfn2u8lG5OeAPPX1n6qh38WLO2Tqy9MR3ms6_hALcHccbnXAZxITFDZDf3zYBkxJwJg_8OI-pOLGK0lUMIc9iqFWQOdB2SAtIibFmJzcTWARHMvEbrv62Qn_fEKGQDLdhH61rMQ-xbAzlkz4HF__leQ03D--cy0PZ-nzf-ZCTBZkThDRAX4xqvlA4nfkZQxym6JRFwQvK5_tgDq0Uq1UodmjmijZffQ
+2023-02-15 10:59:05,430 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Verify accessToken
+2023-02-15 10:59:05,430 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Before decode token
+2023-02-15 10:59:05,430 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Header:eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+2023-02-15 10:59:05,430 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Payload:eyJleHAiOjE2NzY0MzM1NDI3OTAsImlhdCI6MTY3NjQzMzU0MjQ5MCwiaXNzIjoiZW50ZXJwcmlzZWlkIiwiYXVkIjoiYWNjb3VudCIsInR5cCI6IkJlYXJlciIsIm5hbWUiOiJUP3QgS2jhbmggR2lhIiwiZW1haWwiOiJnaWF0a0Btb2JpbGUtaWQudm4iLCJhenAiOiJlbnRlcnByaXNlTmFtZSIsIm1vYmlsZSI6IjA1NjY0Nzc4NDcifQ
+2023-02-15 10:59:05,430 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Signature:ZFTU_WZhQ8X5afT8-x0zAzIBugqjYeS4sZNLzWP_g4l8rzhAsSzRRqNoDtfdRvnnj-DK7e81nD7MY7mPYEi2VZVWKyeNFw-FILj2rEtp2tRwDxEXLnHCxHMRfn2u8lG5OeAPPX1n6qh38WLO2Tqy9MR3ms6_hALcHccbnXAZxITFDZDf3zYBkxJwJg_8OI-pOLGK0lUMIc9iqFWQOdB2SAtIibFmJzcTWARHMvEbrv62Qn_fEKGQDLdhH61rMQ-xbAzlkz4HF__leQ03D--cy0PZ-nzf-ZCTBZkThDRAX4xqvlA4nfkZQxym6JRFwQvK5_tgDq0Uq1UodmjmijZffQ
+2023-02-15 10:59:05,430 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Header:{"alg":"RS256","typ":"JWT"}
+2023-02-15 10:59:05,430 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Alg:RS256
+2023-02-15 10:59:05,431 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Payload:{"exp":1676433542790,"iat":1676433542490,"iss":"enterpriseid","aud":"account","typ":"Bearer","name":"T?t Khánh Gia","email":"giatk@mobile-id.vn","azp":"enterpriseName","mobile":"0566477847"}
+2023-02-15 10:59:05,431 DEBUG v.m.i.q.k.ManageTokenWithDB [default task-26] Signature:ZFTU_WZhQ8X5afT8-x0zAzIBugqjYeS4sZNLzWP_g4l8rzhAsSzRRqNoDtfdRvnnj-DK7e81nD7MY7mPYEi2VZVWKyeNFw-FILj2rEtp2tRwDxEXLnHCxHMRfn2u8lG5OeAPPX1n6qh38WLO2Tqy9MR3ms6_hALcHccbnXAZxITFDZDf3zYBkxJwJg_8OI-pOLGK0lUMIc9iqFWQOdB2SAtIibFmJzcTWARHMvEbrv62Qn_fEKGQDLdhH61rMQ-xbAzlkz4HF__leQ03D--cy0PZ-nzf-ZCTBZkThDRAX4xqvlA4nfkZQxym6JRFwQvK5_tgDq0Uq1UodmjmijZffQ
+2023-02-15 10:59:05,446 INFO v.m.i.q.k.ManageTokenWithDB [default task-26] Verify Token
+2023-02-15 10:59:05,450 DEBUG v.m.i.g.a.ServicesController [default task-26] Request fail
+2023-02-15 10:59:05,450 DEBUG v.m.i.g.a.ServicesController [default task-26] Status:400
+2023-02-15 10:59:05,450 DEBUG v.m.i.g.a.ServicesController [default task-26] Message:["Internal server exception"]

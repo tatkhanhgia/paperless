@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Date;
 
 /**
  *
@@ -28,11 +29,11 @@ public class FileManagement extends Object{
     private int size;
     private int width;
     private int height;
-    private int status;
+    private int status;    
     private String hmac;
-    private String created_ad;
+    private Date created_ad;
     private String lastmodified_by;
-    private String lastmodified_at;
+    private Date lastmodified_at;
            
 
     public FileManagement(byte[] data, String name, String ID, String created_by) {
@@ -141,11 +142,11 @@ public class FileManagement extends Object{
         this.hmac = hmac;
     }
 
-    public String getCreated_ad() {
+    public Date getCreated_ad() {
         return created_ad;
     }
 
-    public void setCreated_ad(String created_ad) {
+    public void setCreated_ad(Date created_ad) {
         this.created_ad = created_ad;
     }
 
@@ -157,11 +158,11 @@ public class FileManagement extends Object{
         this.lastmodified_by = lastmodified_by;
     }
 
-    public String getLastmodified_at() {
+    public Date getLastmodified_at() {
         return lastmodified_at;
     }
 
-    public void setLastmodified_at(String lastmodified_at) {
+    public void setLastmodified_at(Date lastmodified_at) {
         this.lastmodified_at = lastmodified_at;
     }
 
@@ -172,9 +173,7 @@ public class FileManagement extends Object{
     public void setWidth(int width) {
         this.width = width;
     }
-    
-    
-    
+                
     public static void main(String[] args) throws JsonProcessingException{
         FileManagement a = new FileManagement();
         a.setName("hello");

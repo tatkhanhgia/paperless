@@ -24,9 +24,9 @@ import vn.mobileid.id.utils.Utils;
  *
  * @author ADMIN
  */
-public class ManageToken {
+public class ManageTokenWithIAM {
 
-    final private static Logger LOG = LogManager.getLogger(ManageToken.class);
+    final private static Logger LOG = LogManager.getLogger(ManageTokenWithIAM.class);
 
     private String URL = Configuration.getInstance().getKeyCloakURL();
     private String Realm = Configuration.getInstance().getKeyCloakRealm();
@@ -45,8 +45,9 @@ public class ManageToken {
         try {
             object = mapper.readValue(payload, KeycloakReq.class);
         } catch (JsonProcessingException ex) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Cannot parse payload");
+            if (LogHandler.isShowErrorLog()) {                
+                LOG.error("Cannot parse payload - payload:"+payload);
+                LOG.error("Details:"+ex);
             }
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
@@ -83,9 +84,10 @@ public class ManageToken {
                             accessToken
                     ));
         } else {
-            int sub_code = ManageToken.convertError(accessToken.getError_description());
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+//            int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
+//            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+//                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST, accessToken.getError_description());
         }
 
         return response;
@@ -97,7 +99,7 @@ public class ManageToken {
         //Check Client Secret. If not => found in system
         if (object.getClient_secret() == null) {
             object.setClient_secret(Configuration.getInstance().getKeycloakClient_secret());
-        }
+        }                
 
         KeyCloakInvocation keycloakServer = new KeyCloakInvocation(
                 URL,
@@ -122,9 +124,8 @@ public class ManageToken {
                             accessToken
                     ));
         } else {
-            int sub_code = ManageToken.convertError(accessToken.getError_description());
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+//            int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
+            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,accessToken.getError_description());
         }
 
         return response;
@@ -172,9 +173,9 @@ public class ManageToken {
         
         InternalResponse response;
         if (accessToken.getAccess_token() != null) {         
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,"SUCCESS");
+            response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,"");
         } else {
-            int sub_code = ManageToken.convertError(accessToken.getError_description());
+            int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
             response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
@@ -208,7 +209,7 @@ public class ManageToken {
         if (accessToken.getAccess_token() != null) {
             response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,"SUCCESS");
         } else {
-            int sub_code = ManageToken.convertError(accessToken.getError_description());
+            int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
             response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
@@ -238,7 +239,7 @@ public class ManageToken {
             return QryptoConstant.SUBCODE_MISSING_GRANT_TYPE;
         }
         if(errorKeycloak.contains("username")){
-            return QryptoConstant.SUBCODE_MISSING_USER_NAME;
+            return QryptoConstant.SUBCODE_MISSING_USER_NAME_OR_PASSWORD;
         }
         if(errorKeycloak.contains("Client secret")){
             //Missing client secret
@@ -270,9 +271,9 @@ public class ManageToken {
         if(LogHandler.isShowDebugLog()){
             LOG.info("Checking Header!!");            
             LOG.info("Token:"+token);
-        }
+        } 
         
-        if(token == null){
+        if(token == null || token.contains("null")){
             return new InternalResponse(QryptoConstant.HTTP_CODE_UNAUTHORIZED,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             QryptoConstant.SUBCODE_MISSING_ACCESS_TOKEN, "en", null)
@@ -286,15 +287,23 @@ public class ManageToken {
         KeycloakRes accessToken = keycloakServer.verifyToken(token);        
         
         InternalResponse response;
-        if (accessToken.getStatus() == QryptoConstant.CODE_SUCCESS) {
+//        System.out.println("Status:"+accessToken.getStatus());
+        if (accessToken.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
             response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,"SUCCESS");
             response.setUser(accessToken.getUser());
-        } else {
-            int sub_code = ManageToken.convertError(accessToken.getError_description());
+            return response;
+        } if( accessToken.getStatus() == QryptoConstant.HTTP_CODE_UNAUTHORIZED){
+            response = new InternalResponse(QryptoConstant.HTTP_CODE_UNAUTHORIZED,
+                    QryptoMessageResponse.getErrorMessage(
+                            QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            QryptoConstant.SUBCODE_UNAUTHORIZED_USER, "EN", null));
+        }
+        else {
+//            System.out.println("ErrDes:"+);
+            int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
             response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
                     QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
-
         return response;
     }         
     

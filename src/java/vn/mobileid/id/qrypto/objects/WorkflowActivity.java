@@ -37,7 +37,7 @@ public class WorkflowActivity {
     private String CSV_id; //pending        
     private int Generation_type;
     private String requestData;
-    private String status;
+    private String status;    
 
     public WorkflowActivity() {
         enterprise_name = null;
@@ -221,10 +221,7 @@ public class WorkflowActivity {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    
-    
+    }       
     
     public static void main(String[] args) throws JsonProcessingException {
         WorkflowActivity ac = new WorkflowActivity();

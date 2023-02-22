@@ -33,13 +33,13 @@ public class CreateWorkflowActivity {
     final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
     public static InternalResponse checkDataWorkflowActivity(WorkflowActivity workflowAc) {
-        if (workflowAc.getEnterprise_name() == null && workflowAc.getEnterprise_id() <= 0) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                            QryptoConstant.SUBCODE_MISSING_ENTERPRISE_DATA,
-                            "en",
-                            null));
-        }
+//        if (workflowAc.getEnterprise_name() == null && workflowAc.getEnterprise_id() <= 0) {
+//            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
+//                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                            QryptoConstant.SUBCODE_MISSING_ENTERPRISE_DATA,
+//                            "en",
+//                            null));
+//        }
 
         if (workflowAc.getWorkflow_id() <= 0) {
             return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
@@ -85,29 +85,29 @@ public class CreateWorkflowActivity {
             }
             fileManagementID = Integer.parseInt(response.getMessage());
 
-            //Create new QR
-            response = CreateQR.processingCreateQR("metaData",
-                    "HMAC",
-                    woAc.getCreated_by());
-
-            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
-                return response;
-            }
-            QRUUID = response.getMessage();
+//            //Create new QR
+//            response = CreateQR.processingCreateQR("metaData",
+//                    "HMAC",
+//                    user.getName());
+//
+//            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+//                return response;
+//            }
+//            QRUUID = response.getMessage();
 
             //Create new Transaction
             response = CreateTransaction.processingCreateTransaction(logID,
-                    Integer.parseInt(QRUUID),
-                    1, //Type QR:1 CSV:2
+                    fileManagementID,
+                    3, //Type QR:1 CSV:2 PDF:3
                     user,
-                    woAc.getCreated_by());
+                    user.getName());
             if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
             transactionID = response.getMessage();
 
             //Create new Workflow Activity
-            DatabaseResponse callDB = DB.createWorkflowActivity(woAc.getEnterprise_id(), //enterpriseID
+            DatabaseResponse callDB = DB.createWorkflowActivity(Integer.parseInt(user.getIss()), //enterpriseID
                     woAc.getWorkflow_id(), //workflowID
                     user.getEmail(), //useremail
                     transactionID, //transactionid
@@ -120,7 +120,7 @@ public class CreateWorkflowActivity {
                     temp.getTemplate_type(), //workflow type
                     "none request data", //request data
                     "hmac", //hmac
-                    woAc.getCreated_by());  //created by
+                    user.getName());  //created by
             if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
                 String message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
                         callDB.getStatus(),
@@ -132,40 +132,12 @@ public class CreateWorkflowActivity {
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
-            }
+            }           
 
-            //Create Workflow Detail - This is default Data
-            WorkflowDetail_Option detail = new WorkflowDetail_Option();
-            detail.setQr_background("WHITE");
-            detail.setQr_size(4);
-            detail.setQr_type(1);
-            detail.setUrl_code(false);
-//        detail.setPage(1);
-//        detail.setStamp_in(1);
-//        detail.setPage_size("A4");
-//        detail.setAsset_Background(0);
-            detail.setAsset_Template(7);
-//        detail.setAsset_Append(0);
-            detail.setDisable_CSV_task_notification_email(false);
-            detail.setCSV_email(false);
-            detail.setOmit_if_empty(false);
-            detail.setEmail_notification(false);
-
-            String hmac = "HMAC";
-
-            response = UpdateWorkflowDetail_option.updateWorkflowDetail(
-                    Integer.parseInt(temp.getWorkflow_id()),
-                    detail,
-                    hmac,
-                    woAc.getCreated_by());
-            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
-                return response;
-            }
-            
             //Convert to object and return it to client
             Create_WorkflowActivity_MessageJSNObject object = new Create_WorkflowActivity_MessageJSNObject();
             object.setCode(QryptoConstant.CODE_SUCCESS);
-            object.setWorkflowActivityID(String.valueOf(callDB.getIDResponse()));
+            object.setWorkflowActivityID(callDB.getIDResponse_int());
 
             return new InternalResponse(
                     QryptoConstant.HTTP_CODE_SUCCESS,

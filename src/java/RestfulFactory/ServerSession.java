@@ -91,10 +91,10 @@ public class ServerSession implements IServerSession {
         if (refreshToken != null) {
             authHeader = refreshToken;
         } else {
-            retryLogin++;
-            authHeader = property.getAuthorization2();
+            retryLogin++;            
+            authHeader = property.getAuthorization2();            
         }
-        System.out.println("Login-retry: " + retryLogin);
+//        System.out.println("Login-retry: " + retryLogin);
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setRememberMeEnabled(true);
         loginRequest.setRelyingParty(property.getRelyingParty());
@@ -103,7 +103,17 @@ public class ServerSession implements IServerSession {
 
         loginRequest.setLang(this.lang);
 
+        //Test
+//        System.out.println("BaseURL:"+property.getBaseUrl());
+//        System.out.println("RP:"+property.getRelyingParty());
+//        System.out.println("User:"+property.getRelyingPartyUser());
+//        System.out.println("Pass:"+property.getRelyingPartyPassword());
+//        System.out.println("PassKey:"+property.getRelyingPartyKeyStorePassword());
+//        System.out.println("Token:"+authHeader);
+        
         String jsonReq = Utils.gsTmp.toJson(loginRequest);
+//        System.out.println("Payload:"+jsonReq);
+        
         HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "auth/login", jsonReq, authHeader);
 
         if (!response.isStatus()) {
@@ -133,8 +143,8 @@ public class ServerSession implements IServerSession {
 
             if (signCloudResp.getRefreshToken() != null) {
                 this.refreshToken = "Bearer " + signCloudResp.getRefreshToken();
-                System.out.println("Err code: " + signCloudResp.getError());
-                System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+//                System.out.println("Err code: " + signCloudResp.getError());
+//                System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
             }
         }
     }
@@ -147,7 +157,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public List<ICertificate> listCertificates(String agreementUUID, String certificate, boolean certInfoEnabled, boolean authInfoEnabled, SearchConditions conditions) throws Throwable {
-        System.out.println("____________credentials/list____________");
+//        System.out.println("____________credentials/list____________");
         String authHeader = bearer;
         CredentialListRequest credentialListRequest = new CredentialListRequest();
         credentialListRequest.setAgreementUUID(agreementUUID);
@@ -240,7 +250,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public boolean assignAgreement(String userName, String agreementUUID, String otpRequestID, String otp) throws Throwable {
-        System.out.println("____________agreements/assign____________");
+//        System.out.println("____________agreements/assign____________");
         AgreementAssignRequest agreementAssignRequest = new AgreementAssignRequest();
         agreementAssignRequest.setAgreementUUID(agreementUUID);
         agreementAssignRequest.setUser(userName);
@@ -276,7 +286,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public String sendUserOTPByUserName(OTPType otpType, String username) throws Throwable {
-        System.out.println("____________owner/sendOTP____________");
+//        System.out.println("____________owner/sendOTP____________");
         SendOwnerOTPRequest request = new SendOwnerOTPRequest();
         request.setUser(username);
         request.setUserType(USERNAME);
@@ -308,7 +318,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public String sendUserOTPByAgreement(OTPType otpType, String agreementUUID) throws Throwable {
-        System.out.println("____________owner/sendOTP____________");
+//        System.out.println("____________owner/sendOTP____________");
         SendOwnerOTPRequest request = new SendOwnerOTPRequest();
         request.setAgreementUUID(agreementUUID);
         request.setOtpType(otpType);
@@ -341,7 +351,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public String authorize(String agreementUUID, String credentialID, int numSignatures, DocumentDigests doc, SignAlgo signAlgo, String otpRequestID, String otp) throws Throwable {
-        System.out.println("____________credentials/authorize____________");
+//        System.out.println("____________credentials/authorize____________");
         AuthorizeRequest request = new AuthorizeRequest();
         request.setAgreementUUID(agreementUUID);
         request.setCredentialID(credentialID);
@@ -377,7 +387,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public String authorize(String agreementUUID, String credentialID, int numSignatures, DocumentDigests doc, SignAlgo signAlgo, MobileDisplayTemplate displayTemplate) throws Throwable {
-        System.out.println("____________credentials/authorize____________");
+//        System.out.println("____________credentials/authorize____________");
         AuthorizeRequest request = new AuthorizeRequest();
         request.setAgreementUUID(agreementUUID);
         request.setCredentialID(credentialID);
@@ -421,7 +431,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public List<byte[]> signHash(String agreementUUID, String credentialID, DocumentDigests documentDigest, SignAlgo signAlgo, String SAD) throws Throwable {
-        System.out.println("____________signatures/signHash____________");
+//        System.out.println("____________signatures/signHash____________");
         SignHashRequest request = new SignHashRequest();
         request.setAgreementUUID(agreementUUID);
         request.setCredentialID(credentialID);
@@ -454,7 +464,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public String sendOTP(String agreementUUID, String credentialID, String notificationTemplate, String notificationSubject) throws Throwable {
-        System.out.println("____________credentials/sendOTP____________");
+//        System.out.println("____________credentials/sendOTP____________");
         CredentialSendOTPRequest request = new CredentialSendOTPRequest();
         request.setAgreementUUID(agreementUUID);
         request.setCredentialID(credentialID);
@@ -484,7 +494,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public boolean createUser(String userName, String email, String phone) throws Throwable {
-        System.out.println("____________owner/create____________");
+//        System.out.println("____________owner/create____________");
         CreateUserRequest request = new CreateUserRequest();
         request.setUsername(userName);
         request.setEmail(email);
@@ -514,7 +524,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public List<byte[]> signDoc(String agreementUUID, String credentialID, HashMap<SignedPropertyType, Object> signedProps, List<byte[]> docs, HashAlgorithmOID hashAlgo, SignAlgo signAlgo, String SAD) throws Throwable {
-        System.out.println("____________signatures/signDoc____________");
+//        System.out.println("____________signatures/signDoc____________");
         SignDocRequest request = new SignDocRequest();
         request.setAgreementUUID(agreementUUID);
         request.setCredentialID(credentialID);
@@ -547,7 +557,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public List<CertificateAuthority> getCertificateAuthorities() throws Throwable {
-        System.out.println("____________systems/getCertificateAuthorities____________");
+//        System.out.println("____________systems/getCertificateAuthorities____________");
         Request request = new Request();
         request.setLang(this.lang);
 
@@ -575,7 +585,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public List<CertificateProfile> getCertificateProfies(String caName) throws Throwable {
-        System.out.println("____________systems/getCertificateProfiles____________");
+//        System.out.println("____________systems/getCertificateProfiles____________");
         GetCertificateProfilesRequest request = new GetCertificateProfilesRequest();
         request.setCaName(caName);
         request.setLang(this.lang);
@@ -604,7 +614,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public List<Province> getStatesOrProvinces() throws Throwable {
-        System.out.println("____________systems/getStatesOrProvinces____________");
+//        System.out.println("____________systems/getStatesOrProvinces____________");
         GetStateProvinceRequest request = new GetStateProvinceRequest();
         request.setCountry("VN");
         request.setLang(this.lang);
@@ -632,7 +642,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public IssueCertificateResponse createCertificate(String userName, String otpRequestID, String otp, String certProfile, SharedMode sharedMode, AuthMode authMode, int multiSign, CertificateDetails certDetails) throws Throwable {
-        System.out.println("____________credentials/issue____________");
+//        System.out.println("____________credentials/issue____________");
         IssueCertificateRequest request = new IssueCertificateRequest();
         request.setUser(userName);
         request.setUserType(USERNAME);
@@ -674,7 +684,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public ICertificate importCertificate(String agreementUUID, String credentialID, String cert) throws Throwable {
-        System.out.println("____________credentials/import____________");
+//        System.out.println("____________credentials/import____________");
         ImportCertificateRequest request = new ImportCertificateRequest();
         request.setAgreementUUID(agreementUUID);
         request.setCredentialID(credentialID);

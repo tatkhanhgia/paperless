@@ -53,7 +53,7 @@ public class MakeSignature {
 //    }
 
     private PrivateKey GetKey() throws Throwable {
-        System.out.println("Key = " + this.key + ", Value = " + this.passKey);
+//        System.out.println("Key = " + this.key + ", Value = " + this.passKey);
         
         KeyStore keystore = KeyStore.getInstance("PKCS12");
         InputStream is = new FileInputStream(this.key);
@@ -92,7 +92,7 @@ public class MakeSignature {
     }
     
     private PrivateKey GetKey_withArrByte() throws Throwable {
-        System.out.println("Key = null =>get with byte[], Value = " + this.passKey);
+//        System.out.println("Key = null =>get with byte[], Value = " + this.passKey);
         
         KeyStore keystore = KeyStore.getInstance("PKCS12");        
         InputStream is = new ByteArrayInputStream(keyData);

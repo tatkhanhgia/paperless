@@ -19,6 +19,8 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -40,6 +42,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -379,7 +382,7 @@ public class Crypto {
         Security.addProvider(new BouncyCastleProvider());
         KeyStore keystore = KeyStore.getInstance(keystoreType);
         Signature sig;
-        try (InputStream is = new FileInputStream(keystorePath)) {
+        try ( InputStream is = new FileInputStream(keystorePath)) {
             keystore.load(is, keystorePassword.toCharArray());
             Enumeration<String> e = keystore.aliases();
             String aliasName;
@@ -405,15 +408,16 @@ public class Crypto {
         Signature sig = Signature.getInstance("SHA1withRSA");
         sig.initSign(key);
         sig.update(data.getBytes());
-        return DatatypeConverter.printBase64Binary(sig.sign());
+//        return DatatypeConverter.printBase64Binary(sig.sign());
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(sig.sign());
     }
 
     public static PrivateKey getPrivateKeyFromString(String key, String mimeType) throws IOException, GeneralSecurityException {
         byte[] encoded = null;
         if (mimeType.toLowerCase().contains("base64")) {
             String privateKeyPEM = key;
-            privateKeyPEM = privateKeyPEM.replace("-----BEGIN PRIVATE KEY-----\n", "");
-            privateKeyPEM = privateKeyPEM.replace("-----END PRIVATE KEY-----", "");
+            privateKeyPEM = privateKeyPEM.replace("-----BEGIN RSA PRIVATE KEY-----\n", "");
+            privateKeyPEM = privateKeyPEM.replace("-----END RSA PRIVATE KEY-----", "");
             encoded = DatatypeConverter.parseBase64Binary(privateKeyPEM);
         } else {
             encoded = DatatypeConverter.parseHexBinary(key);
@@ -612,7 +616,7 @@ public class Crypto {
         Security.addProvider(new BouncyCastleProvider());
         KeyStore keystore = KeyStore.getInstance(keystoreType);
         Signature sig;
-        try (InputStream is = new FileInputStream(keyStorePath)) {
+        try ( InputStream is = new FileInputStream(keyStorePath)) {
             keystore.load(is, keyStorePassword.toCharArray());
             Enumeration<String> e = keystore.aliases();
             String aliasName;
@@ -955,7 +959,7 @@ public class Crypto {
         String pem = "";
         try {
             StringWriter sw = new StringWriter();
-            try (PEMWriter pw = new PEMWriter(sw)) {
+            try ( PEMWriter pw = new PEMWriter(sw)) {
                 pw.writeObject(x509Cert);
             }
             return sw.toString();
@@ -985,6 +989,12 @@ public class Crypto {
 
     public static String generateSecretKey() {
         return java.util.Base64.getUrlEncoder().encodeToString(randomBytes(30));
+    }
+
+    public static KeyPair generateRSAKey(int lenght) throws NoSuchAlgorithmException {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+        kpg.initialize(lenght < 1024 ? 2048 : lenght);
+        return kpg.generateKeyPair();
     }
 
     /*

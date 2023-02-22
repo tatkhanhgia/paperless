@@ -16,7 +16,7 @@ import vn.mobileid.id.general.LogHandler;
  *
  * @author GiaTK
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(value = {"notneed"},ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class WorkflowDetail_Option {
 
@@ -25,7 +25,7 @@ public class WorkflowDetail_Option {
     private int qr_type;
     private boolean url_code;
     private int page;
-    private int stamp_in;
+    private String stamp_in;
     private String page_size;
     private int asset_Background;
     private int asset_Append;
@@ -34,8 +34,15 @@ public class WorkflowDetail_Option {
     private boolean CSV_email;
     private boolean omit_if_empty;
     private boolean email_notification;
+    private int x_cordinate;
+    private int y_cordinate;
+    private boolean QR_placement;
+    private boolean show_domain;
+    private String text_below_QR;
+    private String note;
+    private String metadata;
 
-    public WorkflowDetail_Option(String qr_background, int qr_size, int qr_type, boolean url_code, int page, int stamp_in, String page_size, int asset_Background, int asset_Append, int asset_Template, boolean disable_CSV_task_notification_email, boolean CSV_email, boolean omit_if_empty, boolean email_notification) {
+    public WorkflowDetail_Option(String qr_background, int qr_size, int qr_type, boolean url_code, int page, String stamp_in, String page_size, int asset_Background, int asset_Append, int asset_Template, boolean disable_CSV_task_notification_email, boolean CSV_email, boolean omit_if_empty, boolean email_notification) {
         this.qr_background = qr_background;
         this.qr_size = qr_size;
         this.qr_type = qr_type;
@@ -55,22 +62,22 @@ public class WorkflowDetail_Option {
     public WorkflowDetail_Option() {
     }
 
-    @JsonProperty("QR_background")
+    @JsonProperty("qr_background")
     public String getQr_background() {
         return qr_background;
     }
 
-    @JsonProperty("QR_size")
+    @JsonProperty("qr_size")
     public int getQr_size() {
         return qr_size;
     }
 
-    @JsonProperty("QR_type")
+    @JsonProperty("qr_type")
     public int getQr_type() {
         return qr_type;
     }
 
-    @JsonProperty("URL_QR_Code")
+    @JsonProperty("url_qr_code")
     public boolean isUrl_code() {
         return url_code;
     }
@@ -81,7 +88,7 @@ public class WorkflowDetail_Option {
     }
 
     @JsonProperty("stamp_in")
-    public int getStamp_in() {
+    public String getStamp_in() {
         return stamp_in;
     }
 
@@ -105,12 +112,12 @@ public class WorkflowDetail_Option {
         return asset_Template;
     }
 
-    @JsonProperty("disable_CSV_task_notification_email")
+    @JsonProperty("disable_csv_task_notification_email")
     public boolean isDisable_CSV_task_notification_email() {
         return disable_CSV_task_notification_email;
     }
 
-    @JsonProperty("CSV_email")
+    @JsonProperty("csv_email")
     public boolean isCSV_email() {
         return CSV_email;
     }
@@ -125,6 +132,73 @@ public class WorkflowDetail_Option {
         return email_notification;
     }
 
+    @JsonProperty("note")
+    public String getNote() {
+        return note;
+    }
+
+    @JsonProperty("x_cordinate")
+    public int getX_cordinate() {
+        return x_cordinate;
+    }
+
+    @JsonProperty("y_cordinate")
+    public int getY_cordinate() {
+        return y_cordinate;
+    }
+
+    @JsonProperty("qr_placement")
+    public boolean isQR_placement() {
+        return QR_placement;
+    }
+
+    @JsonProperty("show_domain")
+    public boolean isShow_domain() {
+        return show_domain;
+    }
+
+    @JsonProperty("text_below_qr")
+    public String getText_below_QR() {
+        return text_below_QR;
+    }
+
+    public void setQR_placement(boolean QR_placement) {
+        this.QR_placement = QR_placement;
+    }
+
+    public void setShow_domain(boolean show_domain) {
+        this.show_domain = show_domain;
+    }
+
+    public void setText_below_QR(String text_below_QR) {
+        this.text_below_QR = text_below_QR;
+    }
+
+    
+    
+    public void setX_cordinate(int x_cordinate) {
+        this.x_cordinate = x_cordinate;
+    }
+
+    public void setY_cordinate(int y_cordinate) {
+        this.y_cordinate = y_cordinate;
+    }
+
+    
+    
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    @JsonProperty("meta_data")
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }   
+    
     public void setQr_background(String qr_background) {
         this.qr_background = qr_background;
     }
@@ -145,7 +219,7 @@ public class WorkflowDetail_Option {
         this.page = page;
     }
 
-    public void setStamp_in(int stamp_in) {
+    public void setStamp_in(String stamp_in) {
         this.stamp_in = stamp_in;
     }
 
@@ -180,7 +254,8 @@ public class WorkflowDetail_Option {
     public void setEmail_notification(boolean email_notification) {
         this.email_notification = email_notification;
     }
-
+    
+    @JsonProperty("notneed")
     public HashMap<String, Object> getHashMap() throws IllegalArgumentException, IllegalAccessException {
         HashMap<String, Object> map = new HashMap<>();
         Field[] fields = WorkflowDetail_Option.class.getDeclaredFields();

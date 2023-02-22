@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.annotation.JsonRootName;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,13 +32,15 @@ public class WorkflowTemplateType {
     private HashMap<String, Integer> enableObjectMap;
     private String HMAC;
     private String created_by;
-    private String created_at;
+    private Date created_at;
     private String modified_by;
-    private String modified_at;
+    private Date modified_at;
+    private String metadata_template;
+    private String metadata_detail;
 
     private String raw;
 
-    public WorkflowTemplateType(int id, String name, int status, int workflowType, int ordinary, String code, HashMap<String, Integer> enableObjectMap, String HMAC, String created_by, String created_at, String modified_by, String modified_at) {
+    public WorkflowTemplateType(int id, String name, int status, int workflowType, int ordinary, String code, HashMap<String, Integer> enableObjectMap, String HMAC, String created_by, Date created_at, String modified_by, Date modified_at) {
         this.id = id;
         this.name = name;
         this.status = status;
@@ -94,7 +97,7 @@ public class WorkflowTemplateType {
         return created_by;
     }
 
-    public String getCreated_at() {
+    public Date getCreated_at() {
         return created_at;
     }
 
@@ -102,7 +105,7 @@ public class WorkflowTemplateType {
         return modified_by;
     }
 
-    public String getModified_at() {
+    public Date getModified_at() {
         return modified_at;
     }
 
@@ -153,7 +156,7 @@ public class WorkflowTemplateType {
         this.created_by = created_by;
     }
 
-    public void setCreated_at(String created_at) {
+    public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
 
@@ -161,7 +164,7 @@ public class WorkflowTemplateType {
         this.modified_by = modified_by;
     }
 
-    public void setModified_at(String modified_at) {
+    public void setModified_at(Date modified_at) {
         this.modified_at = modified_at;
     }
 
@@ -189,4 +192,22 @@ public class WorkflowTemplateType {
         });
         return result;
     }
+
+    public String getMetadata_template() {
+        return metadata_template;
+    }
+
+    public void setMetadata_template(String metadata_template) {
+        this.metadata_template = metadata_template;
+    }
+
+    public String getMetadata_detail() {
+        return metadata_detail;
+    }
+
+    public void setMetadata_detail(String metadata_detail) {
+        this.metadata_detail = metadata_detail;
+    }
+    
+    
 }

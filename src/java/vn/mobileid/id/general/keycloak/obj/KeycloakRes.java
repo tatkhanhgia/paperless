@@ -16,7 +16,7 @@ import java.util.List;
  * @author ADMIN
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class KeycloakRes {
     private int status;
     private String access_token;

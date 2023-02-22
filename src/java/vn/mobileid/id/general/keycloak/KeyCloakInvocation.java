@@ -168,8 +168,8 @@ public class KeyCloakInvocation {
 
     public synchronized KeycloakRes getAccessToken(String payload, boolean renewAccessToken) {
         if (renewAccessToken) {
-            if (LogHandler.isShowDebugLog()) {
-                LOG.debug("Get new accessToken");
+            if (LogHandler.isShowInfoLog()) {
+                LOG.info("Get new accessToken");
             }
             KeycloakRes act = null;
             try {
@@ -200,6 +200,7 @@ public class KeyCloakInvocation {
     }
 
     private KeycloakRes token() throws Exception {
+
         String tokenUrl = url + "/realms/" + realm + FUNCTION_TOKEN;
 
         HashMap<String, String> headers = new HashMap<>();
@@ -216,9 +217,15 @@ public class KeyCloakInvocation {
         urlParameters += username == null ? "" : ("&username=" + URLEncoder.encode(username, "UTF-8"));
         urlParameters += password == null ? "" : ("&password=" + URLEncoder.encode(password, "UTF-8"));
 
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("payload call IAM by JSON:" + urlParameters);
+        }
         KeycloakRes token = null;
         HttpRequest httpRequest = new HttpRequest(true, urlParameters, tokenUrl, headers);
         HttpRequest.Response response = httpRequest.sendRequest();
+//        if (LogHandler.isShowDebugLog()) {
+//            LOG.debug("Response from IAM:" + response.getBody());
+//        }
         try {
             token = objectMapper.readValue(response.getBody(), KeycloakRes.class);
         } catch (IOException e) {
@@ -231,8 +238,8 @@ public class KeyCloakInvocation {
     }
 
     private KeycloakRes token(String payload) throws Exception {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("payload call IAM:" + payload);
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("payload call IAM by URL:" + payload);
         }
         String tokenUrl = url + "/realms/" + realm + FUNCTION_TOKEN;
 
@@ -248,8 +255,12 @@ public class KeyCloakInvocation {
         KeycloakRes token = null;
         HttpRequest httpRequest = new HttpRequest(true, payload, tokenUrl, headers);
         HttpRequest.Response response = httpRequest.sendRequest();
+//        if (LogHandler.isShowDebugLog()) {
+//            LOG.debug("Response from IAM:" + response.getBody());
+//        }
         try {
             token = objectMapper.readValue(response.getBody(), KeycloakRes.class);
+
         } catch (IOException e) {
             e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
@@ -261,8 +272,8 @@ public class KeyCloakInvocation {
 
     public synchronized KeycloakRes revokeToken(String payload, boolean renewAccessToken) {
         if (renewAccessToken) {
-            if (LogHandler.isShowDebugLog()) {
-                LOG.debug("Get new accessToken");
+            if (LogHandler.isShowInfoLog()) {
+                LOG.info("Revoke refreshToken");
             }
             KeycloakRes act = null;
             try {
@@ -274,7 +285,7 @@ public class KeyCloakInvocation {
             } catch (Exception e) {
                 e.printStackTrace();
                 if (LogHandler.isShowErrorLog()) {
-                    LOG.error("Error while getting accessToken. Details: " + Utils.printStackTrace(e));
+                    LOG.error("Error while revoke RefreshToken. Details: " + Utils.printStackTrace(e));
                 }
             }
             if (!Utils.isNullOrEmpty(act.getAccess_token())) {
@@ -292,7 +303,7 @@ public class KeyCloakInvocation {
         }
     }
 
-    private KeycloakRes revokeToken() throws Exception {
+    private KeycloakRes revokeToken() throws Exception {        
         String tokenUrl = url + "/realms/" + realm + FUNCTION_REVOKE;
 
         HashMap<String, String> headers = new HashMap<>();
@@ -308,11 +319,16 @@ public class KeyCloakInvocation {
         urlParameters += refresh_token == null ? "" : ("&token=" + URLEncoder.encode(refresh_token, "UTF-8"));
         urlParameters += token_type == null ? "" : ("&token_type_hint=" + URLEncoder.encode(token_type, "UTF-8"));
 
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("payload call IAM:" + urlParameters);
+        }
         KeycloakRes token = null;
         HttpRequest httpRequest = new HttpRequest(true, urlParameters, tokenUrl, headers);
         HttpRequest.Response response = httpRequest.sendRequest();
-
-        if (response.getHttpCode() == 200 && response.getBody() == null) {
+//        if (LogHandler.isShowDebugLog()) {            
+//            LOG.debug("Response from IAM : " + response.getBody());
+//        }
+        if (response.getHttpCode() == 200 && (response.getBody() == null || response.getBody().isEmpty())) {
             token = new KeycloakRes();
             token.setAccess_token("Success");
             return token;
@@ -344,8 +360,11 @@ public class KeyCloakInvocation {
         KeycloakRes token = null;
         HttpRequest httpRequest = new HttpRequest(true, payload, tokenUrl, headers);
         HttpRequest.Response response = httpRequest.sendRequest();
-
-        if (response.getHttpCode() == 200 && response.getBody() == null) {
+//        if (LogHandler.isShowDebugLog()) {
+//            LOG.debug("HttpCode response:" + response.getHttpCode());
+//            LOG.debug("Body response from IAM : " + response.getBody());
+//        }
+        if (response.getHttpCode() == 200 && (response.getBody() == null || response.getBody().isEmpty())) {
             token = new KeycloakRes();
             token.setAccess_token("Success");
             return token;
@@ -398,7 +417,7 @@ public class KeyCloakInvocation {
             result.setError_description("Token is invalid!");
             return result;
         }
-        
+
         if (LogHandler.isShowDebugLog()) {
             LOG.debug("Header:" + header);
             LOG.debug("Alg:" + alg);
@@ -436,7 +455,7 @@ public class KeyCloakInvocation {
                 return result;
             }
         }
-        
+
         //Convert to Object
         User data = null;
         try {
@@ -458,7 +477,15 @@ public class KeyCloakInvocation {
                     KeyCloakInvocation.certificate.getE()
             );
             result = verifyToken(token, pub);
-            result.setUser(data);
+            if (result.getStatus() == QryptoConstant.CODE_SUCCESS) {
+                result = verifyTokenV2(token);
+                if (result.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                    return result;
+                }
+                result.setStatus(QryptoConstant.HTTP_CODE_SUCCESS);
+                result.setUser(data);
+                return result;
+            }
             return result;
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
@@ -471,12 +498,59 @@ public class KeyCloakInvocation {
         }
     }
 
+    public synchronized KeycloakRes verifyTokenV2(String token) {
+        String tokenUrl = url + "/realms/" + realm + FUNCTION_USERINFO;
+        HashMap<String, String> headers = new HashMap<>();
+//        System.out.println("Token:"+token);
+        headers.put("Authorization", "Bearer " + token);
+//        headers.put("Content-Type", "application/x-www-form-urlencoded");
+        KeycloakRes res = null;
+        HttpRequest httpRequest = new HttpRequest(true, null, tokenUrl, headers);
+        HttpRequest.Response response = httpRequest.sendRequest();
+//        if (LogHandler.isShowDebugLog()) {
+//            LOG.debug("HttpCode response:" + response.getHttpCode());
+//            LOG.debug("Body response from IAM : " + response.getBody());
+//        }
+//        System.out.println("HttpCode:"+response.getHttpCode());
+//        System.out.println("Body:"+response.getBody());
+        if (response.getHttpCode() == 200) {
+            res = new KeycloakRes();
+//            User data = null;
+//            try {
+//                data = objectMapper.readValue(response.getBody(), User.class);
+//            } catch (Exception e) {
+//                if (LogHandler.isShowErrorLog()) {
+//                    LOG.error("Cannot parse data JWT to object User");
+//                }
+//                res.setStatus(QryptoConstant.CODE_FAIL);
+//                res.setError_description("INTERNAL ERROR");
+//                return res;
+//            }
+            res.setStatus(QryptoConstant.HTTP_CODE_SUCCESS);
+//            res.setUser(data);
+            return res;
+        } else {
+            try {
+                res = objectMapper.readValue(response.getBody(), KeycloakRes.class);
+                res.setStatus(QryptoConstant.HTTP_CODE_UNAUTHORIZED);
+//                System.out.println("MEss:"+res.getError_description());
+                return res;
+            } catch (IOException e) {
+                e.printStackTrace();
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Errzor while parsing the json response. Details: " + Utils.printStackTrace(e));
+                }
+            }
+            return null;
+        }
+    }
+
     private KeycloakRes getKeycloakCertificate() {
-        if (LOG.isDebugEnabled()) {
+        if (LogHandler.isShowDebugLog()) {
             LOG.debug("Get IAM Certificate!");
         }
         String tokenUrl = url + "/realms/" + realm + FUNCTION_CERTS;
-        
+
         KeycloakRes token = null;
         HttpRequest httpRequest = new HttpRequest(false, null, tokenUrl, null);
         HttpRequest.Response response = httpRequest.sendRequest();
@@ -529,7 +603,7 @@ public class KeyCloakInvocation {
         } catch (TokenExpiredException e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Expired token!");
-            }                        
+            }
             KeycloakRes result = new KeycloakRes();
             result.setStatus(QryptoConstant.CODE_FAIL);
             result.setError_description("Token is expired!");
@@ -537,7 +611,7 @@ public class KeyCloakInvocation {
         } catch (JWTVerificationException e) {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Token is invalid!");
-            }                        
+            }
             KeycloakRes result = new KeycloakRes();
             result.setStatus(QryptoConstant.CODE_FAIL);
             result.setError_description("Token is invalid!");
@@ -568,4 +642,14 @@ public class KeyCloakInvocation {
         }
     }
 
+    public static void main(String[] args) {
+        KeyCloakInvocation keycloakServer = new KeyCloakInvocation(
+                "http://192.168.198.120:8081/auth",
+                "QryptoRealm");
+        KeycloakRes res = keycloakServer.verifyTokenV2("eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxSEFyRGRxRFFHYWRWX3dKaUpSLXItdjlUbUpVVldILURxSzRBM0xQT2xvIn0.eyJleHAiOjE2NzUzOTQwNzQsImlhdCI6MTY3NTM5Mzc3NCwianRpIjoiNDdkYjVmYjUtOGNmNy00NThiLWEyMTYtNGYxMGYyZjU5ZWI4IiwiaXNzIjoiaHR0cDovLzE5Mi4xNjguMTk4LjEyMDo4MDgxL2F1dGgvcmVhbG1zL1FyeXB0b1JlYWxtIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjY1NDFiY2E4LWRkNTUtNDhiMi1hNTY5LTgyYzYwZGI5NDk1MyIsInR5cCI6IkJlYXJlciIsImF6cCI6InFyeXB0b1VzZXIiLCJzZXNzaW9uX3N0YXRlIjoiYjk1Y2E4MmUtNGM4ZS00MjIzLWJiYmEtMWU0YmI4NTU4NjE2IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLXFyeXB0b3JlYWxtIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6ImI5NWNhODJlLTRjOGUtNDIyMy1iYmJhLTFlNGJiODU1ODYxNiIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlRhdCBHaWEiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJ1c2VyMiIsImdpdmVuX25hbWUiOiJUYXQiLCJmYW1pbHlfbmFtZSI6IkdpYSIsImVtYWlsIjoiZ2lhdGtAbW9iaWxlLWlkLnZuIn0.DPhvN_8dYSEw_-mz4UgHRBa35GD9Wlze8zGTn-UBU6N4n2MiA-W3j72048XCOF9izUkoMmarsVqwcXtRXtN6qD-1oNSwXoCd9cWDf5-5AM1GW9Vw2JyMCL-VcNUA3CRr_zrVZfDQ9jXzTPxuFLgx-nOGeYkmaGv9N85M69knu-MQMpXCkMT5CD3HjpUT2MwkjiKLLUdsF586oVP3prvrsjE0DgrB1ZwoakMRqSTaLfmlnpfwlzMckNND_HYSuwLOrYKIstCVcw_Rx5zyv20E-H7W2yOhJgdK2mGJQtUUueBnKrKxvBX5l8HutH1oWpuZ2A7DyMohaq0s3Yv9leFQ3w");
+        System.out.println(res.getStatus());
+        System.out.println(res.getError());
+        System.out.println(res.getError_description());
+
+    }
 }

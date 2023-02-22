@@ -4,9 +4,11 @@
  */
 package vn.mobileid.id.qrypto.kernel;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
@@ -17,23 +19,40 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.qrypto.QryptoConstant;
 import vn.mobileid.id.qrypto.objects.Asset;
+import vn.mobileid.id.qrypto.objects.Item_JSNObject;
 import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
+import vn.mobileid.id.utils.XSLT_PDF_Processing;
 
 /**
  *
  * @author GiaTK
  */
 public class UploadAsset {
+
     final private static Logger LOG = LogManager.getLogger(UploadAsset.class);
 
-    public static InternalResponse uploadAsset(User user,Asset asset){
+    public static InternalResponse uploadAsset(User user, Asset asset) {
         try {
             Database DB = new DatabaseImpl();
-            //Data                        
+            //Upload Asset Template
+            Files.write(new File("D:\\NetBean\\qrypto\\file\\result.xslt").toPath(), asset.getBinaryData(), StandardOpenOption.CREATE);
+            Item_JSNObject item = XSLT_PDF_Processing.getValueFromXSLT(asset.getBinaryData());
+
+            asset.setMetadata(new ObjectMapper().writeValueAsString(item));
+
+            //Process file PDF
+            asset.setSize(asset.getBinaryData().length);
+            asset.setHmac("hmac");
+            if (asset.getName() == null || asset.getName().equals("")) {
+                asset.setName("PDF -" + user.getEmail());
+            }
+
+            //WWrite into DB
             InternalResponse response = null;
-                    
+
             DatabaseResponse callDB = DB.uploadAsset(
                     user.getEmail(),
+                    3, //enterprise_id
                     asset.getType(),
                     asset.getName(),
                     asset.getSize(),
@@ -43,35 +62,35 @@ public class UploadAsset {
                     asset.getBinaryData(),
                     asset.getHmac(),
                     user.getName());
-            
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
+
+            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
                 String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                    LOG.error("Cannot get Asset - Detail:"+message);
+                message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                         null);
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Cannot Upload Asset - Detail:" + message);
                 }
                 return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
-            }                        
-            
+            }
+
             return new InternalResponse(
                     QryptoConstant.CODE_SUCCESS,
-                    callDB.getIDResponse());
-            
+                    "{\"asset_id\":" + callDB.getIDResponse()+"}");
+
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
                 LOG.error("UNKNOWN EXCEPTION. Details: " + e);
-            }            
-            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
-        }  
+            }
+            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+        }
     }
 
-    public static void main(String[] ags) throws IOException{
+    public static void main(String[] ags) throws IOException {
 //        User user = new User();
 //        user.setEmail("giatk@mobile-id.vn");
 //        user.setName("TAT KHANH GIA");
