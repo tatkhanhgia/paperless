@@ -24,7 +24,6 @@ public class Configuration {
 
     private Properties prop = new Properties();
     private Properties keycloakprop = new Properties();
-//    private Properties QryptoDescription = new Properties();  
     private Properties appInfo = new Properties();
     private Properties propSMTP = new Properties();
 
@@ -205,40 +204,40 @@ public class Configuration {
             }
             
             
-            dbUrl = prop.getProperty("dtis.db.url") == null ? System.getenv("DTIS_DB_URL") : prop.getProperty("dtis.db.url");
-            dbUsername = prop.getProperty("dtis.db.username") == null ? System.getenv("DTIS_DB_USERNAME") : prop.getProperty("dtis.db.username");
-            dbPassword = prop.getProperty("dtis.db.password") == null ? System.getenv("DTIS_DB_PASSWORD") : prop.getProperty("dtis.db.password");
-            dbDriver = prop.getProperty("dtis.db.driver") == null ? System.getenv("DTIS_DB_DRIVER") : prop.getProperty("dtis.db.driver");
+            dbUrl = prop.getProperty("paperless.db.url") == null ? System.getenv("DTIS_DB_URL") : prop.getProperty("paperless.db.url");
+            dbUsername = prop.getProperty("paperless.db.username") == null ? System.getenv("DTIS_DB_USERNAME") : prop.getProperty("paperless.db.username");
+            dbPassword = prop.getProperty("paperless.db.password") == null ? System.getenv("DTIS_DB_PASSWORD") : prop.getProperty("paperless.db.password");
+            dbDriver = prop.getProperty("paperless.db.driver") == null ? System.getenv("DTIS_DB_DRIVER") : prop.getProperty("paperless.db.driver");
 
-            dbReadOnlyUrl = prop.getProperty("dtis.db.readonly.url") == null ? System.getenv("DTIS_DB_READONLY_URL") : prop.getProperty("dtis.db.readonly.url");
-            dbReadOnlyUsername = prop.getProperty("dtis.db.readonly.username") == null ? System.getenv("DTIS_DB_READONLY_USERNAME") : prop.getProperty("dtis.db.readonly.username");
-            dbReadOnlyPassword = prop.getProperty("dtis.db.readonly.password") == null ? System.getenv("DTIS_DB_READONLY_PASSWORD") : prop.getProperty("dtis.db.readonly.password");
-            dbReadOnlyDriver = prop.getProperty("dtis.db.readonly.driver") == null ? System.getenv("DTIS_DB_READONLY_DRIVER") : prop.getProperty("dtis.db.readonly.driver");
+            dbReadOnlyUrl = prop.getProperty("paperless.db.readonly.url") == null ? System.getenv("DTIS_DB_READONLY_URL") : prop.getProperty("paperless.db.readonly.url");
+            dbReadOnlyUsername = prop.getProperty("paperless.db.readonly.username") == null ? System.getenv("DTIS_DB_READONLY_USERNAME") : prop.getProperty("paperless.db.readonly.username");
+            dbReadOnlyPassword = prop.getProperty("paperless.db.readonly.password") == null ? System.getenv("DTIS_DB_READONLY_PASSWORD") : prop.getProperty("paperless.db.readonly.password");
+            dbReadOnlyDriver = prop.getProperty("paperless.db.readonly.driver") == null ? System.getenv("DTIS_DB_READONLY_DRIVER") : prop.getProperty("paperless.db.readonly.driver");
 
-            dbWriteOnlyUrl = prop.getProperty("dtis.db.writeonly.url") == null ? System.getenv("DTIS_DB_WRITEONLY_URL") : prop.getProperty("dtis.db.writeonly.url");
-            dbWriteOnlyUsername = prop.getProperty("dtis.db.writeonly.username") == null ? System.getenv("DTIS_DB_WRITEONLY_USERNAME") : prop.getProperty("dtis.db.writeonly.username");
-            dbWriteOnlyPassword = prop.getProperty("dtis.db.writeonly.password") == null ? System.getenv("DTIS_DB_WRITEONLY_PASSWORD") : prop.getProperty("dtis.db.writeonly.password");
-            dbWriteOnlyDriver = prop.getProperty("dtis.db.writeonly.driver") == null ? System.getenv("DTIS_DB_WRITEONLY_DRIVER") : prop.getProperty("dtis.db.writeonly.driver");
+            dbWriteOnlyUrl = prop.getProperty("paperless.db.writeonly.url") == null ? System.getenv("DTIS_DB_WRITEONLY_URL") : prop.getProperty("paperless.db.writeonly.url");
+            dbWriteOnlyUsername = prop.getProperty("paperless.db.writeonly.username") == null ? System.getenv("DTIS_DB_WRITEONLY_USERNAME") : prop.getProperty("paperless.db.writeonly.username");
+            dbWriteOnlyPassword = prop.getProperty("paperless.db.writeonly.password") == null ? System.getenv("DTIS_DB_WRITEONLY_PASSWORD") : prop.getProperty("paperless.db.writeonly.password");
+            dbWriteOnlyDriver = prop.getProperty("paperless.db.writeonly.driver") == null ? System.getenv("DTIS_DB_WRITEONLY_DRIVER") : prop.getProperty("paperless.db.writeonly.driver");
 
-            initPoolSize = Integer.parseInt(prop.getProperty("dtis.db.init.connection") == null ? System.getenv("DTIS_DB_INIT_CONNECTION") : prop.getProperty("dtis.db.init.connection"));
-            minPoolIdle = Integer.parseInt(prop.getProperty("dtis.db.min.idle.connection") == null ? System.getenv("DTIS_DB_MIN_IDLE_CONNECTION") : prop.getProperty("dtis.db.min.idle.connection"));
-            maxPoolIdle = Integer.parseInt(prop.getProperty("dtis.db.max.idle.connection") == null ? System.getenv("DTIS_DB_MAX_IDLE_CONNECTION") : prop.getProperty("dtis.db.max.idle.connection"));
-            maxConnection = Integer.parseInt(prop.getProperty("dtis.db.max.connection") == null ? System.getenv("DTIS_DB_MAX_CONNECTION") : prop.getProperty("dtis.db.max.connection"));
-            showProcedures = Boolean.parseBoolean(prop.getProperty("dtis.db.logging.procedures.enabled") == null ? System.getenv("DTIS_DB_LOGGING_PROCEDURES_ENABLED") : prop.getProperty("dtis.db.logging.procedures.enabled"));
-            retry = Integer.parseInt(prop.getProperty("dtis.db.retry") == null ? System.getenv("DTIS_DB_RETRY") : prop.getProperty("dtis.db.retry"));
+            initPoolSize = Integer.parseInt(prop.getProperty("paperless.db.init.connection") == null ? System.getenv("DTIS_DB_INIT_CONNECTION") : prop.getProperty("paperless.db.init.connection"));
+            minPoolIdle = Integer.parseInt(prop.getProperty("paperless.db.min.idle.connection") == null ? System.getenv("DTIS_DB_MIN_IDLE_CONNECTION") : prop.getProperty("paperless.db.min.idle.connection"));
+            maxPoolIdle = Integer.parseInt(prop.getProperty("paperless.db.max.idle.connection") == null ? System.getenv("DTIS_DB_MAX_IDLE_CONNECTION") : prop.getProperty("paperless.db.max.idle.connection"));
+            maxConnection = Integer.parseInt(prop.getProperty("paperless.db.max.connection") == null ? System.getenv("DTIS_DB_MAX_CONNECTION") : prop.getProperty("paperless.db.max.connection"));
+            showProcedures = Boolean.parseBoolean(prop.getProperty("paperless.db.logging.procedures.enabled") == null ? System.getenv("DTIS_DB_LOGGING_PROCEDURES_ENABLED") : prop.getProperty("paperless.db.logging.procedures.enabled"));
+            retry = Integer.parseInt(prop.getProperty("paperless.db.retry") == null ? System.getenv("DTIS_DB_RETRY") : prop.getProperty("paperless.db.retry"));
 
-            appUserDBID = Integer.parseInt(prop.getProperty("dtis.db.app.userid") == null ? System.getenv("DTIS_DB_APP_USERID") : prop.getProperty("dtis.db.app.userid"));
+            appUserDBID = Integer.parseInt(prop.getProperty("paperless.db.app.userid") == null ? System.getenv("DTIS_DB_APP_USERID") : prop.getProperty("paperless.db.app.userid"));
 
-            tmpFmsFolder = prop.getProperty("dtis.db.app.temp.folder") == null ? System.getenv("DTIS_DB_APP_TEMP_FOLDER") : prop.getProperty("dtis.db.app.temp.folder");
-            neurotechFolder = prop.getProperty("dtis.db.app.neurotech.folder") == null ? System.getenv("DTIS_DB_APP_NEUROTECH_FOLDER") : prop.getProperty("dtis.db.app.neurotech.folder");
+            tmpFmsFolder = prop.getProperty("paperless.db.app.temp.folder") == null ? System.getenv("DTIS_DB_APP_TEMP_FOLDER") : prop.getProperty("paperless.db.app.temp.folder");
+            neurotechFolder = prop.getProperty("paperless.db.app.neurotech.folder") == null ? System.getenv("DTIS_DB_APP_NEUROTECH_FOLDER") : prop.getProperty("paperless.db.app.neurotech.folder");
 
-            moduleNeuroTechEnabled = Boolean.parseBoolean(prop.getProperty("dtis.module.neurotech.enabled"));
+            moduleNeuroTechEnabled = Boolean.parseBoolean(prop.getProperty("paperless.module.neurotech.enabled"));
 
-            showDebugLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_DEBUG") == null ? prop.getProperty("dtis.log4j.debug", "true") : System.getenv("DTIS_LOG4J_DEBUG"));
-            showInfoLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_INFO") == null ? prop.getProperty("dtis.log4j.info", "true") : System.getenv("DTIS_LOG4J_INFO"));
-            showWarnLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_WARN") == null ? prop.getProperty("dtis.log4j.warn", "true") : System.getenv("DTIS_LOG4J_WARN"));
-            showErrorLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_ERROR") == null ? prop.getProperty("dtis.log4j.error", "true") : System.getenv("DTIS_LOG4J_ERROR"));
-            showFatalLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_FATAL") == null ? prop.getProperty("dtis.log4j.fatal", "true") : System.getenv("DTIS_LOG4J_FATAL"));
+            showDebugLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_DEBUG") == null ? prop.getProperty("paperless.log4j.debug", "true") : System.getenv("DTIS_LOG4J_DEBUG"));
+            showInfoLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_INFO") == null ? prop.getProperty("paperless.log4j.info", "true") : System.getenv("DTIS_LOG4J_INFO"));
+            showWarnLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_WARN") == null ? prop.getProperty("paperless.log4j.warn", "true") : System.getenv("DTIS_LOG4J_WARN"));
+            showErrorLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_ERROR") == null ? prop.getProperty("paperless.log4j.error", "true") : System.getenv("DTIS_LOG4J_ERROR"));
+            showFatalLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_FATAL") == null ? prop.getProperty("paperless.log4j.fatal", "true") : System.getenv("DTIS_LOG4J_FATAL"));
 
             serverTimeType = prop.getProperty("server.time.type") == null ? System.getenv("SERVER_TIME_TYPE") : prop.getProperty("server.time.type");
             
@@ -351,7 +350,7 @@ public class Configuration {
         this.tmpFmsFolder = tmpFmsFolder;
     }
 
-    public Properties getAppInfo() {
+    public Properties getAppInfo() {        
         return appInfo;
     }
 

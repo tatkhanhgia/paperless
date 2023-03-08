@@ -121,7 +121,7 @@ public class HTTPUtils {
             HttpURLConnection.setFollowRedirects(true);
             if (requestBody != null) {
                 try (BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"))) {
-                    LOGGER.debug(">>> SEND: {}", requestBody);
+//                    LOGGER.debug(">>> SEND: {}", requestBody);
                     wr.write(requestBody);
                     wr.flush();
                 }
@@ -149,13 +149,13 @@ public class HTTPUtils {
                 response.setStatus(false);
                 if (is == null) {
                     String responseMsg = connection.getResponseMessage();
-                    LOGGER.debug("<<< RECEIVE: {}", responseMsg);
+//                    LOGGER.debug("<<< RECEIVE: {}", responseMsg);
                     response.setMsg(responseMsg);
                     return response;
                 }
             } else if (responseCode != HttpURLConnection.HTTP_OK) {
                 String responseMsg = connection.getResponseMessage();
-                LOGGER.debug("<<< RECEIVE: {}", responseMsg);
+//                LOGGER.debug("<<< RECEIVE: {}", responseMsg);
                 response.setMsg(responseMsg);
                 response.setStatus(true);
                 return response;
@@ -164,7 +164,7 @@ public class HTTPUtils {
                     is = connection.getInputStream();
                     response.setStatus(true);
                 } catch (IOException ex) {
-                    LOGGER.debug("Error when read inputstream, caused by", ex);
+//                    LOGGER.debug("Error when read inputstream, caused by", ex);
                     is = connection.getErrorStream();
                     response.setStatus(false);
                 }
@@ -179,7 +179,7 @@ public class HTTPUtils {
 //                    msg.append(System.lineSeparator());
                 }
             }
-            LOGGER.debug("<<< RECEIVE: {}", msg.toString());
+//            LOGGER.debug("<<< RECEIVE: {}", msg.toString());
             response.setMsg(msg.toString());
             return response;
         } catch (RuntimeException e) {
@@ -332,9 +332,9 @@ public class HTTPUtils {
             connection.setRequestMethod(httpMethod);
 
             if (headers != null) {
-                LOGGER.debug("**************** Restful Request headers ****************");
+//                LOGGER.debug("**************** Restful Request headers ****************");
                 for (String headerKey : headers.keySet()) {
-                    LOGGER.debug(headerKey + ": " + headers.get(headerKey));
+//                    LOGGER.debug(headerKey + ": " + headers.get(headerKey));
                     connection.setRequestProperty(headerKey, headers.get(headerKey));
                 }
             }
@@ -372,20 +372,20 @@ public class HTTPUtils {
 
         @Override
         public String[] getSupportedCipherSuites() {
-            LOGGER.debug("getSupportedCipherSuites");
+//            LOGGER.debug("getSupportedCipherSuites");
             return new String[]{"TLS_RSA_WITH_AES_128_GCM_SHA256"};
         }
 
         @Override
         public String[] getEnabledCipherSuites() {
-            LOGGER.debug("getEnabledCipherSuites");
+//            LOGGER.debug("getEnabledCipherSuites");
             return new String[]{"TLS_RSA_WITH_AES_128_GCM_SHA256"};
         }
 
         @Override
         public void setEnabledCipherSuites(String[] strings) {
             for (String s : strings) {
-                LOGGER.debug("CipherSuites: " + s);
+//                LOGGER.debug("CipherSuites: " + s);
             }
             sslSocket.setEnabledCipherSuites(strings);
         }
@@ -397,7 +397,7 @@ public class HTTPUtils {
 
         @Override
         public String[] getEnabledProtocols() {
-            LOGGER.debug("getEnabledProtocols");
+//            LOGGER.debug("getEnabledProtocols");
             return sslSocket.getEnabledProtocols();
         }
 
@@ -478,19 +478,19 @@ public class HTTPUtils {
 
         @Override
         public String[] getDefaultCipherSuites() {
-            LOGGER.debug("getDefaultCipherSuites");
+//            LOGGER.debug("getDefaultCipherSuites");
             return sslSocketFactory.getDefaultCipherSuites();
         }
 
         @Override
         public String[] getSupportedCipherSuites() {
-            LOGGER.debug("getSupportedCipherSuites");
+//            LOGGER.debug("getSupportedCipherSuites");
             return sslSocketFactory.getDefaultCipherSuites();
         }
 
         @Override
         public Socket createSocket(Socket socket, String string, int i, boolean bln) throws IOException {
-            LOGGER.debug("createSocket [host:port] [{}:{}] result: {}", string, i, bln);
+//            LOGGER.debug("createSocket [host:port] [{}:{}] result: {}", string, i, bln);
             Socket sk = this.sslSocketFactory.createSocket(socket, string, i, bln);
             if (sk instanceof SSLSocket) {
                 ((SSLSocket) sk).setEnabledCipherSuites(new String[]{
@@ -505,7 +505,7 @@ public class HTTPUtils {
                 ((SSLSocket) sk).addHandshakeCompletedListener(new HandshakeCompletedListener() {
                     @Override
                     public void handshakeCompleted(HandshakeCompletedEvent hce) {
-                        LOGGER.debug("CipherSuite: " + hce.getCipherSuite());
+//                        LOGGER.debug("CipherSuite: " + hce.getCipherSuite());
                         //SSLSession session = hce.getSession();
                     }
                 });
@@ -527,8 +527,8 @@ public class HTTPUtils {
 
         @Override
         public Socket createSocket(String string, int i) throws IOException, UnknownHostException {
-            LOGGER.debug("createSocket:::: " + string);
-            LOGGER.debug("createSocket:::: " + i);
+//            LOGGER.debug("createSocket:::: " + string);
+//            LOGGER.debug("createSocket:::: " + i);
             Socket sk = this.sslSocketFactory.createSocket(string, i);
             if (sk instanceof SSLSocket) {
                 ((SSLSocket) sk).setEnabledCipherSuites(new String[]{
@@ -560,19 +560,19 @@ public class HTTPUtils {
 
         @Override
         public Socket createSocket(String string, int i, InetAddress ia, int i1) throws IOException, UnknownHostException {
-            LOGGER.debug("createSocket");
+//            LOGGER.debug("createSocket");
             return this.sslSocketFactory.createSocket(string, i, ia, i1);
         }
 
         @Override
         public Socket createSocket(InetAddress ia, int i) throws IOException {
-            LOGGER.debug("createSocket");
+//            LOGGER.debug("createSocket");
             return this.sslSocketFactory.createSocket(ia, i);
         }
 
         @Override
         public Socket createSocket(InetAddress ia, int i, InetAddress ia1, int i1) throws IOException {
-            LOGGER.debug("createSocket");
+//            LOGGER.debug("createSocket");
             return this.sslSocketFactory.createSocket(ia, i, ia1, i1);
         }
     }

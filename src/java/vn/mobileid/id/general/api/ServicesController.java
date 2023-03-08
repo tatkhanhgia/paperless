@@ -5,14 +5,21 @@
  */
 package vn.mobileid.id.general.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -24,6 +31,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import vn.mobileid.id.general.LogHandler;
@@ -31,11 +39,14 @@ import vn.mobileid.id.general.email.Email;
 import vn.mobileid.id.general.email.EmailReq;
 import vn.mobileid.id.general.objects.Attachment;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.qrypto.QryptoService;
-import vn.mobileid.id.qrypto.QryptoConstant;
-import vn.mobileid.id.qrypto.objects.FileManagement;
-import vn.mobileid.id.qrypto.objects.ListWorkflow;
-import vn.mobileid.id.qrypto.objects.Workflow;
+import vn.mobileid.id.paperless.QryptoService;
+import vn.mobileid.id.paperless.QryptoConstant;
+import static vn.mobileid.id.paperless.QryptoService.verifyToken;
+import vn.mobileid.id.paperless.objects.AppInfo;
+import vn.mobileid.id.paperless.objects.FileManagement;
+import vn.mobileid.id.paperless.objects.ListWorkflow;
+import vn.mobileid.id.paperless.objects.Workflow;
+import vn.mobileid.id.utils.Configuration;
 
 /**
  *
@@ -55,11 +66,46 @@ public class ServicesController {
 
     // Test INFO
     @GET
-    @Path("/info")
+    @Path("/v1/info")
     public Response getInfo(@Context final HttpServletRequest request, String payload) {
-        return Response.status(200).entity("").build();
+        try {
+            //Check valid token
+            String token = request.getHeader("Authorization");
+
+            debugRequestLOG("getInfo", request, payload);
+
+            String data = new ObjectMapper().writeValueAsString(AppInfo.cast(Configuration.getInstance().getAppInfo()));
+            if (token != null) {
+                InternalResponse response = QryptoService.verifyToken(request);
+                if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                    return Response.status(401).type(MediaType.APPLICATION_JSON).entity(response.getMessage()).build();
+                }
+//                if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS && response != null) {
+//                    data = data.replace("}", ",\n\"access_token_status\": \"valid\",\"access_token_expired_in\": "+(response.getUser().getExp()-Date.from(Instant.now()).getTime())+"}");
+//                } else {
+//                    data = data.replace("}", "\"access_token_status\":\"invalid\"}");
+//                }
+            }
+            return Response.status(200).type(MediaType.APPLICATION_JSON).entity(data).build();
+        } catch (JsonProcessingException e) {
+            if (LogHandler.isShowErrorLog()) {
+                e.printStackTrace();
+                LOG.error("Error " + e);
+            }
+        } catch (IllegalArgumentException e) {
+            if (LogHandler.isShowErrorLog()) {
+                e.printStackTrace();
+                LOG.error("Error " + e);
+            }
+        } catch (IllegalAccessException e) {
+            if (LogHandler.isShowErrorLog()) {
+                e.printStackTrace();
+                LOG.error("Error " + e);
+            }
+        }
+        return Response.status(500).entity("Internal Server Error").build();
     }
-    
+
     //Test send mail
     @GET
     @Path("/sendmail")
@@ -72,7 +118,7 @@ public class ServicesController {
         request.setAttachments(attachs);
         request.setContent("test Content");
         request.setEntityName("EntityName");
-        
+
         Email email = new Email(null);
         email.send(request);
         return Response.status(200).entity("").build();
@@ -86,8 +132,8 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("Authenticate",request,payload);
-            if(request.getContentType() == null){
+            debugRequestLOG("Authenticate", request, payload);
+            if (request.getContentType() == null) {
                 return Response.status(400).entity("Missing Content-Type").build();
             }
             if (request.getContentType().equalsIgnoreCase(MediaType.APPLICATION_JSON)) {
@@ -95,8 +141,8 @@ public class ServicesController {
             } else {
                 response = QryptoService.getToken(request, payload, 1);
             }
-            debugResponseLOG("Authenticate",response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {                
+            debugResponseLOG("Authenticate", response);
+            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(new ObjectMapper().writeValueAsString(response.getData()))
@@ -112,7 +158,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error "+e);
+                LOG.error("Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -124,12 +170,13 @@ public class ServicesController {
     public Response revokeToken(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response = null;
-            if (request.getContentType().equalsIgnoreCase("application/json")) {
-                response = QryptoService.revoke(request, payload, 0);
-            } else {
-                response = QryptoService.revoke(request, payload, 1);
-            }
-            
+//            if (request.getContentType().equalsIgnoreCase("application/json")) {
+            response = QryptoService.revoke(request, payload);
+//            }
+//            } else {
+//                response = QryptoService.revoke(request, payload, 1);
+//            }
+
             debugResponseLOG("token", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
@@ -160,10 +207,10 @@ public class ServicesController {
         try {
             InternalResponse response;
             //Test
-            debugRequestLOG("CreateWorkflow",request,payload);
-            
+            debugRequestLOG("CreateWorkflow", request, payload);
+
             response = QryptoService.createWorkflow(request, payload);
-            
+
             debugResponseLOG("CreateWorkflow", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
@@ -199,11 +246,11 @@ public class ServicesController {
         try {
             InternalResponse response;
             //Test
-            debugRequestLOG("Create Workflow Template",request,payload);
-            
+            debugRequestLOG("Create Workflow Template", request, payload);
+
             response = QryptoService.createWorkflowTemplate(request, payload, id);
-            
-            debugResponseLOG("createWorkflowTemplate",response);
+
+            debugResponseLOG("createWorkflowTemplate", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -236,10 +283,10 @@ public class ServicesController {
     public Response getWorkflowDetail(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            debugRequestLOG("GetWorkflowDetail",request,null);
+            debugRequestLOG("GetWorkflowDetail", request, null);
             response = QryptoService.getWorkflowDetail(request, id);
 
-            debugResponseLOG("GetWorkflowDetail",response);
+            debugResponseLOG("GetWorkflowDetail", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -273,10 +320,10 @@ public class ServicesController {
     public Response getWorkflow(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            debugRequestLOG("getWorkflow",request,null);
+            debugRequestLOG("getWorkflow", request, null);
             response = QryptoService.getWorkflow(request, id);
 
-            debugResponseLOG("getWorkflow",response);
+            debugResponseLOG("getWorkflow", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -310,10 +357,10 @@ public class ServicesController {
     public Response getWorkflowTemplateType(@Context final HttpServletRequest request) {
         try {
             InternalResponse response;
-            debugRequestLOG("Get WorkflowTemplateType",request,null);
+            debugRequestLOG("Get WorkflowTemplateType", request, null);
             response = QryptoService.getWorkflowTemplateType(request);
 
-            debugResponseLOG("getWorkflowTemplateType",response);
+            debugResponseLOG("getWorkflowTemplateType", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode node = mapper.createObjectNode();
@@ -353,11 +400,11 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("GetAllWorkflow",request,null);
-            
+            debugRequestLOG("GetAllWorkflow", request, null);
+
             response = QryptoService.getListWorkflow(request);
 
-            debugResponseLOG("GetAllWorkflow",response);
+            debugResponseLOG("GetAllWorkflow", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -390,13 +437,13 @@ public class ServicesController {
     @Path("/v1/workflow/{id}/template")
     public Response getWorkflowTemplate(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
-            InternalResponse response;            
+            InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("GetWorkflowTemplate",request,null);
-            
+            debugRequestLOG("GetWorkflowTemplate", request, String.valueOf(id));
+
             response = QryptoService.getWorkflowTemplate(request, id);
 
-            debugResponseLOG("getWorkflowTemplate",response);
+            debugResponseLOG("getWorkflowTemplate", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -432,10 +479,10 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("CreateWorkflowActivity",request,payload);
-            
+            debugRequestLOG("CreateWorkflowActivity", request, payload);
+
             response = QryptoService.createWorkflowActivity(request, payload);
-            
+
             debugResponseLOG("CreateWorkflowActivity", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
@@ -470,10 +517,10 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("ProcessActivity",request,payload);
-            
+            debugRequestLOG("ProcessActivity", request, payload);
+
             response = QryptoService.processWorkflowActivity(request, payload, id);
-            
+
             debugResponseLOG("ProcessActivity", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
@@ -509,10 +556,10 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("Assign",request,payload);
-            
+            debugRequestLOG("Assign", request, payload);
+
             response = QryptoService.assignDataIntoWorkflowActivity(request, payload, id);
-            
+
             debugResponseLOG("Assign", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
@@ -548,11 +595,11 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("ProcessAssign",request,null);
-            
+            debugRequestLOG("ProcessAssign", request, String.valueOf(id));
+
             response = QryptoService.processWorkflowActivityWithAuthen(request, payload, id);
-            
-            debugResponseLOG("processAssign",response);
+
+            debugResponseLOG("processAssign", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -587,10 +634,10 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("Download",request,null);
+            debugRequestLOG("Download", request, String.valueOf(id));
             response = QryptoService.downloadsDocument(request, id);
 
-            debugResponseLOG("downloadDocument",response);
+            debugResponseLOG("downloadDocument", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 FileManagement file = (FileManagement) response.getData();
                 return Response
@@ -625,11 +672,11 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("DownloadBase64",request,null);
-            
+            debugRequestLOG("DownloadBase64", request, String.valueOf(id));
+
             response = QryptoService.downloadsDocument(request, id);
 
-            debugResponseLOG("DownloadBase64",response);
+            debugResponseLOG("DownloadBase64", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 FileManagement file = (FileManagement) response.getData();
                 String temp = "{" + Base64.getEncoder().encodeToString(file.getData()) + "}";
@@ -667,10 +714,10 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("GetAssetTemplate",request,null);
+            debugRequestLOG("GetAssetTemplate", request, String.valueOf(id));
             response = QryptoService.getAssetTemplate(request, id);
 
-            debugResponseLOG("getAssetTemplate",response);
+            debugResponseLOG("getAssetTemplate", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -705,10 +752,10 @@ public class ServicesController {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("DownloadAsset",request,null);
+            debugRequestLOG("DownloadAsset", request, String.valueOf(id));
             response = QryptoService.downloadsAsset(request, id);
 
-            debugResponseLOG("DownloadAsset",response);
+            debugResponseLOG("DownloadAsset", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -737,16 +784,16 @@ public class ServicesController {
     }
 
     //Upload Asset
-    @GET
+    @POST
     @Path("/v1/asset")
     public Response uploadAsset(@Context final HttpServletRequest request) {
         try {
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("Upload Asset",request,null);
+            debugRequestLOG("Upload Asset", request, null);
             response = QryptoService.uploadAsset(request);
 
-            debugResponseLOG("uploadAsset",response);
+            debugResponseLOG("uploadAsset", response);
             if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -807,14 +854,44 @@ public class ServicesController {
         }
     }
 
-    public static void debugRequestLOG(String function,@Context final HttpServletRequest request, String payload) {
-        LOG.info("\n---------\n"+function+" request:\n"+"\tMETHOD:" + request.getMethod()
-                +"\n\tContentType:" + request.getContentType()
-                +"\n\tBody:" + payload
-        );
+    public static void debugRequestLOG(String function, @Context final HttpServletRequest request, String payload) {
+        String data = "\n---------\n" + function + " request:\n" + "\tMETHOD:" + request.getMethod()
+                + "\n\tContentType:" + request.getContentType();
+        if (request.getHeader("Authorization") != null) {
+            data += "\n\tUser:"+getUser(request.getHeader("Authorization"));
+        }
+        if (request.getHeader("x-send-mail") != null) {
+            data += "\n\tSendMail:" + request.getHeader("x-send-mail");
+        }
+        data += "\n\tBody (or ID):" + conclusionString(payload);
+        LOG.info(data);
     }
-    
-    public static void debugResponseLOG(String function, InternalResponse response){
-        LOG.info("\nRESPONSE:\n"+"\tStatus:"+response.getStatus()+"\n\tMessage:"+response.getMessage());
+
+    public static void debugResponseLOG(String function, InternalResponse response) {
+        LOG.info("\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
+    }
+
+    //========================INTERNAL METHOD==========================
+    private static String conclusionString(String payload) {
+        String pattern = "\"value\":.*";
+        return payload.replaceAll(pattern, "\"value\":\"base64\"}]}");
+    }
+
+    private static String getUser(String payload) {
+        String[] chunks = payload.split("\\.");
+                     
+        String alg = null;
+
+        try {            
+            payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
+        } catch (Exception ex) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while decode token!" + ex);
+            }
+            return null;
+        }
+        int begin = payload.indexOf("email");
+        int end = payload.indexOf("azp");
+        return payload.substring(begin + 8, end-3);
     }
 }

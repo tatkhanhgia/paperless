@@ -6,7 +6,7 @@
 package vn.mobileid.id.general.objects;
 
 import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.qrypto.QryptoConstant;
+import vn.mobileid.id.paperless.QryptoConstant;
 import vn.mobileid.id.utils.Utils;
 
 /**

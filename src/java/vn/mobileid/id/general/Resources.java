@@ -19,9 +19,9 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.qrypto.QryptoConstant;
-import vn.mobileid.id.qrypto.objects.WorkflowActivity;
-import vn.mobileid.id.qrypto.objects.WorkflowTemplateType;
+import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.objects.WorkflowActivity;
+import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
 
 /**
  *

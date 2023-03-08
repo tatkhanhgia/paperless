@@ -11,11 +11,11 @@ import java.util.List;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.qrypto.QryptoConstant;
-import vn.mobileid.id.qrypto.objects.ItemDetails;
-import vn.mobileid.id.qrypto.objects.KYC;
-import vn.mobileid.id.qrypto.objects.ProcessWorkflowActivity_JSNObject;
-import vn.mobileid.id.qrypto.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.objects.ItemDetails;
+import vn.mobileid.id.paperless.objects.KYC;
+import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
+import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 
 /**
  *

@@ -8,6 +8,7 @@ package SignFile;
 import java.util.ArrayList;
 import java.util.List;
 import restful.sdk.API.IServerSession;
+import restful.sdk.API.IUserSession;
 import restful.sdk.API.Types.HashAlgorithmOID;
 import restful.sdk.API.Types.SignAlgo;
 import vn.mobileid.exsig.Profile;
@@ -32,7 +33,12 @@ public class RSSP_RestfulSign implements ISignFile {
 
     public List<byte[]> sign(String agreementUUID, String credentialId, String pin, List<byte[]> files, IServerSession session) throws Exception {
         RestfulSigningMethod signingMethod = new RestfulSigningMethod(agreementUUID, credentialId, pin, session, SignAlgo.RSA, hashAlgo);
-        return _profile.sign(signingMethod, files);
+        return _profile.sign(signingMethod, files);        
+    }
+
+    @Override
+    public List<byte[]> sign(String credentialId, String pin, List<byte[]> files, IUserSession session) throws Exception {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }

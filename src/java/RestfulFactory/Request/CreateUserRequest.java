@@ -17,7 +17,9 @@ public class CreateUserRequest extends Request{
     private String fullname;
     private String email;
     private String phone;
-
+    private String identificationType;
+    private String identification;
+    
     public String getUsername() {
         return username;
     }
@@ -56,6 +58,22 @@ public class CreateUserRequest extends Request{
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getIdentificationType() {
+        return identificationType;
+    }
+
+    public void setIdentificationType(String identificationType) {
+        this.identificationType = identificationType;
+    }
+
+    public String getIdentification() {
+        return identification;
+    }
+
+    public void setIdentification(String identification) {
+        this.identification = identification;
     }
     
 }

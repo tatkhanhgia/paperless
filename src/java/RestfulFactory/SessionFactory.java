@@ -16,7 +16,7 @@ public class SessionFactory implements ISessionFactory {
     private Property prop;
     private String lang;
 
-    public SessionFactory(Property prop,  String lang) {
+    private SessionFactory(Property prop, String lang) {
         this.prop = prop;
         this.lang = lang;
     }

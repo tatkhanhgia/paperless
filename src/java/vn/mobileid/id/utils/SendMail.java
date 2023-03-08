@@ -12,13 +12,13 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.email.Email;
 import vn.mobileid.id.general.email.EmailReq;
 import vn.mobileid.id.general.objects.Attachment;
-import vn.mobileid.id.qrypto.QryptoService;
+import vn.mobileid.id.paperless.QryptoService;
 
 /**
  *
  * @author GiaTK
  */
-public class SendMail {
+public class SendMail extends Thread {
 
     final private static Logger LOG = LogManager.getLogger(SendMail.class);
 
@@ -42,7 +42,7 @@ public class SendMail {
     //Constructor for Elabor
     public SendMail(String sendTo, String name, String CCCD, byte[] file, String filename){
         this.sendTo = sendTo;
-        this.Subject = "eLaborContract -"+name+" - "+CCCD;
+        this.Subject = "eLaborContract - "+name+" - "+CCCD;
         this.Content = "Dear " + name;
         this.Content += "<br /><br /> Paperless service would like to thank you for trusting and using our services";
         this.Content += "<br /><br /> Your eLaborContract has been created successfully.";
@@ -75,5 +75,10 @@ public class SendMail {
                 LOG.error("Cannot Send mail! - Detail:" + ex);
             }
         }
+    }
+    
+    @Override
+    public void run(){
+        send();
     }
 }

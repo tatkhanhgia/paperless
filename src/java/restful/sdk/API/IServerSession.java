@@ -25,6 +25,7 @@ public interface IServerSession extends ISession {
 
     List<ICertificate> listCertificates(String agreementUUID, String certificate, boolean certInfoEnabled, boolean authInfoEnabled, SearchConditions conditions) throws Throwable;
 
+    List<ICertificate> listCertificates() throws Throwable;
     //get certificate-info of user indentity by agreement-uuid and certificate-uuid
     //credentials/info
     ICertificate certificateInfo(String agreementUUID, String credentialID) throws Throwable;
@@ -65,7 +66,7 @@ public interface IServerSession extends ISession {
     boolean assignAgreement(String userName, String agreementUUID, String otpRequestID, String otp) throws Throwable;
 
     //create end-user
-    boolean createUser(String userName, String email, String phone) throws Throwable;
+    boolean createUser(String userName, String email, String phone, String identificationType, String identification) throws Throwable;
 
     //get CA
     List<CertificateAuthority> getCertificateAuthorities() throws Throwable;
@@ -76,9 +77,18 @@ public interface IServerSession extends ISession {
     List<Province> getStatesOrProvinces() throws Throwable;
 
     //create certificate
-    IssueCertificateResponse createCertificate(String userName, String otpRequestID, String otp, String certProfile, SharedMode sharedMode,
-            AuthMode authMode, int multiSign, CertificateDetails certDetails) throws Throwable;
+    IssueCertificateResponse createCertificate(
+            String userName,
+            String otpRequestID,
+            String otp,
+            String certProfile,
+            SharedMode sharedMode,
+            AuthMode authMode,
+            int multiSign,
+            CertificateDetails certDetails) throws Throwable;
 
     //import certificate
     ICertificate importCertificate(String agreementUUID, String credentialID, String cert) throws Throwable;
+
+    public boolean preLogin(String username) throws Throwable;
 }

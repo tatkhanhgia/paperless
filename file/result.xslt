@@ -32,6 +32,7 @@
                         font-size: 8pt;
                         margin: 0 auto;
                         line-height: 16pt;
+						font-family: "Times New Roman", Times, serif;
                     }
                     
                     .wrapper{
@@ -189,7 +190,7 @@
                                 <tr>
                                     <td style="width:20%; text-align: justify">
                                         <p style="font-size: 11px;font-weight: 350">
-                                            CMND số:
+                                            Số CCCD:
                                         </p>
                                     </td>
                                     <td style="width:20%; text-align: justify">

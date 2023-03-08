@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import restful.sdk.API.ICertificate;
 import restful.sdk.API.IServerSession;
+import restful.sdk.API.IUserSession;
 import restful.sdk.API.Types.HashAlgorithmOID;
 import restful.sdk.API.Types.SignAlgo;
 import restful.sdk.API.Utils;
@@ -21,7 +22,7 @@ import vn.mobileid.exsig.SigningMethodSync;
 
 /**
  *
- * @author Tuan Pham
+ * @author GiaTK
  */
 public class RestfulSigningMethod implements SigningMethodSync, SigningMethodAsync {
 
@@ -30,7 +31,7 @@ public class RestfulSigningMethod implements SigningMethodSync, SigningMethodAsy
     private String _credentialID;
     private String _pin;
     private List<String> _chain;
-    private IServerSession _session;
+    private IServerSession _session;    
     //private readonly List<byte[]> _files;
 
     private SignAlgo _signAlgo;
@@ -49,8 +50,8 @@ public class RestfulSigningMethod implements SigningMethodSync, SigningMethodAsy
     }
 
     // remove declare final to init constructor without parameter
-    public RestfulSigningMethod() {
-    }
+    public RestfulSigningMethod() {        
+    }          
 
     @Override
     public List<String> getCert() throws Exception {
@@ -127,5 +128,5 @@ public class RestfulSigningMethod implements SigningMethodSync, SigningMethodAsy
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         this.hashList = list;
     }
-
+    
 }

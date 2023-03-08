@@ -1,0 +1,95 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package vn.mobileid.id.paperless.objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
+
+/**
+ *
+ * @author GiaTK
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class FileDataDetails {
+//        
+//    @JsonIgnore
+//    private FileType file_type;
+    
+    private int file_type;
+    private Object value;
+
+    public FileDataDetails() {
+    }
+
+    @JsonProperty("file_type")
+    public int getFile_type() {
+        return file_type;
+    }
+
+    @JsonProperty("value")
+    public Object getValue() {
+        return value;
+    }
+
+//    @JsonIgnore
+//    public void setFile_type(FileType file_type) {
+//        this.file_type = file_type;
+//        this.type = file_type.value;
+//    }
+
+    public void setValue(Object value) {
+        this.value = value;
+    }
+
+    public void setFile_type(int type) {
+        this.file_type = type;
+//        switch(type){
+//            case 1 : {
+//                this.file_type = FileType.FingerPrint;
+//                break;
+//            }
+//            case 2 : {
+//                this.file_type = FileType.IdentityCard;
+//                break;
+//            }
+//            case 3:{
+//                this.file_type = FileType.Photo;
+//                break;
+//            }
+//            case 4:{
+//                this.file_type = FileType.PDF;
+//                break;
+//            }
+//        }
+    }
+        
+    
+    
+//    @JsonIgnore
+//    public FileType getFile_typeOriginal() {
+//        return file_type;
+//    }
+//    
+//    public enum FileType{
+//        FingerPrint(1),
+//        IdentityCard(2),
+//        Photo(3),
+//        PDF(4);
+//        
+//        private int value;
+//        FileType(int i){
+//            this.value = i;
+//        };
+//        
+//        public int getValue(){
+//            return value;
+//        }
+//    }
+}
+

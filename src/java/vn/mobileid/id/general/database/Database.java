@@ -5,11 +5,12 @@
  */
 package vn.mobileid.id.general.database;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.qrypto.objects.WorkflowActivity;
+import vn.mobileid.id.paperless.objects.WorkflowActivity;
 
 /**
  *
@@ -165,7 +166,8 @@ public interface Database {
             String hmac,
             String created_by,            
             String last_modified_by,                    
-            byte[] data);
+            byte[] data,
+            boolean isSigned);
     
     public DatabaseResponse getWorkflow(int id);
     
@@ -201,5 +203,39 @@ public interface Database {
     public DatabaseResponse getEnterpriseInfoOfUser(String email);
 
     public DatabaseResponse getListWorkflowTemplateType();
+    
+    public DatabaseResponse writeRefreshToken(
+            String email,
+            String session_id,
+            int client_credentials_enabled,
+            String clientID,
+            Date issue_on,
+            Date expires_on,
+            String hmac,
+            String created_by);
+    
+    public DatabaseResponse removeRefreshToken(            
+            String refreshtoken
+    );
+    
+    public DatabaseResponse checkAccessToken(
+            String email,
+            String accesstoken
+    );
+    
+    public DatabaseResponse getRefreshToken(
+            String refreshtoken
+    );
+    
+    public DatabaseResponse updateRefreshToken(
+            String email,
+            String session_id,
+            int client_credentials_enabled,            
+            Date issue_on,
+            Date expires_on,
+            int status,
+            String hmac,
+            String created_by
+    );
 }
 

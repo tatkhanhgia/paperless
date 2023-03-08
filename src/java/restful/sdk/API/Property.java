@@ -124,6 +124,11 @@ public class Property {
         return "SSL2 " + Base64.getEncoder().encodeToString(byteSSL2);
     }
     
+    public String getBasicToken(String user, String pass){
+        String temp = "USERNAME:"+user + ":" + pass;
+        return "Basic "+ Base64.getEncoder().encodeToString(temp.getBytes());
+    }
+    
     public byte[] getRelyingPartyKeyStoreData() {
         return relyingPartyKeyStoreData;
     }

@@ -26,26 +26,32 @@ public class PdfSignFile extends RSSP_RestfulSign implements IPdfSignFile {
         hashAlgo = alg;
     }
 
+    @Override
     public PdfProfile getProfile() {
         return (PdfProfile) super._profile;
     }
 
-    public PdfProfile getPdfProfile() {
-        return this.getProfile();
-    }
-
+    @Override
     public byte[] createBlankSignature(String agreementUUID, String credentialID, IServerSession session, List<byte[]> files) throws Exception {
         return getProfile().createTemporalFile(new RestfulSigningMethod(agreementUUID, credentialID, "", session, SignAlgo.RSA, hashAlgo), files);
     }
 
+    @Override
     public byte[] createBlankSignature(List<byte[]> files) throws Exception {
         return ((PdfProfileCMS) getProfile()).createTemporalFile(new RestfulSigningMethod(), files);
     }
 
+    @Override
     public byte[] addSignature(String agreementUUID, String credentialId, String pin, byte[] blankSignature, IServerSession session) throws Exception {
-        RestfulSigningMethod rest = new RestfulSigningMethod(agreementUUID, credentialId, pin, session, SignAlgo.RSA, hashAlgo);        
+        RestfulSigningMethod rest = new RestfulSigningMethod(agreementUUID, credentialId, pin, session, SignAlgo.RSA, hashAlgo);
 //        PdfProfileCMS a = new PdfProfileCMS(Algorithm.SHA1);
 //        return a.sign(rest, blankSignature).get(0);
         return PdfProfileCMS.sign(rest, blankSignature).get(0);
     }
+
+    @Override
+    public PdfProfile getPdfProfile() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
 }

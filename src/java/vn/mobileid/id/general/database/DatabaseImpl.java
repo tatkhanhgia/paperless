@@ -11,7 +11,9 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.sql.rowset.serial.SerialBlob;
@@ -22,16 +24,17 @@ import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.qrypto.QryptoConstant;
-import vn.mobileid.id.qrypto.kernel.ProcessELaborContract;
-import vn.mobileid.id.qrypto.objects.Asset;
-import vn.mobileid.id.qrypto.objects.Enterprise;
-import vn.mobileid.id.qrypto.objects.FileManagement;
-import vn.mobileid.id.qrypto.objects.Workflow;
-import vn.mobileid.id.qrypto.objects.WorkflowActivity;
-import vn.mobileid.id.qrypto.objects.WorkflowDetail_Option;
-import vn.mobileid.id.qrypto.objects.WorkflowTemplate;
-import vn.mobileid.id.qrypto.objects.WorkflowTemplateType;
+import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.kernel.process.ProcessELaborContract;
+import vn.mobileid.id.paperless.objects.Asset;
+import vn.mobileid.id.paperless.objects.Enterprise;
+import vn.mobileid.id.paperless.objects.FileManagement;
+import vn.mobileid.id.paperless.objects.RefreshToken;
+import vn.mobileid.id.paperless.objects.Workflow;
+import vn.mobileid.id.paperless.objects.WorkflowActivity;
+import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
+import vn.mobileid.id.paperless.objects.WorkflowTemplate;
+import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -858,6 +861,7 @@ public class DatabaseImpl implements Database {
                     file.setHeight(rs.getInt("HEIGHT"));
                     file.setStatus(rs.getInt("STATUS"));
                     file.setData(rs.getBytes("BINARY_DATA"));
+                    file.setIsSigned(rs.getBoolean("IS_PROCESSED"));
 
                     databaseResponse.setObject(file);
                     databaseResponse.setStatus(QryptoConstant.CODE_SUCCESS);
@@ -1197,13 +1201,13 @@ public class DatabaseImpl implements Database {
      * @param created_by
      * @return
      */
-     @Override
+    @Override
     public DatabaseResponse createWorkflowDetail(
             int id,
             HashMap<String, Object> map,
             String hmac,
             String created_by) {
-        DatabaseResponse response = new DatabaseResponse();         
+        DatabaseResponse response = new DatabaseResponse();
         for (String temp : map.keySet()) {
             long startTime = System.nanoTime();
             Connection conn = null;
@@ -1219,7 +1223,7 @@ public class DatabaseImpl implements Database {
                 cals.setString("pATTRIBUTE_VALUE", map.get(temp).toString());
                 cals.setString("pHMAC", hmac);
                 cals.setString("pCREATED_BY", created_by);
-                                
+
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
                 if (LogHandler.isShowDebugLog()) {
                     LOG.debug("[SQL] " + cals.toString());
@@ -1258,7 +1262,7 @@ public class DatabaseImpl implements Database {
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
-        try {            
+        try {
             String str = "{ call USP_TEMPLATE_TYPE_GET(?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
@@ -1282,9 +1286,9 @@ public class DatabaseImpl implements Database {
                     templateType.setCode(rs.getString("CODE"));
                     templateType.setHMAC(rs.getString("HMAC"));
                     templateType.setCreated_by(rs.getString("CREATED_BY"));
-                    templateType.setCreated_at(rs.getDate("CREATED_AT"));
+                    templateType.setCreated_at(new Date(rs.getDate("CREATED_AT").getTime()));
                     templateType.setModified_by(rs.getString("LAST_MODIFIED_BY"));
-                    templateType.setModified_at(rs.getDate("LAST_MODIFIED_AT"));
+                    templateType.setModified_at(new Date(rs.getDate("LAST_MODIFIED_AT").getTime()));
                     templateType.setMetadata_template(rs.getString("META_DATA_TEMPLATE_DEFAULT"));
                     templateType.setMetadata_detail(rs.getString("META_DATA_DETAIL_DEFAULT"));
                     for (int i = 1; i <= columns.getColumnCount(); i++) {
@@ -1381,7 +1385,8 @@ public class DatabaseImpl implements Database {
             String hmac,
             String created_by,
             String last_modified_by,
-            byte[] data) {
+            byte[] data,
+            boolean isSigned) {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
@@ -1392,7 +1397,7 @@ public class DatabaseImpl implements Database {
             if (data != null) {
                 blob = new SerialBlob(data);
             }
-            String str = "{ call USP_FILE_MANAGEMENT_UPDATE(?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+            String str = "{ call USP_FILE_MANAGEMENT_UPDATE(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
@@ -1409,6 +1414,7 @@ public class DatabaseImpl implements Database {
             cals.setString("pCREATED_BY", created_by);
             cals.setInt("pFILE_ID", id);
             cals.setString("pLAST_MODIFIED_BY", last_modified_by);
+            cals.setBoolean("pIS_PROCESSED", isSigned);
 
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
             if (LogHandler.isShowDebugLog()) {
@@ -1473,8 +1479,13 @@ public class DatabaseImpl implements Database {
                     workflow.setStatus(rs.getInt("STATUS"));
                     workflow.setTemplate_type_name(rs.getString("TEMPLATE_TYPE"));
                     workflow.setLabel(rs.getString("LABEL"));
-                    workflow.setWorkflow_type_name(rs.getString("WORKFLOW_TYPE"));
+                    workflow.setWorkflow_type_name(rs.getString("WORKFLOW_TYPE_NAME"));
                     workflow.setTemplate_type(rs.getInt("TEMPLATE_ID"));
+                    workflow.setWorkflow_type(rs.getInt("WORKFLOW_TYPE"));
+                    workflow.setCreated_by(rs.getString("CREATED_BY"));
+                    workflow.setCreated_at(new Date(rs.getTimestamp("CREATED_AT").getTime()));
+                    workflow.setLast_modified_at(new Date(rs.getTimestamp("LAST_MODIFIED_AT").getTime()));
+                    workflow.setLast_modified_by(rs.getString("LAST_MODIFIED_BY"));
 //                    workflow.setWorkflow_type(rs.getInt("WORKFLOW"));
 
                     databaseResponse.setObject(workflow);
@@ -1669,8 +1680,9 @@ public class DatabaseImpl implements Database {
                     while (rs.next()) {
                         Workflow workflow = new Workflow();
                         workflow.setWorkflow_id(rs.getInt("ID"));
-//                        workflow.setCreated_at(rs.getDate("DATE_CREATED"));
+                        workflow.setCreated_at(rs.getDate("CREATED_AT"));
 //                        workflow.setWorkflow_type(rs.getInt("WORKFLOW_TYPE"));
+                        workflow.setWorkflow_type_name(rs.getString("WORKFLOW_TYPE"));
                         workflow.setLabel(rs.getString("LABEL"));
 //                        workflow.setNote(rs.getString("NOTE"));
 //                        workflow.setMetadata(rs.getString("METADATA"));                        
@@ -1915,7 +1927,7 @@ public class DatabaseImpl implements Database {
                     wa.setCreated_by(rs.getString("DATE"));
                     wa.setTransaction(rs.getString("TRANSACTION_ID"));
                     wa.setWorkflow_template_type(rs.getInt("WORKFLOW_TEMPLATE_TYPE_ID"));
-                    
+
                     FileManagement file = new FileManagement();
                     file.setID(rs.getString("FILE_ID"));
                     file.setName(rs.getString("DOWNLOAD_LINK"));
@@ -2020,7 +2032,7 @@ public class DatabaseImpl implements Database {
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
         try {
-            String str = "{ call USP_TEMPLATE_TYPE_LIST() }";            
+            String str = "{ call USP_TEMPLATE_TYPE_LIST() }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
@@ -2030,7 +2042,7 @@ public class DatabaseImpl implements Database {
             cals.execute();
             rs = cals.getResultSet();
             if (rs != null) {
-                while (rs.next()) {                      
+                while (rs.next()) {
                     WorkflowTemplateType data = new WorkflowTemplateType();
                     data.setId(rs.getInt("ID"));
                     data.setName(rs.getString("TYPE_NAME"));
@@ -2053,6 +2065,259 @@ public class DatabaseImpl implements Database {
         long timeElapsed = endTime - startTime;
         if (LogHandler.isShowDebugLog()) {
             LOG.debug("Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
+        }
+        response.setStatus(QryptoConstant.CODE_SUCCESS);
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse writeRefreshToken(
+            String email,
+            String session_id,
+            int client_credentials_enabled,
+            String clientID,
+            Date issue_on,
+            Date expires_on,
+            String hmac,
+            String created_by) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse response = new DatabaseResponse();
+        try {
+            String str = "{ call USP_REFRESH_TOKEN_ADD(?,?,?,?,?,?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            //In
+            cals.setString("pUSER_EMAIL", email);
+            cals.setString("pSESSION_TOKEN", session_id);
+            cals.setInt("pGRANT_TYPE", client_credentials_enabled);
+            cals.setString("pCLIENT_ID", clientID);
+            cals.setTimestamp("pISSUED_AT", new Timestamp(issue_on.getTime()));
+            cals.setTimestamp("pEXPIRED_AT", new Timestamp(expires_on.getTime()));
+            cals.setString("pHMAC", hmac);
+            cals.setString("pCREATED_BY", created_by);
+            //Out
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+            if (LogHandler.isShowDebugLog()) {
+                LOG.debug("[SQL] " + cals.toString());
+            }
+            cals.execute();
+            rs = cals.getResultSet();
+            if (!cals.getString("pRESPONSE_CODE").equals("1")) {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                return response;
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while writing refreshToken. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
+        }
+        response.setStatus(QryptoConstant.CODE_SUCCESS);
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse removeRefreshToken(
+            String refreshtoken) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse response = new DatabaseResponse();
+        try {
+            String str = "{ call USP_REFRESH_TOKEN_DELETE(?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+            //In
+            cals.setString("pSESSION_TOKEN", refreshtoken);
+            //Out
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+            if (LogHandler.isShowDebugLog()) {
+                LOG.debug("[SQL] " + cals.toString());
+            }
+            cals.execute();
+            rs = cals.getResultSet();
+            if (!cals.getString("pRESPONSE_CODE").equals("1")) {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                return response;
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while remove refreshToken. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of remove refreshToken in milliseconds: " + timeElapsed / 1000000);
+        }
+        response.setStatus(QryptoConstant.CODE_SUCCESS);
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse checkAccessToken(
+            String email,
+            String accesstoken) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse response = new DatabaseResponse();
+        try {
+            String str = "{ call USP_REFRESH_TOKEN_CHECK_EXISTS(?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            //In
+            cals.setString("pUSER_EMAIL", email);
+            cals.setString("pSESSION_TOKEN", accesstoken);
+
+            //Out
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+            if (LogHandler.isShowDebugLog()) {
+                LOG.debug("[SQL] " + cals.toString());
+            }
+            cals.execute();
+            rs = cals.getResultSet();
+            if (!cals.getString("pRESPONSE_CODE").equals("1")) {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                return response;
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while writing refreshToken. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
+        }
+        response.setStatus(QryptoConstant.CODE_SUCCESS);
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getRefreshToken(String sessionID) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse response = new DatabaseResponse();
+        try {
+            String str = "{ call USP_REFRESH_TOKEN_GET(?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            //In
+            cals.setString("pSESSION_TOKEN", sessionID);
+
+            //Out
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+            if (LogHandler.isShowDebugLog()) {
+                LOG.debug("[SQL] " + cals.toString());
+            }
+            cals.execute();
+            rs = cals.getResultSet();
+            if (cals.getString("pRESPONSE_CODE").equals("1")) {
+                rs.next();
+                RefreshToken data = new RefreshToken();
+                data.setSessionID(rs.getString("SESSION_TOKEN"));
+                data.setClient_id(rs.getString("CLIENT_ID"));
+                data.setIssued_on(new Date(rs.getTimestamp("ISSUED_AT").getTime()));
+                data.setExpired_on(new Date(rs.getTimestamp("EXPIRED_AT").getTime()));
+                response.setObject(data);
+            } else {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                return response;
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while writing refreshToken. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
+        }
+        response.setStatus(QryptoConstant.CODE_SUCCESS);
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse updateRefreshToken(
+            String email,
+            String session_id,
+            int client_credentials_enabled,
+            Date issue_on,
+            Date expires_on,
+            int status,
+            String hmac,
+            String created_by) {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse response = new DatabaseResponse();
+        try {
+            String str = "{ call USP_REFRESH_TOKEN_UPDATE(?,?,?,?,?,?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            //In            
+            cals.setString("pUSER_EMAIL", email);
+            cals.setString("pSESSION_TOKEN", session_id);    
+            cals.setInt("pGRANT_TYPE", client_credentials_enabled);
+            cals.setTimestamp("pISSUED_AT", new Timestamp(issue_on.getTime()));
+            cals.setTimestamp("pEXPIRED_AT", new Timestamp(expires_on.getTime()));
+            cals.setInt("pSTATUS", status);            
+            cals.setString("pHMAC", hmac);
+            cals.setString("pLAST_MODIFIED_BY", created_by);
+            //Out
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+            if (LogHandler.isShowDebugLog()) {
+                LOG.debug("[SQL] " + cals.toString());
+            }
+            cals.execute();
+            rs = cals.getResultSet();
+            if (!cals.getString("pRESPONSE_CODE").equals("1")) {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                return response;
+            }
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Error while update refreshToken. Details: " + Utils.printStackTrace(e));
+            }
+            e.printStackTrace();
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        long endTime = System.nanoTime();
+        long timeElapsed = endTime - startTime;
+        if (LogHandler.isShowDebugLog()) {
+            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
         }
         response.setStatus(QryptoConstant.CODE_SUCCESS);
         return response;

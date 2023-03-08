@@ -30,7 +30,7 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.Attachment;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.qrypto.QryptoConstant;
+import vn.mobileid.id.paperless.QryptoConstant;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 //import org.apache.log4j.Logger;
@@ -95,7 +95,7 @@ public class Email {
             session.setDebug(false);            
             // Create a default MimeMessage object.
             Message message = new MimeMessage(session);
-            // Set From: header field of the header.
+            // Set From: header field of the header.            
             message.setFrom(new InternetAddress(props.getProperty("mail.smtp.sendfromaddr"),
                     props.getProperty("mail.smtp.sendfromname")));
 

@@ -34,6 +34,7 @@ import RestfulFactory.Request.Request;
 import RestfulFactory.Request.SendOwnerOTPRequest;
 import RestfulFactory.Request.SignDocRequest;
 import RestfulFactory.Request.SignHashRequest;
+import RestfulFactory.Request.preLoginRequest;
 import RestfulFactoryl.Response.AgreementAssignResponse;
 import RestfulFactoryl.Response.AuthorizeResponse;
 import RestfulFactoryl.Response.CreateUserResponse;
@@ -68,6 +69,8 @@ public class ServerSession implements IServerSession {
     private Property property;
     private String lang;
     private int retryLogin = 0;
+    private String username;
+    private String password;
 
     private String sessionId;
 
@@ -75,6 +78,15 @@ public class ServerSession implements IServerSession {
         this.property = prop;
         this.lang = lang;
         this.sessionId = UUID.randomUUID().toString();
+        this.login();
+    }
+    
+    public ServerSession(Property prop,String user, String password ,String lang) throws Throwable {
+        this.property = prop;
+        this.lang = lang;
+        this.sessionId = UUID.randomUUID().toString();
+        this.username = user;
+        this.password = password;
         this.login();
     }
 
@@ -92,7 +104,7 @@ public class ServerSession implements IServerSession {
             authHeader = refreshToken;
         } else {
             retryLogin++;            
-            authHeader = property.getAuthorization2();            
+            authHeader = property.getAuthorization2();               
         }
 //        System.out.println("Login-retry: " + retryLogin);
         LoginRequest loginRequest = new LoginRequest();
@@ -143,8 +155,8 @@ public class ServerSession implements IServerSession {
 
             if (signCloudResp.getRefreshToken() != null) {
                 this.refreshToken = "Bearer " + signCloudResp.getRefreshToken();
-//                System.out.println("Err code: " + signCloudResp.getError());
-//                System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+                System.out.println("Err code: " + signCloudResp.getError());
+                System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
             }
         }
     }
@@ -196,6 +208,48 @@ public class ServerSession implements IServerSession {
         return listCertificate;
     }
 
+    @Override
+    public List<ICertificate> listCertificates() throws Throwable {
+        System.out.println("____________credentials/list____________");
+        String authHeader = bearer;
+        CredentialListRequest credentialListRequest = new CredentialListRequest();
+//        credentialListRequest.setAgreementUUID(agreementUUID);
+//        credentialListRequest.setCertificates(certificate);
+//        credentialListRequest.setCertInfoEnabled(certInfoEnabled);
+//        credentialListRequest.setAuthInfoEnabled(authInfoEnabled);
+//        credentialListRequest.setSearchConditions(conditions);
+        credentialListRequest.setLang(this.lang);
+        credentialListRequest.setProfile("rssp-119.432-v2.0");
+
+        String jsonReq = Utils.gsTmp.toJson(credentialListRequest);
+        HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "credentials/list", jsonReq, authHeader);
+        if (!response.isStatus()) {
+            try {
+                throw new Exception(response.getMsg());
+            } catch (Exception ex) {
+                Logger.getLogger(ServerSession.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        System.out.println("credentials/list response.getMsg() = "+ response.getMsg());
+        CredentialListResponse signCloudResp = Utils.gsTmp.fromJson(response.getMsg(), CredentialListResponse.class);
+        if (signCloudResp.getError() == 3005 || signCloudResp.getError() == 3006) {
+            login();
+            return listCertificates();
+        } else if (signCloudResp.getError() != 0) {
+            System.out.println("Err code: " + signCloudResp.getError());
+            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
+        }
+        List<BaseCertificateInfo> listCert = signCloudResp.getCerts();
+        List<ICertificate> listCertificate = new ArrayList<ICertificate>();
+
+        for (BaseCertificateInfo item : listCert) {
+            ICertificate icrt = new Certificate(item, this.username, this);
+            listCertificate.add(icrt);
+        }
+        return listCertificate;
+    }
+    
     @Override
     public ICertificate certificateInfo(String agreementUUID, String credentialID) throws Throwable {
         return certificateInfo(agreementUUID, credentialID, null, false, false);
@@ -493,15 +547,16 @@ public class ServerSession implements IServerSession {
     }
 
     @Override
-    public boolean createUser(String userName, String email, String phone) throws Throwable {
+    public boolean createUser(String userName, String email, String phone, String identificationType, String identification) throws Throwable {
 //        System.out.println("____________owner/create____________");
         CreateUserRequest request = new CreateUserRequest();
         request.setUsername(userName);
         request.setEmail(email);
         request.setPhone(phone);
-
         request.setLang(this.lang);
-
+        request.setIdentificationType(identificationType);
+        request.setIdentification(identification);
+        
         String jsonReq = Utils.gsTmp.toJson(request);
         HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "owner/create", jsonReq, bearer);
         if (!response.isStatus()) {
@@ -515,7 +570,7 @@ public class ServerSession implements IServerSession {
         CreateUserResponse signCloudResp = Utils.gsTmp.fromJson(response.getMsg(), CreateUserResponse.class);
         if (signCloudResp.getError() == 3005 || signCloudResp.getError() == 3006) {
             login();
-            return createUser(userName, email, phone);
+            return createUser(userName, email, phone, identificationType, identification);
         } else if (signCloudResp.getError() != 0) {
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
@@ -641,7 +696,15 @@ public class ServerSession implements IServerSession {
     }
 
     @Override
-    public IssueCertificateResponse createCertificate(String userName, String otpRequestID, String otp, String certProfile, SharedMode sharedMode, AuthMode authMode, int multiSign, CertificateDetails certDetails) throws Throwable {
+    public IssueCertificateResponse createCertificate(
+            String userName,
+            String otpRequestID,
+            String otp,
+            String certProfile,
+            SharedMode sharedMode,
+            AuthMode authMode,
+            int multiSign,
+            CertificateDetails certDetails) throws Throwable {
 //        System.out.println("____________credentials/issue____________");
         IssueCertificateRequest request = new IssueCertificateRequest();
         request.setUser(userName);
@@ -649,10 +712,11 @@ public class ServerSession implements IServerSession {
         request.setCertificateProfile(certProfile);
         request.setSharedMode(sharedMode);
         request.setAuthMode(authMode);
-        request.setMultisign(multiSign);
+//        request.setMultisign(multiSign);
         request.setCertDetails(certDetails);
         request.setRequestID(otpRequestID);
         request.setAuthorizeCode(otp);
+        request.setSCAL(1);
         request.setLang(this.lang);
 
         String jsonReq = Utils.gsTmp.toJson(request);
@@ -670,14 +734,16 @@ public class ServerSession implements IServerSession {
             login();
             return createCertificate(userName, otpRequestID, otp, certProfile, sharedMode, authMode, multiSign, certDetails);
         } else if (signCloudResp.getError() != 0) {
+            System.out.println("Error:"+signCloudResp.getError());
+            System.out.println("ErrorDes:"+signCloudResp.getErrorDescription());
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
         List<CertificateAuthority> cas = new ArrayList<CertificateAuthority>();
 
         if (signCloudResp.getCsr() != null) {
-            System.out.println("Csr = " + signCloudResp.getCsr());
+//            System.out.println("Csr = " + signCloudResp.getCsr());
         } else {
-            System.out.println("Certificate = " + signCloudResp.getCertificates()[0]);
+//            System.out.println("Certificate = " + signCloudResp.getCertificates()[0]);
         }
         return signCloudResp;
     }
@@ -710,6 +776,44 @@ public class ServerSession implements IServerSession {
         }
 
         return new Certificate(new BaseCertificateInfo(), agreementUUID, this);
+    }
+
+    @Override
+    public boolean preLogin(String username) throws Throwable {
+        preLoginRequest request = new preLoginRequest();
+        request.setUser(username);
+        request.setType(UserType.USERNAME);
+        //Console.WriteLine(loginRequest);
+
+        String jsonReq = Utils.gsTmp.toJson(request);        
+        HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "auth/preLogin", jsonReq, bearer);
+        if (!response.isStatus()) {
+            try {
+                throw new Exception(response.getMsg());
+            } catch (Exception ex) {
+                Logger.getLogger(ServerSession.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        Response signCloudResp = Utils.gsTmp.fromJson(response.getMsg(), Response.class);
+        if (signCloudResp.getError() == 3005 || signCloudResp.getError() == 3006) {
+            refreshToken = null;
+            if (retryLogin >= 5) {
+                retryLogin = 0;
+                throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
+            }
+            login();
+        } else if (signCloudResp.getError() != 0) {
+            throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
+        } else {
+            System.out.println(signCloudResp.getErrorDescription());
+            if(signCloudResp.getError() == 0 && response.getHttpCode() == 200){
+                return true;
+            }
+            return false;            
+        }
+        System.out.println(signCloudResp.getErrorDescription());
+        return false;
     }
 
 }

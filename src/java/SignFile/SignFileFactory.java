@@ -20,7 +20,7 @@ import vn.mobileid.exsig.XmlProfile;
 
 /**
  *
- * @author Tuan Pham
+ * @author Tuan Pham - GiaTK
  */
 public class SignFileFactory {
 
@@ -37,6 +37,21 @@ public class SignFileFactory {
                 throw new APIException("Not support SignType [" + signType + "]");
         }
         return new PdfSignFile(profile, getHashAlgorithmOID(alg));
+    }
+    
+    public IPdfSignFile createPdfSignFile_forUser(SignType signType, Algorithm alg, PdfForm form) throws APIException {
+        PdfProfile profile;
+        switch (signType) {
+            case CMS:
+                profile = new PdfProfileCMS(alg);
+                break;
+            case PAdES:
+                profile = new PdfProfile(form, alg);
+                break;
+            default:
+                throw new APIException("Not support SignType [" + signType + "]");
+        }
+        return new UserPdfSignFile(profile, getHashAlgorithmOID(alg));
     }
 
     public enum SignType {

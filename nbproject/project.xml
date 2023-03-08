@@ -6,7 +6,7 @@
             <extension file="rest-build.xml" id="rest.5"/>
         </buildExtensions>
         <data xmlns="http://www.netbeans.org/ns/web-project/3">
-            <name>qrypto</name>
+            <name>paperless</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <explicit-platform explicit-source-supported="true"/>
             <web-module-libraries>

@@ -40,6 +40,8 @@ public class User {
     private String mobile;
     private int id;
 
+    private int aid; //authorized party ID
+    
     @JsonProperty("exp")
     public long getExp() {
         return exp;
@@ -49,6 +51,16 @@ public class User {
         this.exp = exp;
     }
 
+    @JsonProperty("aid")
+    public int getAid() {
+        return aid;
+    }
+
+    public void setAid(int aid) {
+        this.aid = aid;
+    }
+
+    
     @JsonProperty("iat")
     public long getIat() {
         return iat;

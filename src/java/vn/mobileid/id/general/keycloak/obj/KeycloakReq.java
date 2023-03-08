@@ -36,7 +36,7 @@ public class KeycloakReq {
     private String scope;
     
     //For Revoke connection
-    private String token;
+    private String refreshtoken;
     private String token_type_hint;
 
     @JsonProperty("username")
@@ -175,12 +175,12 @@ public class KeycloakReq {
     }
 
     @JsonProperty("refresh_token")
-    public String getToken() {
-        return token;
+    public String getRefreshToken() {
+        return refreshtoken;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setRefreshToken(String token) {
+        this.refreshtoken = token;
     }
 
     @JsonProperty("token_type_hint")

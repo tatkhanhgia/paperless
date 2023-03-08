@@ -1,28 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="ALL">
+	<CustomLevels>
+		<CustomLevel name="REQUEST" intLevel="350" />
+	</CustomLevels>
+	
     <Appenders>
         <Console name="LogToConsole" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
-        <RollingFile name="LogToRollingFile" fileName="/opt/wildfly/paperless/log/paperless.log"
-                    filePattern="/opt/wildfly/paperless/log/paperless.%d{yyyy-MM-dd-HH}.log">
-        <PatternLayout>
-            <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
-        </PatternLayout>
-        <Policies>
-            <TimeBasedTriggeringPolicy interval="1" modulate="true" />
-            <SizeBasedTriggeringPolicy size="10 MB"/>
-        </Policies>
-    </RollingFile>
-
+		
+        <RollingFile name="LogToINFOfile" fileName="/opt/wildfly/paperless/log/info/paperless-INFO.log"
+                    filePattern="/opt/wildfly/paperless/log/info/paperless-INFO.%d{yyyy-MM-dd-HH}.log">
+			<LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+			<PatternLayout>
+				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+		</RollingFile> 
+		
+		<RollingFile name="LogToDEBUGfile" fileName="/opt/wildfly/paperless/log/debug/paperless-DEBUG.log"
+                    filePattern="/opt/wildfly/paperless/log/debug/paperless-DEBUG.%d{yyyy-MM-dd-HH}.log">
+			<LevelRangeFilter minLevel="DEBUG" maxLevel="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+			<PatternLayout>
+				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+		</RollingFile>
+		
+		<RollingFile name="LogToERRORfile" fileName="/opt/wildfly/paperless/log/error/paperless-ERROR.log"
+                    filePattern="/opt/wildfly/paperless/log/error/paperless-ERROR.%d{yyyy-MM-dd-HH}.log">
+			<LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+			<PatternLayout>
+				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+		</RollingFile>
+		
     </Appenders>
     <Loggers>
         <!-- avoid duplicated logs with additivity=false -->
-        <Logger name="com.mkyong" level="ALL" additivity="false">
-            <AppenderRef ref="LogToRollingFile"/>
+        <Logger name="vn.mobileid.id.paperless" additivity="false">
+            <AppenderRef ref="LogToINFOfile"/>
+			<AppenderRef ref="LogToDEBUGfile"/>
+			<AppenderRef ref="LogToERRORfile"/>				
         </Logger>
+		
+		<Logger name="vn.mobileid.id.general.api" additivity="false">
+            <AppenderRef ref="LogToINFOfile"/>
+			<AppenderRef ref="LogToDEBUGfile"/>
+			<AppenderRef ref="LogToERRORfile"/>				
+        </Logger>
+		
         <Root level="ALL">            
-			<AppenderRef ref="LogToRollingFile"/>
+			<AppenderRef ref="LogToConsole"/>
         </Root>		
     </Loggers>
 </Configuration>

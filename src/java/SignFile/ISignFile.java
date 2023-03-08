@@ -8,6 +8,7 @@ package SignFile;
 import java.util.ArrayList;
 import java.util.List;
 import restful.sdk.API.IServerSession;
+import restful.sdk.API.IUserSession;
 import vn.mobileid.exsig.Profile;
 
 /**
@@ -15,8 +16,10 @@ import vn.mobileid.exsig.Profile;
  * @author Tuan Pham
  */
 public interface ISignFile {
-            
+
     Profile getProfile();
-    
+
     List<byte[]> sign(String agreementUUID, String credentialId, String pin, List<byte[]> files, IServerSession session) throws Exception;
+
+    List<byte[]> sign( String credentialId, String pin, List<byte[]> files, IUserSession session) throws Exception;
 }
