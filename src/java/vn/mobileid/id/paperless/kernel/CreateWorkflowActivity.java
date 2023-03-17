@@ -6,21 +6,16 @@
 package vn.mobileid.id.paperless.kernel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
-import vn.mobileid.id.paperless.objects.Item_JSNObject;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
-import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.Workflow;
-import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.paperless.objects.response.Create_WorkflowActivity_MessageJSNObject;
 import vn.mobileid.id.utils.Utils;
 
@@ -30,32 +25,35 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateWorkflowActivity {
 
-    final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
+//    final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
     public static InternalResponse checkDataWorkflowActivity(WorkflowActivity workflowAc) {
 //        if (workflowAc.getEnterprise_name() == null && workflowAc.getEnterprise_id() <= 0) {
-//            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-//                            QryptoConstant.SUBCODE_MISSING_ENTERPRISE_DATA,
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                            PaperlessConstant.SUBCODE_MISSING_ENTERPRISE_DATA,
 //                            "en",
 //                            null));
 //        }
 
         if (workflowAc.getWorkflow_id() <= 0) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                            QryptoConstant.SUBCODE_MISSING_WORKFLOW_ID,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_MISSING_WORKFLOW_ID,
                             "en",
                             null));
         }
-        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
-                        QryptoConstant.SUBCODE_SUCCESS,
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                        PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
 
-    public static InternalResponse processingCreateWorkflowActivity(WorkflowActivity woAc, User user) {
+    public static InternalResponse processingCreateWorkflowActivity(
+            WorkflowActivity woAc,
+            User user,
+            String transaction) {
         try {
             Database DB = new DatabaseImpl();
             //Data
@@ -66,11 +64,13 @@ public class CreateWorkflowActivity {
 
             InternalResponse response = null;
             //Get woAc type 
-            Workflow temp = (Workflow) GetWorkflow.getWorkflow(woAc.getWorkflow_id()).getData();
+            Workflow temp = (Workflow) GetWorkflow.getWorkflow(
+                    woAc.getWorkflow_id(),
+                    transaction).getData();
 
             //Create new User Activity Log
-            response = CreateUserActivityLog.processingCreateUserActivityLog(woAc, user);
-            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+            response = CreateUserActivityLog.processingCreateUserActivityLog(woAc, user,transaction);
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
             logID = Integer.parseInt(response.getMessage());
@@ -79,8 +79,8 @@ public class CreateWorkflowActivity {
             response = CreateFileManagement.processingCreateFileManagement(woAc,
                     "HMAC",
                     null,
-                    user);
-            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                    user,transaction);
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
             fileManagementID = Integer.parseInt(response.getMessage());
@@ -90,7 +90,7 @@ public class CreateWorkflowActivity {
 //                    "HMAC",
 //                    user.getName());
 //
-//            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+//            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
 //                return response;
 //            }
 //            QRUUID = response.getMessage();
@@ -100,14 +100,14 @@ public class CreateWorkflowActivity {
                     fileManagementID,
                     3, //Type QR:1 CSV:2 PDF:3
                     user,
-                    user.getName());
-            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                    user.getName(),transaction);
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
             transactionID = response.getMessage();
 
             //Create new Workflow Activity            
-            DatabaseResponse callDB = DB.createWorkflowActivity(Integer.parseInt(user.getIss()), //enterpriseID
+            DatabaseResponse callDB = DB.createWorkflowActivity(user.getAid(), //enterpriseID
                     woAc.getWorkflow_id(), //workflowID
                     user.getEmail(), //useremail
                     transactionID, //transactionid
@@ -120,35 +120,38 @@ public class CreateWorkflowActivity {
                     temp.getWorkflow_type(), //workflow type
                     "none request data", //request data
                     "hmac", //hmac
-                    user.getName());  //created by
-            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                    user.getName(),
+                    transaction);  //created by
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                         null);
                 if (LogHandler.isShowErrorLog()) {
-                    LOG.error("Cannot create Workflow Activity - Detail:" + message);
+                    LogHandler.error(CreateWorkflowActivity.class,"TransactionID:"+transaction
+                            +"\nCannot create Workflow Activity - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }           
 
             //Convert to object and return it to client
             Create_WorkflowActivity_MessageJSNObject object = new Create_WorkflowActivity_MessageJSNObject();
-            object.setCode(QryptoConstant.CODE_SUCCESS);
+            object.setCode(PaperlessConstant.CODE_SUCCESS);
             object.setWorkflowActivityID(callDB.getIDResponse_int());
 
             return new InternalResponse(
-                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     new ObjectMapper().writeValueAsString(object));
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+                LogHandler.error(CreateWorkflowActivity.class,"TransactionID:"+transaction+
+                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
 //            e.printStackTrace();
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
@@ -165,6 +168,6 @@ public class CreateWorkflowActivity {
         User user = new User();
         user.setEmail("giatk@mobile-id.vn");
 
-        CreateWorkflowActivity.processingCreateWorkflowActivity(object, user);
+//        CreateWorkflowActivity.processingCreateWorkflowActivity(object, user);
     }
 }

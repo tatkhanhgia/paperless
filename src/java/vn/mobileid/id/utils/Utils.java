@@ -5,7 +5,7 @@
  */
 package vn.mobileid.id.utils;
 
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -61,6 +61,7 @@ import com.google.gson.Gson;
 import java.lang.reflect.Field;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Map;
@@ -213,10 +214,10 @@ public class Utils {
         }
         return headerValue;
     }
-    
-    public static HashMap<String,String> getHashMapRequestHeader(final HttpServletRequest request) {
+
+    public static HashMap<String, String> getHashMapRequestHeader(final HttpServletRequest request) {
         String headerValue = null;
-        HashMap<String,String> hashMap = new HashMap<>();
+        HashMap<String, String> hashMap = new HashMap<>();
         Enumeration headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String key = (String) headerNames.nextElement();
@@ -261,15 +262,29 @@ public class Utils {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
     }
-    
+
     public static String generateTransactionID_noRP() {
         String billCode = null;
-        try{
+        try {
             billCode = generateOneTimePassword(4) + "-" + generateOneTimePassword(5) + "-" + generateOneTimePassword(5);
-        } catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return billCode;
+    }
+
+    public static String generateRandomString(int lenght) {
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        int targetStringLength = lenght;
+        Random random = new Random();
+
+        String generatedString = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+        return generatedString;
     }
 
     public static List<CredentialTokensJSNObject> cleanUpCredentialTokens(List<CredentialTokensJSNObject> listOfCredentialTokensJSNObject) {
@@ -284,7 +299,7 @@ public class Utils {
                 i = -1;
             }
         }
-        if (listOfCredentialTokensJSNObject.size() == QryptoConstant.NUMBER_OF_ACCESS_TOKEN) { // number of access token
+        if (listOfCredentialTokensJSNObject.size() == PaperlessConstant.NUMBER_OF_ACCESS_TOKEN) { // number of access token
             Collections.sort(listOfCredentialTokensJSNObject);
             listOfCredentialTokensJSNObject.remove(0);
         }
@@ -310,7 +325,17 @@ public class Utils {
             SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmmss");
             sdf.setTimeZone(TimeZone.getTimeZone(System.getProperty("user.timezone")));
             String dateTime = sdf.format(logDatetime);
-            billCode = relyingParty + "-" + dateTime + "-" + logId + "-" + generateOneTimePassword(6);            
+            billCode = relyingParty + "-" + dateTime + "-" + logId + "-" + generateOneTimePassword(6);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return billCode;
+    }
+
+    public static String generateTransactionId(String username) {
+        String billCode = null;
+        try {
+            billCode = username + "-" + generateOneTimePassword(4) + "-" + generateOneTimePassword(4);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -326,7 +351,6 @@ public class Utils {
         }
         return new String(otp);
     }
-
 
     public static String getDocumentDateTimeString(Date date) {
         try {
@@ -1063,7 +1087,7 @@ public class Utils {
                 StringTokenizer token = new StringTokenizer(temp2, "=", false);
                 while (token.hasMoreElements()) {
                     String name = token.nextToken();
-                    String value = URLDecoder.decode(token.nextToken(),StandardCharsets.UTF_8.toString());                    
+                    String value = URLDecoder.decode(token.nextToken(), StandardCharsets.UTF_8.toString());
                     map.put(name, value);
                 }
             }
@@ -1075,13 +1099,13 @@ public class Utils {
             return null;
         }
     }
-    
-    public static Property getDataRESTFromString(String dataREST, byte[] p12){
+
+    public static Property getDataRESTFromString(String dataREST, byte[] p12) {
         HashMap<String, String> map = new HashMap<>();
-        StringTokenizer token = new StringTokenizer(dataREST,";", false);
-        while(token.hasMoreTokens()){
+        StringTokenizer token = new StringTokenizer(dataREST, ";", false);
+        while (token.hasMoreTokens()) {
             String[] row = token.nextToken().split("=");
-            map.put(row[0],row[1]);
+            map.put(row[0], row[1]);
         }
         String baseUrl = map.get("mobileid.rssp.baseurl");
         String relyingParty = map.get("mobileid.rssp.rp.name");
@@ -1091,15 +1115,15 @@ public class Utils {
         String relyingPartyKeyStore = map.get("mobileid.rssp.rp.keystore.file");
         String relyingPartyKeyStorePassword = map.get("mobileid.rssp.rp.keystore.password");
         byte[] relyingPartyKeyStoreData = p12;
-        if(p12 != null){
-        return new Property(
-                baseUrl,
-                relyingParty,
-                relyingPartyUser,
-                relyingPartyPassword,
-                relyingPartySignature,
-                relyingPartyKeyStoreData,
-                relyingPartyKeyStorePassword);
+        if (p12 != null) {
+            return new Property(
+                    baseUrl,
+                    relyingParty,
+                    relyingPartyUser,
+                    relyingPartyPassword,
+                    relyingPartySignature,
+                    relyingPartyKeyStoreData,
+                    relyingPartyKeyStorePassword);
         }
         return new Property(
                 baseUrl,
@@ -1110,11 +1134,11 @@ public class Utils {
                 relyingPartyKeyStore,
                 relyingPartyKeyStorePassword);
     }
-    
-    public static Property getDataRESTFromString2(String dataREST, byte[] p12){
+
+    public static Property getDataRESTFromString2(String dataREST, byte[] p12) {
         ArrayList<String> list = new ArrayList();
-        StringTokenizer token = new StringTokenizer(dataREST,";", false);
-        while(token.hasMoreTokens()){
+        StringTokenizer token = new StringTokenizer(dataREST, ";", false);
+        while (token.hasMoreTokens()) {
             list.add(token.nextToken());
         }
 //        String baseUrl = map.get("mobileid.rssp.baseurl");
@@ -1125,7 +1149,7 @@ public class Utils {
 //        String relyingPartyKeyStore = map.get("mobileid.rssp.rp.keystore.file");
 //        String relyingPartyKeyStorePassword = map.get("mobileid.rssp.rp.keystore.password");
         byte[] relyingPartyKeyStoreData = p12;
-        
+
         return new Property(
                 list.get(0),
                 list.get(1),
@@ -1133,10 +1157,10 @@ public class Utils {
                 list.get(3),
                 list.get(4),
                 relyingPartyKeyStoreData,
-                list.get(5));                
+                list.get(5));
     }
-    
-    public static String hashMD5(String input){
+
+    public static String hashMD5(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(input.getBytes());
@@ -1144,7 +1168,7 @@ public class Utils {
             return DatatypeConverter.printHexBinary(digest).toUpperCase();
         } catch (NoSuchAlgorithmException ex) {
             return null;
-        }        
+        }
     }
-           
+
 }

@@ -16,7 +16,7 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.utils.Utils;
@@ -27,25 +27,28 @@ import vn.mobileid.id.utils.Utils;
  */
 public class GetAsset {
 
-    final private static Logger LOG = LogManager.getLogger(GetAsset.class);
+//    final private static Logger LOG = LogManager.getLogger(GetAsset.class);
 
-    public static InternalResponse getAsset(int id) {
+    public static InternalResponse getAsset(int id,
+            String transactionID) {
         try {
             Database DB = new DatabaseImpl();
             //Data                        
             InternalResponse response = null;
 
-            DatabaseResponse callDB = DB.getAsset(id);
+            DatabaseResponse callDB = DB.getAsset(id, transactionID);
 
-            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                          null);
                 if (LogHandler.isShowErrorLog()) {
-                    LOG.error("Cannot get Asset - Detail:" + message);
+                    LogHandler.error(GetAsset.class,
+                            "TransactionID:"+transactionID+
+                            "\nCannot get Asset - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -53,37 +56,42 @@ public class GetAsset {
             Asset asset = (Asset) callDB.getObject();
 
             return new InternalResponse(
-                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     asset);
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+                LogHandler.error(GetAsset.class,
+                        "TransactionID:"+transactionID+
+                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
 //            e.printStackTrace();
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }   
     
     
-    public static InternalResponse getAssetTemplate(int id) {
+    public static InternalResponse getAssetTemplate(int id,
+            String transactionID) {
         try {
             Database DB = new DatabaseImpl();
             //Data                        
             InternalResponse response = null;
 
-            DatabaseResponse callDB = DB.getAsset(id);
+            DatabaseResponse callDB = DB.getAsset(id, transactionID);
 
-            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 if (LogHandler.isShowErrorLog()) {
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                    message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
                              null);
-                    LOG.error("Cannot get Asset - Detail:" + message);
+                    LogHandler.error(GetAsset.class,
+                            "TransactionID:"+transactionID+
+                            "\nCannot get Asset - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -91,15 +99,16 @@ public class GetAsset {
             Asset asset = (Asset) callDB.getObject();
 
             return new InternalResponse(
-                    QryptoConstant.CODE_SUCCESS,
+                    PaperlessConstant.CODE_SUCCESS,
                     asset.getMetadata());
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+                LogHandler.error(GetAsset.class,
+                        "TransactionID:"+transactionID+
+                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }            
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 

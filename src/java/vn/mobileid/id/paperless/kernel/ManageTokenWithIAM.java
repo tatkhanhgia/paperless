@@ -15,7 +15,7 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.general.keycloak.KeyCloakInvocation;
 import vn.mobileid.id.general.keycloak.obj.KeycloakReq;
 import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
@@ -33,9 +33,9 @@ public class ManageTokenWithIAM {
 
     public InternalResponse processJSON_getToken(final HttpServletRequest request, String payload) {
         if (Utils.isNullOrEmpty(payload)) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                            QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
         }
@@ -49,9 +49,9 @@ public class ManageTokenWithIAM {
                 LOG.error("Cannot parse payload - payload:"+payload);
                 LOG.error("Details:"+ex);
             }
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
         }
@@ -77,17 +77,18 @@ public class ManageTokenWithIAM {
 
         InternalResponse response;
         if (accessToken.getAccess_token() != null) {
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                    QryptoMessageResponse.getAccessTokenMessage(QryptoConstant.CODE_SUCCESS,
-                            QryptoConstant.SUBCODE_SUCCESS,
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+                    QryptoMessageResponse.getAccessTokenMessage(PaperlessConstant.CODE_SUCCESS,
+                            PaperlessConstant.SUBCODE_SUCCESS,
                             "en",
-                            accessToken
+                            accessToken,
+                            "transactionID"
                     ));
         } else {
 //            int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
-//            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST, accessToken.getError_description());
+//            response = new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST, accessToken.getError_description());
         }
 
         return response;
@@ -117,15 +118,16 @@ public class ManageTokenWithIAM {
 
         InternalResponse response;
         if (accessToken.getAccess_token() != null) {
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                    QryptoMessageResponse.getAccessTokenMessage(QryptoConstant.CODE_SUCCESS,
-                            QryptoConstant.SUBCODE_SUCCESS,
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+                    QryptoMessageResponse.getAccessTokenMessage(PaperlessConstant.CODE_SUCCESS,
+                            PaperlessConstant.SUBCODE_SUCCESS,
                             "en",
-                            accessToken
+                            accessToken,
+                            "transactionID"
                     ));
         } else {
 //            int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,accessToken.getError_description());
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,accessToken.getError_description());
         }
 
         return response;
@@ -133,9 +135,9 @@ public class ManageTokenWithIAM {
 
     public InternalResponse processJSON_revoke(final HttpServletRequest request, String payload) {
         if (Utils.isNullOrEmpty(payload)) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                            QryptoConstant.SUBCODE_NO_PAYLOAD_FOUND,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
         }
@@ -148,9 +150,9 @@ public class ManageTokenWithIAM {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot parse payload");
             }
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             QryptoMessageResponse.getLangFromJson(payload),
                             null));
         }       
@@ -173,11 +175,11 @@ public class ManageTokenWithIAM {
         
         InternalResponse response;
         if (accessToken.getAccess_token() != null) {         
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,"");
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,"");
         } else {
             int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
 
         return response;
@@ -207,11 +209,11 @@ public class ManageTokenWithIAM {
 
         InternalResponse response;
         if (accessToken.getAccess_token() != null) {
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,"SUCCESS");
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,"SUCCESS");
         } else {
             int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
 
         return response;
@@ -220,47 +222,47 @@ public class ManageTokenWithIAM {
     private static int convertError(String errorKeycloak) {
         if (errorKeycloak.equalsIgnoreCase("Unsupported grant_type")) {
             //Error in grant_type
-            return QryptoConstant.SUBCODE_UNSUPPORTED_GRANT_TYPE;
+            return PaperlessConstant.SUBCODE_UNSUPPORTED_GRANT_TYPE;
         }
         if (errorKeycloak.equalsIgnoreCase("Invalid user credentials")) {
             //Error in Username, error and missing data in Password
-            return QryptoConstant.SUBCODE_INVALID_USER_CREDENTIALS;
+            return PaperlessConstant.SUBCODE_INVALID_USER_CREDENTIALS;
         }
         if (errorKeycloak.equalsIgnoreCase("Invalid client secret")) {
             //Error in Client Secret
-            return QryptoConstant.SUBCODE_INVALID_CLIENT_SECRET;
+            return PaperlessConstant.SUBCODE_INVALID_CLIENT_SECRET;
         }
         if (errorKeycloak.equalsIgnoreCase("Invalid client credentials")) {
             //Error and missing data in Client ID
-            return QryptoConstant.SUBCODE_INVALID_CLIENT_CREDENTIALS;
+            return PaperlessConstant.SUBCODE_INVALID_CLIENT_CREDENTIALS;
         }
         if(errorKeycloak.contains("grant_type")){
             //Missing data in grant_type
-            return QryptoConstant.SUBCODE_MISSING_GRANT_TYPE;
+            return PaperlessConstant.SUBCODE_MISSING_GRANT_TYPE;
         }
         if(errorKeycloak.contains("username")){
-            return QryptoConstant.SUBCODE_MISSING_USER_NAME_OR_PASSWORD;
+            return PaperlessConstant.SUBCODE_MISSING_USER_NAME_OR_PASSWORD;
         }
         if(errorKeycloak.contains("Client secret")){
             //Missing client secret
-            return QryptoConstant.SUBCODE_MISSING_CLIENT_SECRET;
+            return PaperlessConstant.SUBCODE_MISSING_CLIENT_SECRET;
         }
         if(errorKeycloak.contains("Token") && errorKeycloak.contains("provided")){
-            return QryptoConstant.SUBCODE_TOKEN_NOT_PROVIDED;
+            return PaperlessConstant.SUBCODE_TOKEN_NOT_PROVIDED;
         }
         if(errorKeycloak.contains("Invalid token")){
-            return QryptoConstant.SUBCODE_INVALID_TOKEN;
+            return PaperlessConstant.SUBCODE_INVALID_TOKEN;
         }
         if(errorKeycloak.contains("Token is invalid!")){
-            return QryptoConstant.SUBCODE_INVALID_TOKEN;
+            return PaperlessConstant.SUBCODE_INVALID_TOKEN;
         }
         if(errorKeycloak.contains("Token is expired!")){
-            return QryptoConstant.SUBCODE_TOKEN_EXPIRED;
+            return PaperlessConstant.SUBCODE_TOKEN_EXPIRED;
         }
         if(errorKeycloak.contains("INTERNAL ERROR")){
-            return QryptoConstant.SUBCODE_INTERNAL_ERROR;
+            return PaperlessConstant.SUBCODE_INTERNAL_ERROR;
         }
-        return QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE;
+        return PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE;
     }
 
     public InternalResponse verifyAccessToken(final HttpServletRequest request){
@@ -274,9 +276,9 @@ public class ManageTokenWithIAM {
         } 
         
         if(token == null || token.contains("null")){
-            return new InternalResponse(QryptoConstant.HTTP_CODE_UNAUTHORIZED,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK,
-                            QryptoConstant.SUBCODE_MISSING_ACCESS_TOKEN, "en", null)
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            PaperlessConstant.SUBCODE_MISSING_ACCESS_TOKEN, "en", null)
             );
         }
         
@@ -288,21 +290,20 @@ public class ManageTokenWithIAM {
         
         InternalResponse response;
 //        System.out.println("Status:"+accessToken.getStatus());
-        if (accessToken.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,"SUCCESS");
+        if (accessToken.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,"SUCCESS");
             response.setUser(accessToken.getUser());
             return response;
-        } if( accessToken.getStatus() == QryptoConstant.HTTP_CODE_UNAUTHORIZED){
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_UNAUTHORIZED,
-                    QryptoMessageResponse.getErrorMessage(
-                            QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK,
-                            QryptoConstant.SUBCODE_UNAUTHORIZED_USER, "EN", null));
+        } if( accessToken.getStatus() == PaperlessConstant.HTTP_CODE_UNAUTHORIZED){
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            PaperlessConstant.SUBCODE_UNAUTHORIZED_USER, "EN", null));
         }
         else {
 //            System.out.println("ErrDes:"+);
             int sub_code = ManageTokenWithIAM.convertError(accessToken.getError_description());
-            response = new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
+            response = new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK, sub_code, "EN", null));
         }
         return response;
     }         

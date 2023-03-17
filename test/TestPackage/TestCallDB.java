@@ -16,7 +16,7 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.utils.Utils;
 

@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import RestfulFactory.Model.CertificateDetails;
 import RestfulFactory.Model.CertificateProfile;
-import RestfulFactory.Model.ClientInfo;
 import RestfulFactory.Model.DocumentDigests;
 import RestfulFactory.Model.MobileDisplayTemplate;
 import RestfulFactory.Model.Province;
@@ -49,18 +48,17 @@ import RestfulFactoryl.Response.Response;
 import RestfulFactoryl.Response.SignDocResponse;
 import RestfulFactoryl.Response.SignHashResponse;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import restful.sdk.API.BaseCertificateInfo;
-import restful.sdk.API.CertificateInfo;
 import restful.sdk.API.HTTPUtils;
 import restful.sdk.API.HttpResponse;
 import restful.sdk.API.ICertificate;
 import restful.sdk.API.IServerSession;
 import restful.sdk.API.Property;
 import restful.sdk.API.Utils;
+import vn.mobileid.id.general.LogHandler;
 
 public class ServerSession implements IServerSession {
 
@@ -80,8 +78,8 @@ public class ServerSession implements IServerSession {
         this.sessionId = UUID.randomUUID().toString();
         this.login();
     }
-    
-    public ServerSession(Property prop,String user, String password ,String lang) throws Throwable {
+
+    public ServerSession(Property prop, String user, String password, String lang) throws Throwable {
         this.property = prop;
         this.lang = lang;
         this.sessionId = UUID.randomUUID().toString();
@@ -97,14 +95,14 @@ public class ServerSession implements IServerSession {
 
     @Override
     public void login() throws Throwable {
-        System.out.println("____________auth/login____________");
+//        System.out.println("____________auth/login____________");
         String authHeader;
 
         if (refreshToken != null) {
             authHeader = refreshToken;
         } else {
-            retryLogin++;            
-            authHeader = property.getAuthorization2();               
+            retryLogin++;
+            authHeader = property.getAuthorization2();
         }
 //        System.out.println("Login-retry: " + retryLogin);
         LoginRequest loginRequest = new LoginRequest();
@@ -122,17 +120,19 @@ public class ServerSession implements IServerSession {
 //        System.out.println("Pass:"+property.getRelyingPartyPassword());
 //        System.out.println("PassKey:"+property.getRelyingPartyKeyStorePassword());
 //        System.out.println("Token:"+authHeader);
-        
         String jsonReq = Utils.gsTmp.toJson(loginRequest);
 //        System.out.println("Payload:"+jsonReq);
-        
+
         HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "auth/login", jsonReq, authHeader);
 
         if (!response.isStatus()) {
             try {
                 throw new Exception(response.getMsg());
             } catch (Exception ex) {
-                Logger.getLogger(ServerSession.class.getName()).log(Level.SEVERE, null, ex);
+                if (LogHandler.isShowInfoLog()) {
+                    ex.printStackTrace();
+                    LogHandler.info(ServerSession.class, "Error - Detail:" + ex);
+                }
             }
         }
 
@@ -141,29 +141,37 @@ public class ServerSession implements IServerSession {
             refreshToken = null;
             if (retryLogin >= 5) {
                 retryLogin = 0;
-                System.out.println("Err code: " + signCloudResp.getError());
-                System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+                if (LogHandler.isShowInfoLog()) {
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError()
+                            + "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                }
                 throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
             }
             login();
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Err code: " + signCloudResp.getError());
-            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            if (LogHandler.isShowInfoLog()) {
+                LogHandler.info(ServerSession.class,
+                        "Err code: " + signCloudResp.getError()
+                        + "\nErr Desscription: " + signCloudResp.getErrorDescription());
+            }
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         } else {
             this.bearer = "Bearer " + signCloudResp.getAccessToken();
 
             if (signCloudResp.getRefreshToken() != null) {
                 this.refreshToken = "Bearer " + signCloudResp.getRefreshToken();
-                System.out.println("Err code: " + signCloudResp.getError());
-                System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+                if (LogHandler.isShowInfoLog()) {
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError()
+                            + "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                }
             }
         }
     }
 
     @Override
     public List<ICertificate> listCertificates(String agreementUUID) throws Throwable {
-
         return listCertificates(agreementUUID, null, false, false, null);
     }
 
@@ -194,8 +202,11 @@ public class ServerSession implements IServerSession {
             login();
             return listCertificates(agreementUUID, certificate, certInfoEnabled, authInfoEnabled, conditions);
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Err code: " + signCloudResp.getError());
-            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            if (LogHandler.isShowInfoLog()) {
+                LogHandler.info(ServerSession.class,
+                        "Err code: " + signCloudResp.getError()
+                        + "\nErr Desscription: " + signCloudResp.getErrorDescription());
+            }
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
         List<BaseCertificateInfo> listCert = signCloudResp.getCerts();
@@ -210,7 +221,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public List<ICertificate> listCertificates() throws Throwable {
-        System.out.println("____________credentials/list____________");
+//        System.out.println("____________credentials/list____________");
         String authHeader = bearer;
         CredentialListRequest credentialListRequest = new CredentialListRequest();
 //        credentialListRequest.setAgreementUUID(agreementUUID);
@@ -230,14 +241,17 @@ public class ServerSession implements IServerSession {
                 Logger.getLogger(ServerSession.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        System.out.println("credentials/list response.getMsg() = "+ response.getMsg());
+//        System.out.println("credentials/list response.getMsg() = "+ response.getMsg());
         CredentialListResponse signCloudResp = Utils.gsTmp.fromJson(response.getMsg(), CredentialListResponse.class);
         if (signCloudResp.getError() == 3005 || signCloudResp.getError() == 3006) {
             login();
             return listCertificates();
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Err code: " + signCloudResp.getError());
-            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            if (LogHandler.isShowInfoLog()) {
+                LogHandler.info(ServerSession.class,
+                        "Err code: " + signCloudResp.getError()
+                        + "\nErr Desscription: " + signCloudResp.getErrorDescription());
+            }
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
         List<BaseCertificateInfo> listCert = signCloudResp.getCerts();
@@ -249,7 +263,7 @@ public class ServerSession implements IServerSession {
         }
         return listCertificate;
     }
-    
+
     @Override
     public ICertificate certificateInfo(String agreementUUID, String credentialID) throws Throwable {
         return certificateInfo(agreementUUID, credentialID, null, false, false);
@@ -257,7 +271,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public ICertificate certificateInfo(String agreementUUID, String credentialID, String certificate, boolean certInfoEnabled, boolean authInfoEnabled) throws Throwable {
-        System.out.println("____________credentials/info____________");
+//        System.out.println("____________credentials/info____________");
         CredentialInfoRequest credentialInfoRequest = new CredentialInfoRequest();
         credentialInfoRequest.setAgreementUUID(agreementUUID);
         credentialInfoRequest.setCredentialID(credentialID);
@@ -281,8 +295,11 @@ public class ServerSession implements IServerSession {
             login();
             return certificateInfo(agreementUUID, credentialID, certificate, certInfoEnabled, authInfoEnabled);
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Err code: " + signCloudResp.getError());
-            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                }  
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
 
@@ -330,8 +347,11 @@ public class ServerSession implements IServerSession {
         } else if (signCloudResp.getError() == 3055) {
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription(), signCloudResp.getAgreementUUID());
         } else if (signCloudResp.getError() != 0) {
-            System.err.println("err code: " + signCloudResp.getError());
-            System.err.println("error description: " + signCloudResp.getErrorDescription());
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                }  
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
 
@@ -363,8 +383,11 @@ public class ServerSession implements IServerSession {
             login();
             return sendUserOTPByUserName(otpType, username);
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Err code: " + signCloudResp.getError());
-            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                }  
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
         return signCloudResp.getResponseID();
@@ -431,8 +454,11 @@ public class ServerSession implements IServerSession {
             login();
             return authorize(agreementUUID, credentialID, numSignatures, doc, signAlgo, otpRequestID, otp);
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Err code: " + signCloudResp.getError());
-            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                }  
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
 
@@ -476,8 +502,11 @@ public class ServerSession implements IServerSession {
             login();
             return authorize(agreementUUID, credentialID, numSignatures, doc, signAlgo, displayTemplate);
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Err code: " + signCloudResp.getError());
-            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                } 
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
         return signCloudResp.getSAD();
@@ -509,8 +538,11 @@ public class ServerSession implements IServerSession {
             login();
             return signHash(agreementUUID, credentialID, documentDigest, signAlgo, SAD);
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Err code: " + signCloudResp.getError());
-            System.out.println("Err Desscription: " + signCloudResp.getErrorDescription());
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                } 
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
         return signCloudResp.getSignatures();
@@ -556,7 +588,7 @@ public class ServerSession implements IServerSession {
         request.setLang(this.lang);
         request.setIdentificationType(identificationType);
         request.setIdentification(identification);
-        
+
         String jsonReq = Utils.gsTmp.toJson(request);
         HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "owner/create", jsonReq, bearer);
         if (!response.isStatus()) {
@@ -734,8 +766,11 @@ public class ServerSession implements IServerSession {
             login();
             return createCertificate(userName, otpRequestID, otp, certProfile, sharedMode, authMode, multiSign, certDetails);
         } else if (signCloudResp.getError() != 0) {
-            System.out.println("Error:"+signCloudResp.getError());
-            System.out.println("ErrorDes:"+signCloudResp.getErrorDescription());
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                } 
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         }
         List<CertificateAuthority> cas = new ArrayList<CertificateAuthority>();
@@ -785,7 +820,7 @@ public class ServerSession implements IServerSession {
         request.setType(UserType.USERNAME);
         //Console.WriteLine(loginRequest);
 
-        String jsonReq = Utils.gsTmp.toJson(request);        
+        String jsonReq = Utils.gsTmp.toJson(request);
         HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "auth/preLogin", jsonReq, bearer);
         if (!response.isStatus()) {
             try {
@@ -804,15 +839,23 @@ public class ServerSession implements IServerSession {
             }
             login();
         } else if (signCloudResp.getError() != 0) {
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                } 
             throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         } else {
-            System.out.println(signCloudResp.getErrorDescription());
-            if(signCloudResp.getError() == 0 && response.getHttpCode() == 200){
+            if(LogHandler.isShowInfoLog()){                    
+                    LogHandler.info(ServerSession.class,
+                            "Err code: " + signCloudResp.getError() +
+                            "\nErr Desscription: " + signCloudResp.getErrorDescription());
+                } 
+            if (signCloudResp.getError() == 0 && response.getHttpCode() == 200) {
                 return true;
             }
-            return false;            
-        }
-        System.out.println(signCloudResp.getErrorDescription());
+            return false;
+        }        
         return false;
     }
 

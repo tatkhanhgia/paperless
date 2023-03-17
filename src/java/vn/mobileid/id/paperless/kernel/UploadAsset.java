@@ -11,13 +11,14 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.taglibs.standard.tag.el.sql.UpdateTag;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
@@ -29,13 +30,16 @@ import vn.mobileid.id.utils.XSLT_PDF_Processing;
  */
 public class UploadAsset {
 
-    final private static Logger LOG = LogManager.getLogger(UploadAsset.class);
+//    final private static Logger LOG = LogManager.getLogger(UploadAsset.class);
 
-    public static InternalResponse uploadAsset(User user, Asset asset) {
+    public static InternalResponse uploadAsset(
+            User user,
+            Asset asset,
+            String transactionID) {
         try {
             Database DB = new DatabaseImpl();
             //Upload Asset Template
-            Files.write(new File("D:\\NetBean\\qrypto\\file\\uploaded.xslt").toPath(), asset.getBinaryData(), StandardOpenOption.CREATE);
+//            Files.write(new File("D:\\NetBean\\qrypto\\file\\uploaded.xslt").toPath(), asset.getBinaryData(), StandardOpenOption.CREATE);
             Item_JSNObject item = XSLT_PDF_Processing.getValueFromXSLT(asset.getBinaryData());
 
             asset.setMetadata(new ObjectMapper().writeValueAsString(item));
@@ -61,57 +65,57 @@ public class UploadAsset {
                     asset.getMetadata(),
                     asset.getBinaryData(),
                     asset.getHmac(),
-                    user.getName());
+                    user.getName(),
+                    transactionID);
 
-            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                String message = null;
-                message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                          null);
                 if (LogHandler.isShowErrorLog()) {
-                    LOG.error("Cannot Upload Asset - Detail:" + message);
+                    LogHandler.error(UploadAsset.class,transactionID,"Cannot Upload Asset - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
 
             return new InternalResponse(
-                    QryptoConstant.CODE_SUCCESS,
+                    PaperlessConstant.CODE_SUCCESS,
                     "{\"asset_id\":" + callDB.getIDResponse()+"}");
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("UNKNOWN EXCEPTION. Details: " + e);
+                LogHandler.error(UploadAsset.class,transactionID,"UNKNOWN EXCEPTION. Details: " + e);
             }
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
     public static void main(String[] ags) throws IOException {
-        User user = new User();
-        user.setEmail("giatk@mobile-id.vn");
-        user.setName("TAT KHANH GIA");
-        
-        String path = "D:\\NetBean\\qrypto\\file\\result.xslt";
-        File a = new File(path);
-        
-        Asset asset = new Asset(
-                0,
-                "Asset 20230223",
-                3,
-                (int)a.getUsableSpace(),
-                "fileUUID",
-                null,
-                user.getEmail(),
-                null,
-                null,
-                null,
-                Files.readAllBytes(new File(path).toPath()),
-                "meta data upload");
-        
-        UploadAsset.uploadAsset(user, asset);
+//        User user = new User();
+//        user.setEmail("giatk@mobile-id.vn");
+//        user.setName("TAT KHANH GIA");
+//        
+//        String path = "D:\\NetBean\\qrypto\\file\\result.xslt";
+//        File a = new File(path);
+//        
+//        Asset asset = new Asset(
+//                0,
+//                "Asset 20230223",
+//                3,
+//                (int)a.getUsableSpace(),
+//                "fileUUID",
+//                null,
+//                user.getEmail(),
+//                null,
+//                null,
+//                null,
+//                Files.readAllBytes(new File(path).toPath()),
+//                "meta data upload");
+//        
+//        UploadAsset.uploadAsset(user, asset);
     }
 }

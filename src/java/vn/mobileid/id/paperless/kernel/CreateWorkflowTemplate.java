@@ -13,11 +13,10 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.paperless.objects.ItemDetails;
-import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -26,61 +25,65 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateWorkflowTemplate {
 
-    final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
+//    final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
     public static InternalResponse checkDataWorkflowTemplate(Item_JSNObject workflow) {
         for (ItemDetails detail : workflow.getItems()) {
             InternalResponse response = checkDataWorkflowTemplate(detail);
-            if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
         }
 
-        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
-                        QryptoConstant.SUBCODE_SUCCESS,
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                        PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
 
     public static InternalResponse checkDataWorkflowTemplate(ItemDetails workflow) {
         if (workflow == null) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             "en",
                             null));
         }
         if (workflow.getField() == null || workflow.getField().isEmpty() || workflow.getField().length() <= 0) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-                            QryptoConstant.SUBCODE_MISSING_INPUT_FIELD,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            PaperlessConstant.SUBCODE_MISSING_INPUT_FIELD,
                             "en",
                             null));
         }
-        if (workflow.getType() <= 0 || workflow.getType() > QryptoConstant.NUMBER_OF_ITEMS_TYPE) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-                            QryptoConstant.SUBCODE_MISSING_OR_ERROR_FIELD_TYPE,
+        if (workflow.getType() <= 0 || workflow.getType() > PaperlessConstant.NUMBER_OF_ITEMS_TYPE) {
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            PaperlessConstant.SUBCODE_MISSING_OR_ERROR_FIELD_TYPE,
                             "en",
                             null));
         }
         if( workflow.getValue() == null){
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-                            QryptoConstant.SUBCODE_MISSING_OR_ERROR_VALUE,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            PaperlessConstant.SUBCODE_MISSING_OR_ERROR_VALUE,
                             "en",
                             null));
         }
 
-        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
-                        QryptoConstant.SUBCODE_SUCCESS,
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                        PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
 
-    public static InternalResponse processingCreateWorkflowTemplate(int workflow_id, Item_JSNObject workflow, String user_mail) {
+    public static InternalResponse processingCreateWorkflowTemplate(
+            int workflow_id,
+            Item_JSNObject workflow,
+            String user_mail,
+            String transactionID) {
         try {
             Database DB = new DatabaseImpl();
 
@@ -88,27 +91,29 @@ public class CreateWorkflowTemplate {
                     workflow_id,
                     new ObjectMapper().writeValueAsString(workflow),
                     "HMAC",
-                    user_mail
+                    user_mail,
+                    transactionID
             );
 
-            if (createWorkflow.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(
-                                QryptoConstant.CODE_FAIL,
+            if (createWorkflow.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                                 createWorkflow.getStatus(),
                                 "en",
                                  null)
                 );
             }
-            return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                     ""
             );
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+                LogHandler.error(CreateWorkflowTemplate.class,
+                        "TransactionID:"+transactionID+
+                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
             e.printStackTrace();
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 }

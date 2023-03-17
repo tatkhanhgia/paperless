@@ -6,15 +6,13 @@ package vn.mobileid.id.paperless.kernel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.paperless.objects.Workflow;
@@ -28,38 +26,42 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateWorkflow {
 
-    final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
+//    final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
 
     public static InternalResponse checkDataWorkflow(Workflow workflow) {
         if (workflow == null) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-                            QryptoConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             "en",
                             null));
         }
         if (Utils.isNullOrEmpty(workflow.getLabel())) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-                            QryptoConstant.SUBCODE_MISSING_WORKFLOW_LABEL,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            PaperlessConstant.SUBCODE_MISSING_WORKFLOW_LABEL,
                             "en",
                             null));
         }
 //        if (Utils.isNullOrEmpty(workflow.getCreated_by())) {
-//            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_WORKFLOW,
-//                            QryptoConstant.SUBCODE_MISSING_WORKFLOW_CREATED_BY,
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+//                            PaperlessConstant.SUBCODE_MISSING_WORKFLOW_CREATED_BY,
 //                            "en",
 //                            null));
 //        }
-        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_SUCCESS,
-                        QryptoConstant.SUBCODE_SUCCESS,
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                        PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
 
-    public static InternalResponse processingCreateWorkflow(Workflow workflow, User user) {
+    public static InternalResponse processingCreateWorkflow(
+            Workflow workflow,
+            User user,
+            String transactionID
+        ) {
         try {
             Database DB = new DatabaseImpl();
             
@@ -68,13 +70,13 @@ public class CreateWorkflow {
                     workflow.getLabel(),
                     user.getName(),
                     user.getEmail(),
-                    user.getAid()
+                    user.getAid(),
+                    transactionID
             );
 
-            if (createWorkflow.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(
-                                QryptoConstant.CODE_FAIL,
+            if (createWorkflow.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                                 createWorkflow.getStatus(),
                                 "en",
                                  null)
@@ -108,26 +110,29 @@ public class CreateWorkflow {
 //                    user.getEmail());
             //Get Default data detail - template of template Type 
             try {
-                InternalResponse res = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(workflow.getTemplate_type());
+                InternalResponse res = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(
+                        workflow.getTemplate_type(),
+                        transactionID);
                 WorkflowTemplateType template = (WorkflowTemplateType) res.getData();                 
                 Item_JSNObject object = new ObjectMapper().readValue(template.getMetadata_template(), Item_JSNObject.class);
-                CreateWorkflowTemplate.processingCreateWorkflowTemplate(createWorkflow.getIDResponse_int(), object, user.getEmail());
+                CreateWorkflowTemplate.processingCreateWorkflowTemplate(createWorkflow.getIDResponse_int(), object, user.getEmail(),transactionID);
 
                 WorkflowDetail_Option object2 = new ObjectMapper().readValue(template.getMetadata_detail(), WorkflowDetail_Option.class);
-                CreateWorkflowDetail_option.createWorkflowDetail(createWorkflow.getIDResponse_int(), object2, "HMAC", user.getEmail());
+                CreateWorkflowDetail_option.createWorkflowDetail(createWorkflow.getIDResponse_int(), object2, "HMAC", user.getEmail(), transactionID);
             } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("\n====================FAIL\n" + e);
+                e.printStackTrace();                
             }
-            return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                     "{\"workflow_id\":" + createWorkflow.getIDResponse_int() + "}"
             );
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
             e.printStackTrace();
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(CreateWorkflow.class,
+                        "TransactionID:"+transactionID+
+                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }            
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 

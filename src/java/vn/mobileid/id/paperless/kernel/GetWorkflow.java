@@ -4,7 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,8 +12,7 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
-import vn.mobileid.id.paperless.objects.Asset;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.utils.Utils;
@@ -24,40 +22,45 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class GetWorkflow {
-    final private static Logger LOG = LogManager.getLogger(GetWorkflow.class);
+//    final private static Logger LOG = LogManager.getLogger(GetWorkflow.class);
     
-    public static InternalResponse getWorkflow(int id){
+    public static InternalResponse getWorkflow(int id,
+            String transactionID){
         try {
             Database DB = new DatabaseImpl();                         
             InternalResponse response = null;
                     
-            DatabaseResponse callDB = DB.getWorkflow(id);
+            DatabaseResponse callDB = DB.getWorkflow(id, transactionID);
             
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
+            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
                 String message = null;
                 if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                    message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                                 callDB.getStatus(),
                                 "en"
                                 , null);
-                    LOG.error("Cannot get Workflow - Detail:"+message);
+                    LogHandler.error(GetWorkflow.class,
+                            "TransactionID:"+transactionID+
+                            "\nCannot get Workflow - Detail:"+message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
             
             Workflow workflow = (Workflow) callDB.getObject();            
             return new InternalResponse(
-                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     workflow);
             
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
             e.printStackTrace();
-            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(GetWorkflow.class,
+                        "TransactionID:"+transactionID+
+                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }            
+            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
         }  
     }
     
@@ -69,24 +72,34 @@ public class GetWorkflow {
             boolean use_metadata,
             String metadata,
             int offset,
-            int rowcount
+            int rowcount,
+            String transactionID
     ){
         try {
             Database DB = new DatabaseImpl();                
             InternalResponse response = null;
                     
-            DatabaseResponse callDB = DB.getListWorkflow(email, enterprise_id, status, type, use_metadata, metadata, offset, rowcount);
+            DatabaseResponse callDB = DB.getListWorkflow(
+                    email,
+                    enterprise_id,
+                    status,
+                    type,
+                    use_metadata,
+                    metadata,
+                    offset,
+                    rowcount,
+                    transactionID);
             
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
+            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
                 String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                                 callDB.getStatus(),
                                 "en"
                                 , null);
-                    LOG.error("Cannot get list Workflow - Detail:"+message);
+                if(LogHandler.isShowErrorLog()){                    
+                    LogHandler.error(GetWorkflow.class,"TransactionID:"+transactionID+"\nCannot get list Workflow - Detail:"+message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -94,15 +107,15 @@ public class GetWorkflow {
             List<Workflow> object = (List<Workflow>) callDB.getObject();
             
             return new InternalResponse(
-                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     object);
             
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
             e.printStackTrace();
-            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(GetWorkflow.class,transactionID,"UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }            
+            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
         }  
     }
     
@@ -120,10 +133,10 @@ public class GetWorkflow {
 //              System.out.println(a.getWorkflow_id());
 //          }
 
-        Workflow a = (Workflow)GetWorkflow.getWorkflow(30).getData();
-        System.out.println("ID:"+a.getWorkflow_id());
-        System.out.println("Template:"+a.getTemplate_type_name());
-
-        System.out.println("Workflow type:"+a.getWorkflow_type_name());
+//        Workflow a = (Workflow)GetWorkflow.getWorkflow(30).getData();
+//        System.out.println("ID:"+a.getWorkflow_id());
+//        System.out.println("Template:"+a.getTemplate_type_name());
+//
+//        System.out.println("Workflow type:"+a.getWorkflow_type_name());
     }
 }

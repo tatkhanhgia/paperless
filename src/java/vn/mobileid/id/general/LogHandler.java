@@ -5,10 +5,8 @@
 package vn.mobileid.id.general;
 
 import java.io.IOException;
+import org.apache.logging.log4j.Level;
 import vn.mobileid.id.utils.Configuration;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.SimpleFormatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,24 +24,10 @@ public class LogHandler {
 
     private static boolean configCaching;
 
-    private static FileHandler handler;
-    private static SimpleFormatter formatter;
 
     private static LogHandler instance;
 
     private static void readConfig() {
-//        LogController logController = null;
-//        Entity systemConfig = Resources.getEntities().get(Entity.ENTITY_SYSTEM_CONFIG);
-//        if (systemConfig != null) {
-//            EntityProperties entityProperties = systemConfig.getEntityProperties();
-//            if (entityProperties != null) {
-//                logController = entityProperties.getLogController();
-//        showDebugLog = logController.isShowDebugLog() && Configuration.getInstance().isShowDebugLog();
-//        showInfoLog = logController.isShowInfoLog() && Configuration.getInstance().isShowInfoLog();
-//        showWarnLog = logController.isShowWarnLog() && Configuration.getInstance().isShowWarnLog();
-//        showErrorLog = logController.isShowErrorLog() && Configuration.getInstance().isShowErrorLog();
-//        showFatalLog = logController.isShowFatalLog() && Configuration.getInstance().isShowFatalLog();
-//                configCaching = entityProperties.isConfigCaching();
         showDebugLog = Configuration.getInstance().isShowDebugLog();
         showInfoLog = Configuration.getInstance().isShowInfoLog();
         showWarnLog = Configuration.getInstance().isShowWarnLog();
@@ -78,5 +62,75 @@ public class LogHandler {
     public static boolean isConfigCaching() {
         readConfig();
         return configCaching;
+    }
+
+    /**
+     * Using for log the request/response into file
+     * @param object defines the class
+     * @param message 
+     */
+    public static void request(Class object, String message){
+        Logger LOG = LogManager.getLogger(object);
+        LOG.log(Level.forName("REQUEST", 350), message);
+    }
+    
+    /**
+     * Using for log the debug into file
+     * @param object
+     * @param message 
+     */
+    public static void debug(Class object, String message){
+        Logger LOG = LogManager.getLogger(object);
+        LOG.debug(message);
+    }
+    
+        /**
+     * Using for log the debug into file
+     * @param object
+     * @param message 
+     */
+    public static void debug(Class object,String transactionID ,String message){
+        Logger LOG = LogManager.getLogger(object);
+        LOG.debug("TransactionID:"+transactionID+"\n"+message);
+    }
+    
+    /**
+     * Using for log the error into file
+     * @param object
+     * @param message 
+     */
+    public static void error(Class object, String message){
+        Logger LOG = LogManager.getLogger(object);
+        LOG.error(message);
+    }
+    
+        /**
+     * Using for log the error into file
+     * @param object
+     * @param message 
+     */
+    public static void error(Class object, String transactionID, String message){
+        Logger LOG = LogManager.getLogger(object);
+        LOG.error("TransactionID:"+transactionID + "\n"+message);
+    }
+    
+    /**
+     * Using for log the info into file
+     * @param object
+     * @param message 
+     */
+    public static void info(Class object, String message){
+        Logger LOG = LogManager.getLogger(object);
+        LOG.info(message);
+    }
+    
+        /**
+     * Using for log the info into file
+     * @param object
+     * @param message 
+     */
+    public static void info(Class object, String transactionID,String message){
+        Logger LOG = LogManager.getLogger(object);
+        LOG.info("TransactionID:"+transactionID+"\n"+message);
     }
 }

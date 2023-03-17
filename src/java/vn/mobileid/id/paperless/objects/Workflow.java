@@ -5,7 +5,7 @@
 package vn.mobileid.id.paperless.objects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

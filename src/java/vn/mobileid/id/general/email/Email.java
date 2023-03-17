@@ -30,7 +30,7 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.Attachment;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 //import org.apache.log4j.Logger;
@@ -134,7 +134,7 @@ public class Email {
             if (LogHandler.isShowDebugLog()) {
                 LOG.debug("Email has been sent to " + emailReq.getSendTo());
             }
-            emailResponse.setResponseCode(QryptoConstant.CODE_SUCCESS);
+            emailResponse.setResponseCode(PaperlessConstant.CODE_SUCCESS);
             emailResponse.setBillCode(billCode);
 //            emailResponse.setTimestamp(dpresp.getLogDatetime());
 //            emailResponse.setLogInstance(dpresp.getLogId());

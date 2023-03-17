@@ -4,18 +4,14 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 
@@ -24,54 +20,57 @@ import vn.mobileid.id.paperless.objects.WorkflowActivity;
  * @author GiaTK
  */
 public class CreateFileManagement {
-    final private static Logger LOG = LogManager.getLogger(CreateUserActivityLog.class);
-    
-    public static boolean checkData(WorkflowActivity workflow){
-        if(workflow == null){
+//    final private static Logger LOG = LogManager.getLogger(CreateUserActivityLog.class);
+
+    public static boolean checkData(WorkflowActivity workflow) {
+        if (workflow == null) {
             return false;
         }
-        if(workflow.getEnterprise_id() <=0 && workflow.getEnterprise_name() == null){
+        if (workflow.getEnterprise_id() <= 0 && workflow.getEnterprise_name() == null) {
             return false;
         }
-        if(workflow.getCreated_by() == null){
+        if (workflow.getCreated_by() == null) {
             return false;
         }
         return true;
-    }    
-    
-    
+    }
+
     public static InternalResponse processingCreateFileManagement(
-            WorkflowActivity workflow,            
+            WorkflowActivity workflow,
             String UUID,
-            String nameFile,            
+            String nameFile,
             String HMAC,
             byte[] fileData,
-            User user) {
-        return processingCreateFileManagement(workflow,UUID, nameFile, 0, 0, 0, 0, HMAC, fileData, user, "DBMS");
+            User user,
+            String transactionID
+            ) {
+        return processingCreateFileManagement(workflow, UUID, nameFile, 0, 0, 0, 0, HMAC, fileData, user, "DBMS", transactionID);
     }
-    
+
     public static InternalResponse processingCreateFileManagement(
-            WorkflowActivity workflow,                        
+            WorkflowActivity workflow,
             String HMAC,
             byte[] fileData,
-            User user) {
-        return processingCreateFileManagement(workflow,"UUID", null, 0, 0, 0, 0, HMAC, fileData, user, "DBMS");
+            User user,
+            String transactionID) {
+        return processingCreateFileManagement(workflow, "UUID", null, 0, 0, 0, 0, HMAC, fileData, user, "DBMS", transactionID);
     }
-    
+
     public static InternalResponse processingCreateFileManagement(
-            WorkflowActivity workflow,                        
+            WorkflowActivity workflow,
             int page,
             int size,
             int width,
             int height,
             String HMAC,
             byte[] fileData,
-            User user) {
-        return processingCreateFileManagement(workflow,"UUID", null, page, size, width, height, HMAC, fileData, user, "DBMS");
+            User user,
+            String transactionID) {
+        return processingCreateFileManagement(workflow, "UUID", null, page, size, width, height, HMAC, fileData, user, "DBMS", transactionID);
     }
-    
+
     public static InternalResponse processingCreateFileManagement(
-            WorkflowActivity workflow,            
+            WorkflowActivity workflow,
             String nameFile,
             int page,
             int size,
@@ -79,10 +78,11 @@ public class CreateFileManagement {
             int height,
             String HMAC,
             byte[] fileData,
-            User user) {
-        return processingCreateFileManagement(workflow,"UUID", nameFile, page, size, width, height, HMAC, fileData, user,"DBMS");
+            User user,
+            String transactionID) {
+        return processingCreateFileManagement(workflow, "UUID", nameFile, page, size, width, height, HMAC, fileData, user, "DBMS", transactionID);
     }
-    
+
     private static InternalResponse processingCreateFileManagement(
             WorkflowActivity workflow,
             String UUID,
@@ -94,73 +94,74 @@ public class CreateFileManagement {
             String HMAC,
             byte[] fileData,
             User user,
-            String DBMS) {
-    try {
+            String DBMS,
+            String transactionID) {
+        try {
             Database DB = new DatabaseImpl();
-            
+
             //Create new File Management
             DatabaseResponse callDB = DB.createFileManagement(
                     UUID, //UUID
-                    nameFile,   //name
-                    page,      //page
-                    size,      //size
-                    width,      //width
-                    height,      //height
+                    nameFile, //name
+                    page, //page
+                    size, //size
+                    width, //width
+                    height, //height
                     fileData, //file data
                     HMAC, //HMAC
                     user.getName(),
-                    DBMS);          
-                        
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){
+                    DBMS,
+                    transactionID);
+
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                    LOG.error("Cannot create File Management - Detail:"+message);
+                if (LogHandler.isShowErrorLog()) {
+                    message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            callDB.getStatus(),
+                            "en",
+                             null);
+                    LogHandler.error(CreateFileManagement.class, "TransactionID:" + transactionID + "\nCannot create File Management - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                     callDB.getIDResponse());
-    }catch(Exception e){
-        if(LogHandler.isShowErrorLog()){
-                    
-                    LOG.error("Cannot create User_Activity_log - Detail:"+e);
-                }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        e.getMessage()
-                );
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(CreateFileManagement.class, "TransactionID:" + transactionID + "\nCannot create User_Activity_log - Detail:" + e);
+            }
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    e.getMessage()
+            );
+        }
     }
-    }
-    
-    public static void main(String[] args) throws IOException{
-        WorkflowActivity object = new WorkflowActivity();
-        object.setEnterprise_id(3);
-        object.setCreated_by("GIATK");      
-        User user = new User();
-        user.setEmail("giatk@mobile-id.vn");
-        
-        String pa = "D:\\NetBean\\QryptoServices\\file\\rssp.p12";
-        byte[] data = Files.readAllBytes(new File(pa).toPath());
-        
+
+    public static void main(String[] args) throws IOException {
+//        WorkflowActivity object = new WorkflowActivity();
+//        object.setEnterprise_id(3);
+//        object.setCreated_by("GIATK");
+//        User user = new User();
+//        user.setEmail("giatk@mobile-id.vn");
+//
+//        String pa = "D:\\NetBean\\QryptoServices\\file\\rssp.p12";
+//        byte[] data = Files.readAllBytes(new File(pa).toPath());
+//
+////        CreateFileManagement.processingCreateFileManagement(
+////                object,
+////                "HMAC",
+////                data, user);
 //        CreateFileManagement.processingCreateFileManagement(
 //                object,
+//                "RSSP",
+//                0,
+//                0,
+//                0,
+//                0,
 //                "HMAC",
-//                data, user);
-        CreateFileManagement.processingCreateFileManagement(
-                object,
-                "RSSP",
-                0,
-                0,
-                0,
-                0,
-                "HMAC",
-                data,
-                user);
-                
+//                data,
+//                user);
+//
     }
 }

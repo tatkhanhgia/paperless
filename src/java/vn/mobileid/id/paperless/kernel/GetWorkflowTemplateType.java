@@ -12,9 +12,8 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
-import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
 import vn.mobileid.id.utils.Utils;
 
@@ -24,7 +23,7 @@ import vn.mobileid.id.utils.Utils;
  */
 public class GetWorkflowTemplateType {
 
-    final private static Logger LOG = LogManager.getLogger(GetWorkflowTemplateType.class);
+//    final private static Logger LOG = LogManager.getLogger(GetWorkflowTemplateType.class);
 
     /**
      * Get the workflow template type of the workflow input
@@ -32,22 +31,25 @@ public class GetWorkflowTemplateType {
      * @param id ID of workflow
      * @return InternalResponse with WorkflowTemplateType(setObject)
      */
-    public static InternalResponse getWorkflowTemplateTypeFromDB(int id) {
+    public static InternalResponse getWorkflowTemplateTypeFromDB(
+            int id,
+            String transactionID) {
         try {
             Database DB = new DatabaseImpl();
 
-            DatabaseResponse callDB = DB.getTemplateType(id);
+            DatabaseResponse callDB = DB.getTemplateType(
+                    id,
+                    transactionID);
 
-            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                String message = null;
-                if (LogHandler.isShowErrorLog()) {
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
                              null);
-                    LOG.error("Cannot get Workflow Template Type  - Detail:" + message);
+                if (LogHandler.isShowErrorLog()) {                    
+                    LogHandler.error(GetWorkflowTemplateType.class,transactionID,"Cannot get Workflow Template Type  - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -55,15 +57,15 @@ public class GetWorkflowTemplateType {
             WorkflowTemplateType templateType = (WorkflowTemplateType) callDB.getObject();
 
             return new InternalResponse(
-                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     templateType);
 
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
             e.printStackTrace();
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(GetWorkflowTemplateType.class,transactionID,"UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }            
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
@@ -73,18 +75,23 @@ public class GetWorkflowTemplateType {
      * @param id ID of workflow
      * @return InternalResponse with WorkflowTemplateType(setObject)
      */
-    public static InternalResponse getWorkflowTemplateType(int id) {
+    public static InternalResponse getWorkflowTemplateType(
+            int id,
+            String transactionID
+    ) {
         if (Resources.getListWorkflowTemplateType().isEmpty()) {
             Resources.reloadListWorkflowTemplateType();
         }
         WorkflowTemplateType temp = Resources.getListWorkflowTemplateType().get(String.valueOf(id));
         if (temp != null) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS, temp);
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, temp);
         }
 
         //Read from DB
-        InternalResponse res = getWorkflowTemplateTypeFromDB(id);
-        if (res.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+        InternalResponse res = getWorkflowTemplateTypeFromDB(
+                id,
+                transactionID);
+        if (res.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
             Resources.reloadListWorkflowTemplateType();
             return res;
         }

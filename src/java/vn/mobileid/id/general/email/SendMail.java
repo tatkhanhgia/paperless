@@ -1,123 +1,127 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package vn.mobileid.id.general.email;
 
-import com.sun.mail.util.MailSSLSocketFactory;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.security.GeneralSecurityException;
-import java.util.Properties;
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
-import org.apache.commons.io.IOUtils;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.database.Database;
+import vn.mobileid.id.general.database.DatabaseImpl;
+import vn.mobileid.id.general.email.Email;
+import vn.mobileid.id.general.email.EmailReq;
+import vn.mobileid.id.general.objects.Attachment;
+import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.PaperlessService;
+import vn.mobileid.id.paperless.objects.EmailTemplate;
+import vn.mobileid.id.paperless.objects.Enterprise;
 
 /**
  *
- * @author VUDP
+ * @author GiaTK
  */
-public class SendMail {
+public class SendMail extends Thread {
 
-    public static void main(String[] args) throws Exception {        
-        //Test hàm đính kèm file
-        String filename = "testPDF.pdf";
-        byte[] data = Files.readAllBytes(new File("D:\\NetBean\\qrypto\\file\\result.pdf").toPath());
-        attachment(filename, data);
+    final private static Logger LOG = LogManager.getLogger(SendMail.class);
+
+    private String sendTo;
+    private String Subject;
+    private String Content;
+    private String EntityName;
+    private byte[] file;
+    private String fileName;
+
+    //Contructor for custom
+    public SendMail(String sendTo, String Subject, String Content, String EntityName, byte[] file, String fileName) {
+        this.sendTo = sendTo;
+        this.Subject = Subject;
+        this.Content = Content;
+        this.EntityName = EntityName;
+        this.file = file;
+        this.fileName = fileName;
     }
 
-    public static void attachment(String filename, byte[] data) throws UnsupportedEncodingException, MessagingException, GeneralSecurityException, IOException {
-        String sendTo = "giatk@mobile-id.vn";
-        String subject = "Test hàm gửi email";
-        String content = "Đây là mail có file đính kèm";
+    //Constructor for Elabor
+    public SendMail(String sendTo, String name, String CCCD, byte[] file, String filename) {
+        this.sendTo = sendTo;
+        this.Subject = "eLaborContract - " + name + " - " + CCCD;
+        this.Content = "Dear " + name;
+        this.Content += "<br /><br /> Paperless service would like to thank you for trusting and using our services";
+        this.Content += "<br /><br /> Your eLaborContract has been created successfully.";
+        this.file = file;
+        this.fileName = filename;
+        this.EntityName = "eLaborContract";
+    }
 
-        byte[] config = IOUtils.toByteArray(new FileInputStream("D:\\NetBean\\qrypto\\src\\java\\config.properties"));
-
-        // parsing properties
-        final Properties props = new Properties();
-        Reader reader = new InputStreamReader(new ByteArrayInputStream(config), StandardCharsets.UTF_8);
-        props.load(reader);
-
-        final String username = props.getProperty("mail.smtp.username");
-        final String password = props.getProperty("mail.smtp.password");
-
-        final String sendFromAddr = props.getProperty("mail.smtp.sendfromaddr", username);
-        final String sendFromName = props.getProperty("mail.smtp.sendfromname", username);
-
-        MailSSLSocketFactory sf = new MailSSLSocketFactory();
-        sf.setTrustAllHosts(true);
-        props.put("mail.smtp.ssl.socketFactory", sf);
-
-        props.put("mail.smtp.starttls.required", "true");
-        props.put("mail.smtp.ssl.protocols","TLSv1.2");
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        
-        Session session = null;
-        if (username == null || password == null) {
-            // Get the Session object.
-            session = Session.getInstance(props, null);
+    public SendMail(String sendTo, int enterprise_id, String name, String CCCD, byte[] file, String filename) {
+        this.sendTo = sendTo;
+        this.file = file;
+        this.fileName = filename;
+        EmailTemplate template = getTemplate(enterprise_id);
+        if (template == null) {
+            this.Subject = "eLaborContract - " + name + " - " + CCCD;
+            this.Content = "Dear " + name;
+            this.Content += "<br /><br /> Paperless service would like to thank you for trusting and using our services";
+            this.Content += "<br /><br /> Your eLaborContract has been created successfully.";
         } else {
-            // Get the Session object.
-            session = Session.getInstance(props,
-                    new javax.mail.Authenticator() {
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(username,
-                            password);
-                }
-            });
+            this.Subject = template.getSubject().replace("@name", name);
+            this.Subject = this.Subject.replace("@CCCD", CCCD);
+            this.Content = template.getBody().replace("@name", name);
         }
-
-        // Create a default MimeMessage object.
-        Message message = new MimeMessage(session);
-        // Set From: header field of the header.
-        message.setFrom(new InternetAddress(sendFromAddr, sendFromName));
-
-        // Set To: header field of the header.
-        message.setRecipients(Message.RecipientType.TO,
-                InternetAddress.parse(sendTo));
-
-        // Set Subject: header field
-        message.setSubject(subject);
-
-        //Create Body mail
-        Multipart multipart = new MimeMultipart();
-        
-            //Text in mail
-            MimeBodyPart textBodyPart = new MimeBodyPart();
-            textBodyPart.setContent(content, "text/html; charset=utf-8");
-            
-            //Create attachment
-            MimeBodyPart textBodyPart2 = new MimeBodyPart();
-            DataSource source = new ByteArrayDataSource(data, "application/octet-stream");
-            textBodyPart2.setDataHandler(new DataHandler(source));
-            textBodyPart2.setFileName(filename);
-           
-
-        multipart.addBodyPart(textBodyPart);
-        multipart.addBodyPart(textBodyPart2);
-        message.setContent(multipart);
-        
-        // Send message
-        Transport.send(message);
-        System.out.println("OK");
     }
+
+    public  void send() {
+        try {
+            EmailReq request = new EmailReq();
+            request.setSendTo(sendTo);
+            request.setSubject(Subject);
+            List<Attachment> attachs = new ArrayList<>();
+            attachs.add(new Attachment(file, fileName));
+            request.setAttachments(attachs);
+            request.setContent(Content);
+            request.setEntityName(EntityName);
+
+            Email email = new Email(null);
+            email.send(request);
+        } catch (Exception ex) {
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("Cannot Send mail! - Detail:" + ex);
+            }
+        }
+    }
+
+    private EmailTemplate getTemplate(int enterprise_id) {
+        try {
+            String email_notification = "";
+            Database db = new DatabaseImpl();
+            DatabaseResponse res = db.getEnterpriseInfo(enterprise_id);
+            if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                email_notification = "defaultemail";
+            } else {
+                Enterprise ent = (Enterprise) res.getObject();
+                email_notification = ent.getEmail_notification();
+            }
+
+            res = db.getEmailTemplate(
+                    2, //langguageEN
+                    email_notification,
+                    "transactionID");
+            if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                return null;
+            }
+            EmailTemplate email_template = (EmailTemplate) res.getObject();
+            return email_template;
+        } catch (Exception ex) {
+            if (LogHandler.isShowErrorLog()) {
+                ex.printStackTrace();
+                LogHandler.error(SendMail.class, "Error while get Email Template");
+            }
+        }
+        return null;
+    }
+
 }

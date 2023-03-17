@@ -8,18 +8,11 @@ package vn.mobileid.id.general.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -27,26 +20,21 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.email.Email;
 import vn.mobileid.id.general.email.EmailReq;
 import vn.mobileid.id.general.objects.Attachment;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoService;
-import vn.mobileid.id.paperless.QryptoConstant;
-import static vn.mobileid.id.paperless.QryptoService.verifyToken;
+import vn.mobileid.id.paperless.PaperlessService;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.AppInfo;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.ListWorkflow;
-import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -56,8 +44,7 @@ import vn.mobileid.id.utils.Configuration;
 @Path("/")
 public class ServicesController {
 
-    final private static Logger LOG = LogManager.getLogger(ServicesController.class);
-
+//    final private static Logger LOG = LogManager.getLogger(ServicesController.class);
     @GET
     @Path("hello")
     public String hello() {
@@ -72,35 +59,30 @@ public class ServicesController {
             //Check valid token
             String token = request.getHeader("Authorization");
 
-            debugRequestLOG("getInfo", request, payload);
+            String transactionID = debugRequestLOG("getInfo", request, payload, 0);
 
             String data = new ObjectMapper().writeValueAsString(AppInfo.cast(Configuration.getInstance().getAppInfo()));
             if (token != null) {
-                InternalResponse response = QryptoService.verifyToken(request);
-                if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                InternalResponse response = PaperlessService.verifyToken(request, transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                     return Response.status(401).type(MediaType.APPLICATION_JSON).entity(response.getMessage()).build();
                 }
-//                if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS && response != null) {
-//                    data = data.replace("}", ",\n\"access_token_status\": \"valid\",\"access_token_expired_in\": "+(response.getUser().getExp()-Date.from(Instant.now()).getTime())+"}");
-//                } else {
-//                    data = data.replace("}", "\"access_token_status\":\"invalid\"}");
-//                }
             }
             return Response.status(200).type(MediaType.APPLICATION_JSON).entity(data).build();
         } catch (JsonProcessingException e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error " + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
         } catch (IllegalArgumentException e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error " + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
         } catch (IllegalAccessException e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error " + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
         }
         return Response.status(500).entity("Internal Server Error").build();
@@ -130,19 +112,20 @@ public class ServicesController {
     @Path("/v1/authenticate")
     public Response authenticateJSON(@Context final HttpServletRequest request, String payload) {
         try {
+
             InternalResponse response;
             //LOG FOR TESTING
-            debugRequestLOG("Authenticate", request, payload);
+            String transactionID = debugRequestLOG("Authenticate", request, payload, 0);
             if (request.getContentType() == null) {
                 return Response.status(400).entity("Missing Content-Type").build();
             }
             if (request.getContentType().equalsIgnoreCase(MediaType.APPLICATION_JSON)) {
-                response = QryptoService.getToken(request, payload, 0);
+                response = PaperlessService.getToken(request, payload, 0, transactionID);
             } else {
-                response = QryptoService.getToken(request, payload, 1);
+                response = PaperlessService.getToken(request, payload, 1, transactionID);
             }
             debugResponseLOG("Authenticate", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(new ObjectMapper().writeValueAsString(response.getData()))
@@ -158,7 +141,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error " + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -170,15 +153,16 @@ public class ServicesController {
     public Response revokeToken(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response = null;
+            String transactionID = debugRequestLOG("Revoke", request, payload, 0);
 //            if (request.getContentType().equalsIgnoreCase("application/json")) {
-            response = QryptoService.revoke(request, payload);
+            response = PaperlessService.revoke(request, payload, transactionID);
 //            }
 //            } else {
-//                response = QryptoService.revoke(request, payload, 1);
+//                response = PaperlessService.revoke(request, payload, 1);
 //            }
 
             debugResponseLOG("token", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(response.getMessage())
@@ -193,7 +177,7 @@ public class ServicesController {
             }
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error " + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -206,24 +190,19 @@ public class ServicesController {
     public Response createWorkflow(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response;
-            //Test
-            debugRequestLOG("CreateWorkflow", request, payload);
 
-            response = QryptoService.createWorkflow(request, payload);
+            String transactionID = debugRequestLOG("CreateWorkflow", request, payload, 0);
+
+            response = PaperlessService.createWorkflow(request, payload, transactionID);
 
             debugResponseLOG("CreateWorkflow", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -233,7 +212,7 @@ public class ServicesController {
         } catch (Exception e) {
             e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error ");
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -245,24 +224,24 @@ public class ServicesController {
     public Response createWorkflowTemplate(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
         try {
             InternalResponse response;
-            //Test
-            debugRequestLOG("Create Workflow Template", request, payload);
 
-            response = QryptoService.createWorkflowTemplate(request, payload, id);
+            String transactionID = debugRequestLOG("Create Workflow Template", request, payload, id);
+
+            response = PaperlessService.createWorkflowTemplate(request, payload, id, transactionID);
 
             debugResponseLOG("createWorkflowTemplate", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
+//                if (LOG.isDebugEnabled()) {
+//                    LOG.debug("Request fail");
+//                    LOG.debug("Status:" + response.getStatus());
+//                    LOG.debug("Message:" + response.getMessage());
+//                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -271,7 +250,7 @@ public class ServicesController {
             }
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error ");
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -283,22 +262,22 @@ public class ServicesController {
     public Response getWorkflowDetail(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            debugRequestLOG("GetWorkflowDetail", request, null);
-            response = QryptoService.getWorkflowDetail(request, id);
+            String transactionID = debugRequestLOG("GetWorkflowDetail", request, null, id);
+            response = PaperlessService.getWorkflowDetail(request, id, transactionID);
 
             debugResponseLOG("GetWorkflowDetail", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
+//                if (LOG.isDebugEnabled()) {
+//                    LOG.debug("Request fail");
+//                    LOG.debug("Status:" + response.getStatus());
+//                    LOG.debug("Message:" + response.getMessage());
+//                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -308,7 +287,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -320,22 +299,17 @@ public class ServicesController {
     public Response getWorkflow(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            debugRequestLOG("getWorkflow", request, null);
-            response = QryptoService.getWorkflow(request, id);
+            String transactionID = debugRequestLOG("getWorkflow", request, null, id);
+            response = PaperlessService.getWorkflow(request, id, transactionID);
 
             debugResponseLOG("getWorkflow", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -345,7 +319,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -357,11 +331,11 @@ public class ServicesController {
     public Response getWorkflowTemplateType(@Context final HttpServletRequest request) {
         try {
             InternalResponse response;
-            debugRequestLOG("Get WorkflowTemplateType", request, null);
-            response = QryptoService.getWorkflowTemplateType(request);
+            String transactionID = debugRequestLOG("Get WorkflowTemplateType", request, null, 0);
+            response = PaperlessService.getWorkflowTemplateType(request, transactionID);
 
             debugResponseLOG("getWorkflowTemplateType", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode node = mapper.createObjectNode();
 
@@ -373,11 +347,6 @@ public class ServicesController {
                         .entity(mapper.writeValueAsString(node))
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -387,7 +356,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -399,24 +368,19 @@ public class ServicesController {
     public Response getAllWorkflow(@Context final HttpServletRequest request) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("GetAllWorkflow", request, null);
 
-            response = QryptoService.getListWorkflow(request);
+            String transactionID = debugRequestLOG("GetAllWorkflow", request, null, 0);
+
+            response = PaperlessService.getListWorkflow(request, transactionID);
 
             debugResponseLOG("GetAllWorkflow", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .type(MediaType.APPLICATION_JSON)
                         .entity(new ObjectMapper().writeValueAsString((ListWorkflow) response.getData()))
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -426,7 +390,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -438,24 +402,19 @@ public class ServicesController {
     public Response getWorkflowTemplate(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("GetWorkflowTemplate", request, String.valueOf(id));
 
-            response = QryptoService.getWorkflowTemplate(request, id);
+            String transactionID = debugRequestLOG("GetWorkflowTemplate", request, String.valueOf(id), id);
+
+            response = PaperlessService.getWorkflowTemplate(request, id, transactionID);
 
             debugResponseLOG("getWorkflowTemplate", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -465,7 +424,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -478,24 +437,19 @@ public class ServicesController {
     public Response createWorkflowActivity(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("CreateWorkflowActivity", request, payload);
 
-            response = QryptoService.createWorkflowActivity(request, payload);
+            String transactionID = debugRequestLOG("CreateWorkflowActivity", request, payload, 0);
+
+            response = PaperlessService.createWorkflowActivity(request, payload, transactionID);
 
             debugResponseLOG("CreateWorkflowActivity", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -504,7 +458,7 @@ public class ServicesController {
             }
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -516,24 +470,19 @@ public class ServicesController {
     public Response processWorkflowActivity(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("ProcessActivity", request, payload);
 
-            response = QryptoService.processWorkflowActivity(request, payload, id);
+            String transactionID = debugRequestLOG("ProcessActivity", request, payload, id);
+
+            response = PaperlessService.processWorkflowActivity(request, payload, id);
 
             debugResponseLOG("ProcessActivity", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -543,7 +492,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -555,24 +504,19 @@ public class ServicesController {
     public Response assignDataWorkflowActivity(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("Assign", request, payload);
 
-            response = QryptoService.assignDataIntoWorkflowActivity(request, payload, id);
+            String transactionID = debugRequestLOG("Assign", request, payload, id);
+
+            response = PaperlessService.assignDataIntoWorkflowActivity(request, payload, id, transactionID);
 
             debugResponseLOG("Assign", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -582,7 +526,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -594,24 +538,19 @@ public class ServicesController {
     public Response processWorkflowActivityWithAuthenticate(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("ProcessAssign", request, String.valueOf(id));
 
-            response = QryptoService.processWorkflowActivityWithAuthen(request, payload, id);
+            String transactionID = debugRequestLOG("ProcessAssign", request, String.valueOf(id), id);
+
+            response = PaperlessService.processWorkflowActivityWithAuthen(request, payload, id, transactionID);
 
             debugResponseLOG("processAssign", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -621,7 +560,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -633,12 +572,12 @@ public class ServicesController {
     public Response downloadDocument(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("Download", request, String.valueOf(id));
-            response = QryptoService.downloadsDocument(request, id);
+
+            String transactionID = debugRequestLOG("Download", request, String.valueOf(id), id);
+            response = PaperlessService.downloadsDocument(request, id, transactionID);
 
             debugResponseLOG("downloadDocument", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 FileManagement file = (FileManagement) response.getData();
                 return Response
                         .status(200)
@@ -646,11 +585,6 @@ public class ServicesController {
                         .entity(file.getData())
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -660,7 +594,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -671,13 +605,13 @@ public class ServicesController {
     public Response downloadDocumentBase64(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("DownloadBase64", request, String.valueOf(id));
 
-            response = QryptoService.downloadsDocument(request, id);
+            String transactionID = debugRequestLOG("DownloadBase64", request, String.valueOf(id), id);
+
+            response = PaperlessService.downloadsDocument(request, id, transactionID);
 
             debugResponseLOG("DownloadBase64", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 FileManagement file = (FileManagement) response.getData();
                 String temp = "{" + Base64.getEncoder().encodeToString(file.getData()) + "}";
                 return Response
@@ -686,11 +620,6 @@ public class ServicesController {
                         .entity(temp)
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -700,7 +629,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -713,23 +642,18 @@ public class ServicesController {
     public Response getAssetTemplate(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("GetAssetTemplate", request, String.valueOf(id));
-            response = QryptoService.getAssetTemplate(request, id);
+
+            String transactionID = debugRequestLOG("GetAssetTemplate", request, String.valueOf(id), id);
+            response = PaperlessService.getAssetTemplate(request, id, transactionID);
 
             debugResponseLOG("getAssetTemplate", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -739,7 +663,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -751,23 +675,18 @@ public class ServicesController {
     public Response downloadAsset(@Context final HttpServletRequest request, @PathParam("id") int id) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("DownloadAsset", request, String.valueOf(id));
-            response = QryptoService.downloadsAsset(request, id);
+
+            String transactionID = debugRequestLOG("DownloadAsset", request, String.valueOf(id), id);
+            response = PaperlessService.downloadsAsset(request, id, transactionID);
 
             debugResponseLOG("DownloadAsset", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .type(MediaType.APPLICATION_OCTET_STREAM)
                         .entity(response.getData())
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -777,7 +696,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -789,23 +708,18 @@ public class ServicesController {
     public Response uploadAsset(@Context final HttpServletRequest request) {
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            debugRequestLOG("Upload Asset", request, null);
-            response = QryptoService.uploadAsset(request);
+
+            String transactionID = debugRequestLOG("Upload Asset", request, null, 0);
+            response = PaperlessService.uploadAsset(request, transactionID);
 
             debugResponseLOG("uploadAsset", response);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -815,7 +729,7 @@ public class ServicesController {
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 e.printStackTrace();
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
@@ -827,19 +741,14 @@ public class ServicesController {
     public Response verify(@Context final HttpServletRequest request, String payload) {
         try {
             InternalResponse response;
-            response = QryptoService.verifyToken(request);
-            if (response.getStatus() == QryptoConstant.HTTP_CODE_SUCCESS) {
+            response = PaperlessService.verifyToken(request, "transactionID");
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Request fail");
-                    LOG.debug("Status:" + response.getStatus());
-                    LOG.debug("Message:" + response.getMessage());
-                }
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -848,50 +757,62 @@ public class ServicesController {
             }
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error - Detail:" + e);
+                LogHandler.error(this.getClass(), "Error " + e);
             }
             return Response.status(500).entity("Internal Server Error").build();
         }
     }
 
-    public static void debugRequestLOG(String function, @Context final HttpServletRequest request, String payload) {
-        String data = "\n---------\n" + function + " request:\n" + "\tMETHOD:" + request.getMethod()
+    public static String debugRequestLOG(String function, @Context final HttpServletRequest request, String payload, int id) {
+        String data = "\n------------------\n" + function + " request:\n" + "\tMETHOD:" + request.getMethod()
                 + "\n\tContentType:" + request.getContentType();
+        String user = "";
         if (request.getHeader("Authorization") != null) {
-            data += "\n\tUser:"+getUser(request.getHeader("Authorization"));
+            user = getUser(request.getHeader("Authorization"));
+            data += "\n\tUser:" + user;
         }
+        if (user.isEmpty()) {
+            user = "@username";
+        }
+        String transaction = Utils.generateTransactionId(user);
+        data += "\n\tTransactionID:" + transaction;
         if (request.getHeader("x-send-mail") != null) {
             data += "\n\tSendMail:" + request.getHeader("x-send-mail");
         }
-        data += "\n\tBody (or ID):" + conclusionString(payload);
-        LOG.info(data);
+        data += "\n\tBody (or ID):" + conclusionString(payload, id);
+
+        LogHandler.request(ServicesController.class, data);
+        return transaction;
     }
 
     public static void debugResponseLOG(String function, InternalResponse response) {
-        LOG.info("\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
+        LogHandler.request(ServicesController.class, "\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
     }
 
     //========================INTERNAL METHOD==========================
-    private static String conclusionString(String payload) {
+    private static String conclusionString(String payload, int id) {
         String pattern = "\"value\":.*";
+        if (payload == null) {
+            return String.valueOf(id);
+        }
         return payload.replaceAll(pattern, "\"value\":\"base64\"}]}");
     }
 
     private static String getUser(String payload) {
         String[] chunks = payload.split("\\.");
-                     
+
         String alg = null;
 
-        try {            
+        try {
             payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
         } catch (Exception ex) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error while decode token!" + ex);
+                LogHandler.error(ServicesController.class, "Error while decode token!" + ex);
             }
             return null;
         }
         int begin = payload.indexOf("email");
         int end = payload.indexOf("azp");
-        return payload.substring(begin + 8, end-3);
+        return payload.substring(begin + 8, end - 3);
     }
 }

@@ -8,7 +8,6 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import java.util.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.database.Database;
@@ -17,11 +16,9 @@ import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
-import vn.mobileid.id.paperless.QryptoConstant;
-import vn.mobileid.id.paperless.objects.response.Create_WorkflowActivity_MessageJSNObject;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.response.QryptoErrorMessageJSNObject;
 import vn.mobileid.id.paperless.objects.response.GetToken_IAM_MessageJSNObject;
-import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -85,7 +82,7 @@ public class QryptoMessageResponse {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
-            return QryptoConstant.INTERNAL_EXP_MESS;
+            return PaperlessConstant.INTERNAL_EXP_MESS;
         }
     }
 
@@ -93,7 +90,8 @@ public class QryptoMessageResponse {
             int code,
             int subCode,
             String lang,
-            KeycloakRes result) {
+            KeycloakRes result,
+            String transactionID) {
         try {
             GetToken_IAM_MessageJSNObject responseMessageJSNObject = new GetToken_IAM_MessageJSNObject();
             String strCode = String.valueOf(code) + String.valueOf(subCode);
@@ -117,13 +115,14 @@ public class QryptoMessageResponse {
                 return objectMapper.writeValueAsString(responseMessageJSNObject);
             } else {
                 Database db = new DatabaseImpl();
-                responseCode = db.getResponse(String.valueOf(code));
+                responseCode = db.getResponse(String.valueOf(code),
+                        transactionID);
                 if (responseCode == null) {
                     if (LogHandler.isShowErrorLog()) {
                         LOG.error("Response code " + code + " is not defined in database.");
                     }
-                    responseMessageJSNObject.setCode(QryptoConstant.DEFAULT_MESS);
-                    responseMessageJSNObject.setMessage(QryptoConstant.DEFAULT_MESS);
+                    responseMessageJSNObject.setCode(PaperlessConstant.DEFAULT_MESS);
+                    responseMessageJSNObject.setMessage(PaperlessConstant.DEFAULT_MESS);
 
                     responseMessageJSNObject.setAccessToken(result.getAccess_token());
                     responseMessageJSNObject.setExpires_in(result.getExpires_in());
@@ -154,7 +153,7 @@ public class QryptoMessageResponse {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
-            return QryptoConstant.INTERNAL_EXP_MESS;
+            return PaperlessConstant.INTERNAL_EXP_MESS;
         }
     }   
     

@@ -39,7 +39,7 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.gateway.p2p.objects.P2PFunction;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 
@@ -413,7 +413,7 @@ public class KeyCloakInvocation {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Error while decode token!" + e);
             }
-            result.setStatus(QryptoConstant.CODE_FAIL);
+            result.setStatus(PaperlessConstant.CODE_FAIL);
             result.setError_description("Token is invalid!");
             return result;
         }
@@ -428,7 +428,7 @@ public class KeyCloakInvocation {
         if (KeyCloakInvocation.certificate == null) {
             KeycloakRes response = getKeycloakCertificate();
             if (response == null) {
-                result.setStatus(QryptoConstant.CODE_FAIL);
+                result.setStatus(PaperlessConstant.CODE_FAIL);
                 result.setError_description("INTERNAL ERROR");
                 return result;
             }
@@ -442,7 +442,7 @@ public class KeyCloakInvocation {
                     if (LogHandler.isShowErrorLog()) {
                         LOG.error("The Certificate of keycloak don't contain Algorithm of accessToken!");
                     }
-                    result.setStatus(QryptoConstant.CODE_FAIL);
+                    result.setStatus(PaperlessConstant.CODE_FAIL);
                     result.setError_description("INTERNAL ERROR");
                     return result;
                 }
@@ -450,7 +450,7 @@ public class KeyCloakInvocation {
                 if (LogHandler.isShowErrorLog()) {
                     LOG.error("Look like accessToken is expired. Try to get the new accessToken");
                 }
-                result.setStatus(QryptoConstant.CODE_FAIL);
+                result.setStatus(PaperlessConstant.CODE_FAIL);
                 result.setError_description("INTERNAL ERROR");
                 return result;
             }
@@ -464,7 +464,7 @@ public class KeyCloakInvocation {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Cannot parse data JWT to object User");
             }
-            result.setStatus(QryptoConstant.CODE_FAIL);
+            result.setStatus(PaperlessConstant.CODE_FAIL);
             result.setError_description("INTERNAL ERROR");
             return result;
         }
@@ -477,12 +477,12 @@ public class KeyCloakInvocation {
                     KeyCloakInvocation.certificate.getE()
             );
             result = verifyToken(token, pub);
-            if (result.getStatus() == QryptoConstant.CODE_SUCCESS) {
+            if (result.getStatus() == PaperlessConstant.CODE_SUCCESS) {
                 result = verifyTokenV2(token);
-                if (result.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                     return result;
                 }
-                result.setStatus(QryptoConstant.HTTP_CODE_SUCCESS);
+                result.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
                 result.setUser(data);
                 return result;
             }
@@ -492,7 +492,7 @@ public class KeyCloakInvocation {
                 LOG.error("Error while processing Verify AccessToken");
                 e.printStackTrace();
             }
-            result.setStatus(QryptoConstant.CODE_FAIL);
+            result.setStatus(PaperlessConstant.CODE_FAIL);
             result.setError_description("INTERNAL ERROR");
             return result;
         }
@@ -522,17 +522,17 @@ public class KeyCloakInvocation {
 //                if (LogHandler.isShowErrorLog()) {
 //                    LOG.error("Cannot parse data JWT to object User");
 //                }
-//                res.setStatus(QryptoConstant.CODE_FAIL);
+//                res.setStatus(PaperlessConstant.CODE_FAIL);
 //                res.setError_description("INTERNAL ERROR");
 //                return res;
 //            }
-            res.setStatus(QryptoConstant.HTTP_CODE_SUCCESS);
+            res.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
 //            res.setUser(data);
             return res;
         } else {
             try {
                 res = objectMapper.readValue(response.getBody(), KeycloakRes.class);
-                res.setStatus(QryptoConstant.HTTP_CODE_UNAUTHORIZED);
+                res.setStatus(PaperlessConstant.HTTP_CODE_UNAUTHORIZED);
 //                System.out.println("MEss:"+res.getError_description());
                 return res;
             } catch (IOException e) {
@@ -589,7 +589,7 @@ public class KeyCloakInvocation {
             DecodedJWT result = verifier.verify(token);
 
             KeycloakRes result2 = new KeycloakRes();
-            result2.setStatus(QryptoConstant.CODE_SUCCESS);
+            result2.setStatus(PaperlessConstant.CODE_SUCCESS);
             return result2;
 
             //Verify by code
@@ -605,7 +605,7 @@ public class KeyCloakInvocation {
                 LOG.error("Expired token!");
             }
             KeycloakRes result = new KeycloakRes();
-            result.setStatus(QryptoConstant.CODE_FAIL);
+            result.setStatus(PaperlessConstant.CODE_FAIL);
             result.setError_description("Token is expired!");
             return result;
         } catch (JWTVerificationException e) {
@@ -613,7 +613,7 @@ public class KeyCloakInvocation {
                 LOG.error("Token is invalid!");
             }
             KeycloakRes result = new KeycloakRes();
-            result.setStatus(QryptoConstant.CODE_FAIL);
+            result.setStatus(PaperlessConstant.CODE_FAIL);
             result.setError_description("Token is invalid!");
             return result;
         }

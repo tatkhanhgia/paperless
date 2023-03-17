@@ -4,15 +4,11 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import java.util.Base64;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
-import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
@@ -22,51 +18,51 @@ import vn.mobileid.id.paperless.objects.WorkflowActivity;
  * @author GiaTK
  */
 public class GetDocument {
-    final private static Logger LOG = LogManager.getLogger(GetDocument.class);
+//    final private static Logger LOG = LogManager.getLogger(GetDocument.class);
     
-    public static InternalResponse getDocument(int workflowActivityID){
+    public static InternalResponse getDocument(int workflowActivityID, String transactionID){
         try {
             Database DB = new DatabaseImpl();                         
             InternalResponse response = null;
 
-            WorkflowActivity woAc = GetWorkflowActivity.getWorkflowActivity(workflowActivityID);
+            WorkflowActivity woAc = GetWorkflowActivity.getWorkflowActivity(
+                    workflowActivityID,
+                    transactionID);
             if(woAc == null){
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(
-                                QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                QryptoConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
                                 "en",
                                 null)
                 );
             }            
             
-            response = GetFileManagement.getFileManagement(Integer.parseInt(woAc.getFile().getID()));
+            response = GetFileManagement.getFileManagement(Integer.parseInt(woAc.getFile().getID()), transactionID);
             
-            if(response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+            if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
                 return response;
             }
             FileManagement file = (FileManagement) response.getData();
                     
             if(file.getData() == null ){
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(
-                                QryptoConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                QryptoConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
                                 "en",
                                 null)
                 );
             }
             return new InternalResponse(
-                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     file);
             
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
 //                e.printStackTrace();
-                LOG.error("UNKNOWN EXCEPTION. Details: " + e);
+                LogHandler.error(GetDocument.class,"UNKNOWN EXCEPTION. Details: " + e);
             }
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 }

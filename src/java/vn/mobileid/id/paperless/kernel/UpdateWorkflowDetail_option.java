@@ -11,7 +11,7 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.utils.Utils;
@@ -21,13 +21,14 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class UpdateWorkflowDetail_option {
-    final private static Logger LOG = LogManager.getLogger(UpdateWorkflowDetail_option.class);
+//    final private static Logger LOG = LogManager.getLogger(UpdateWorkflowDetail_option.class);
     
     public static InternalResponse updateWorkflowOption(
             int id,
             WorkflowDetail_Option detail,
             String hmac,
-            String created_by){
+            String created_by,
+            String transactionID){
         try {
             InternalResponse response = null;
             Database DB = new DatabaseImpl();
@@ -36,47 +37,47 @@ public class UpdateWorkflowDetail_option {
                     id,
                     detail.getHashMap(),
                     hmac,
-                    created_by);
+                    created_by,
+                    transactionID);
 
-            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                String message = null;
-                message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
                             null);
                 if (LogHandler.isShowErrorLog()) {                    
-                    LOG.error("Cannot update Workflow Detail - Detail:" + message);
+                    LogHandler.error(UpdateWorkflowDetail_option.class,transactionID,"Cannot update Workflow Detail - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }                        
 
             return new InternalResponse(
-                    QryptoConstant.CODE_SUCCESS,
+                    PaperlessConstant.CODE_SUCCESS,
                     "");
 
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
             e.printStackTrace();
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(UpdateWorkflowDetail_option.class,transactionID,"UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }            
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
     
     public static void main(String[] args){
-        WorkflowDetail_Option detail = new WorkflowDetail_Option();
-//        detail.setMetadata("metadata 1-2-3-4-4");
-        detail.setCSV_email(true);
-                
-        InternalResponse res = UpdateWorkflowDetail_option.updateWorkflowOption(
-                12,
-                detail,
-                "",
-                "GIATK");
-        
-        System.out.println("Mes:"+res.getMessage());
+//        WorkflowDetail_Option detail = new WorkflowDetail_Option();
+////        detail.setMetadata("metadata 1-2-3-4-4");
+//        detail.setCSV_email(true);
+//                
+//        InternalResponse res = UpdateWorkflowDetail_option.updateWorkflowOption(
+//                12,
+//                detail,
+//                "",
+//                "GIATK");
+//        
+//        System.out.println("Mes:"+res.getMessage());
     }
     
 }

@@ -23,17 +23,21 @@ public interface Database {
             String label,
             String created_by,
             String email,
-            int enterprise_id
+            int enterprise_id,
+            String transaction_id
     );
 
     public DatabaseResponse createWorkflowTemplate(
             int workflow_id,
             String metadata,
             String HMAC,
-            String created_by
+            String created_by,
+            String transaction_id
     );
 
-    public ResponseCode getResponse(String name);
+    public ResponseCode getResponse(
+            String name,
+            String transaction_id);
 
     public List<ResponseCode> getResponseCodes();
 
@@ -50,7 +54,8 @@ public interface Database {
             String agent,
             String agent_detail,
             String HMAC,
-            String create_by
+            String create_by,
+            String transaction_id
     );
 
     public DatabaseResponse createFileManagement(
@@ -63,7 +68,8 @@ public interface Database {
             byte[] fileData,
             String HMAC,
             String created_by,
-            String DBMS
+            String DBMS,
+            String transaction_id
     );
 
 //    public DatabaseResponse addEnterpriseUser(
@@ -88,7 +94,8 @@ public interface Database {
             int pages,
             String des,
             String hmac,
-            String created_by
+            String created_by,
+            String transaction_id
     );
 
     public DatabaseResponse createWorkflowActivity(
@@ -105,25 +112,30 @@ public interface Database {
             int workflow_type,
             String request_data,
             String HMAC,
-            String created_by
+            String created_by,
+            String transactionID
     );
 
     public DatabaseResponse getDataRP(
-            int enterprise_id
+            int enterprise_id,
+            String transaction_id
     );
 
     public DatabaseResponse createQR(
             String metaData,
             String hmac,
-            String created_by
+            String created_by,
+            String transaction_id
     );
 
     public DatabaseResponse getFileManagement(
-            int fileID
+            int fileID,
+            String transaction_id
     );
 
     public DatabaseResponse getAsset(
-            int assetID
+            int assetID,
+            String transaction_id
     );   
 
     public DatabaseResponse uploadAsset(
@@ -137,20 +149,23 @@ public interface Database {
             String metaData,
             byte[] fileData,                        
             String hmac,
-            String createdBy
+            String createdBy,
+            String transaction_id
     );
     
     public List<WorkflowActivity> getListWorkflowActivity();
 
-    public DatabaseResponse getWorkflowDetail(int id);
+    public DatabaseResponse getWorkflowDetail(int id,String transaction_id);
 
     public DatabaseResponse createWorkflowDetail(
             int id,
             HashMap<String, Object> hashMap,
             String HMAC,
-            String created_by);
+            String created_by,
+            String transaction_id
+    );
     
-    public DatabaseResponse getTemplateType(int id);
+    public DatabaseResponse getTemplateType(int id, String transaction_id);
 
     public HashMap<Integer, String> initTemplateTypeForProcessClass();
 
@@ -167,11 +182,13 @@ public interface Database {
             String created_by,            
             String last_modified_by,                    
             byte[] data,
-            boolean isSigned);
+            boolean isSigned,
+            String transaction_id
+    );
     
-    public DatabaseResponse getWorkflow(int id);
+    public DatabaseResponse getWorkflow(int id,String transaction_id);
     
-    public DatabaseResponse getAllWorkflowTemplateType();
+    public DatabaseResponse getHashMapWorkflowTemplateType();
     
     public DatabaseResponse getAssetType();
     
@@ -183,24 +200,28 @@ public interface Database {
             boolean use_metadata,
             String metadata,
             int offset,
-            int rowcount            
+            int rowcount  ,
+            String transaction_id
     );
     
-    public DatabaseResponse getWorkflowTemplate(int id);
+    public DatabaseResponse getWorkflowTemplate(int id,String transaction_id);
     
     public DatabaseResponse updateWorkflowDetail_Option(int id,
             HashMap<String, Object> map,
             String hmac,
-            String created_by);
+            String created_by,
+            String transaction_id
+    );
     
     public DatabaseResponse login(
             String email,
-            String pass
+            String pass,
+            String transaction_id
     );
     
-    public DatabaseResponse getWorkflowActivity(int id);
+    public DatabaseResponse getWorkflowActivity(int id, String transaction_id);
 
-    public DatabaseResponse getEnterpriseInfoOfUser(String email);
+    public DatabaseResponse getEnterpriseInfoOfUser(String email, String transaction_id);
 
     public DatabaseResponse getListWorkflowTemplateType();
     
@@ -212,19 +233,22 @@ public interface Database {
             Date issue_on,
             Date expires_on,
             String hmac,
-            String created_by);
+            String created_by,String transaction_id);
     
     public DatabaseResponse removeRefreshToken(            
-            String refreshtoken
+            String refreshtoken,
+            String transaction_id
     );
     
     public DatabaseResponse checkAccessToken(
             String email,
-            String accesstoken
+            String accesstoken,
+            String transaction_id
     );
     
     public DatabaseResponse getRefreshToken(
-            String refreshtoken
+            String refreshtoken,
+            String transaction_id
     );
     
     public DatabaseResponse updateRefreshToken(
@@ -235,7 +259,43 @@ public interface Database {
             Date expires_on,
             int status,
             String hmac,
-            String created_by
+            String created_by,
+            String transaction_id
     );
+    
+    public DatabaseResponse getUser(
+            String email,
+            int enterprise_id,
+            String transaction_id
+    );
+    
+    public DatabaseResponse getKEYAPI(
+            int enterprise_id,
+            String clientID,
+            String transaction_id
+    );
+    
+    public DatabaseResponse createUser(
+            String email,
+            String created_user_email,
+            int enterprise_id,
+            String role_name,
+            long pass_expired_at,
+            int business_type,
+            String org_web,
+            String hmac,
+            String transactionID
+    );
+    
+    public DatabaseResponse getEmailTemplate(
+            int language,
+            String email_noti,
+            String transaction_id
+    );
+    
+    public DatabaseResponse getEnterpriseInfo(
+            int enterprise_id
+    );
+        
 }
 

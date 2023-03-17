@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.KYC;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 
@@ -50,9 +50,9 @@ public class ProcessEID_JWT {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Error while decode token!" + e);
             }            
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                         QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_JWT,
-                                                QryptoConstant.SUBCODE_INVALID_JWT_TOKEN,"en",null));
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                         QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_JWT,
+                                                PaperlessConstant.SUBCODE_INVALID_JWT_TOKEN,"en",null));
         }
         try{
             jwtData = new ObjectMapper().readValue(payload, JWT_Authenticate.class);
@@ -60,12 +60,12 @@ public class ProcessEID_JWT {
             if (LogHandler.isShowErrorLog()) {
                 LOG.error("Error while mapping JWT data!" + e);
             }
-            return new InternalResponse(QryptoConstant.HTTP_CODE_BAD_REQUEST,
-                         QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_INVALID_PARAMS_JWT,
-                                                QryptoConstant.SUBCODE_INVALID_JWT_TOKEN,"en",null));
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                         QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_JWT,
+                                                PaperlessConstant.SUBCODE_INVALID_JWT_TOKEN,"en",null));
         }
         
-        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS, jwtData);
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, jwtData);
     }
 
     public static InternalResponse mappingIntoKYC(JWT_Authenticate data){

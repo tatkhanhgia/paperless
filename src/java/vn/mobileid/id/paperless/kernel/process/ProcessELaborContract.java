@@ -5,17 +5,11 @@
 package vn.mobileid.id.paperless.kernel.process;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
@@ -24,7 +18,7 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.SigningService;
 import vn.mobileid.id.paperless.kernel.GetWorkflowDetail_option;
 import vn.mobileid.id.paperless.kernel.UpdateFileManagement;
@@ -38,7 +32,6 @@ import vn.mobileid.id.paperless.objects.SigningProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.utils.AnnotationJWT;
-import vn.mobileid.id.utils.Utils;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
 
 /**
@@ -47,7 +40,7 @@ import vn.mobileid.id.utils.XSLT_PDF_Processing;
  */
 public class ProcessELaborContract {
 
-    final private static Logger LOG = LogManager.getLogger(ProcessELaborContract.class);
+//    final private static Logger LOG = LogManager.getLogger(ProcessELaborContract.class);
 
     /**
      * Processing Elabor Contract
@@ -62,21 +55,25 @@ public class ProcessELaborContract {
             List<ItemDetails> fileItem,
             Object[] photo, User user,
             String file_name,
-            JWT_Authenticate jwt
+            JWT_Authenticate jwt,
+            String transactionID
     ) {
         Database DB = new DatabaseImpl();
         //Get Workflow Detail to get Asset
-        InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(woAc.getWorkflow_id());
-        if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+        InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(
+                woAc.getWorkflow_id(),
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
 
         //Get Asset template file from DB
-        DatabaseResponse template = DB.getAsset(((WorkflowDetail_Option) response.getData()).getAsset_Template());
-        if (template.getStatus() != QryptoConstant.CODE_SUCCESS) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                    QryptoMessageResponse.getErrorMessage(
-                            QryptoConstant.CODE_FAIL,
+        DatabaseResponse template = DB.getAsset(
+                ((WorkflowDetail_Option) response.getData()).getAsset_Template(),
+                transactionID);
+        if (template.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             template.getStatus(),
                             "en",
                             null)
@@ -94,7 +91,9 @@ public class ProcessELaborContract {
 
         //Assign JWT Data
         if (jwt != null && jwt.isMath_result()) {
-            LOG.info("Get KYC data from JWT!");
+            if(LogHandler.isShowDebugLog()){
+                LogHandler.debug(ProcessELaborContract.class, "Get Data from JWT!");
+            }
             object.setFullName(jwt.getName());
             object.setNationality(jwt.getNationality());
             object.setPersonalNumber(jwt.getPhone_number());
@@ -107,14 +106,6 @@ public class ProcessELaborContract {
         //Convert from HTML to PDF
         byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
 
-        //Call Create Owner
-//            DataCreateOwner createOwner = new DataCreateOwner();
-//            createOwner.setEmail(uer_info.getEmail());
-//            createOwner.setUsername(uer_info.getEmail());
-//            createOwner.setPa(jwt);
-//            TokenResponse token = (TokenResponse) EIDService.getInstant().v1VeriOidcToken();
-//            String access_token = "Bearer " + token.access_token;
-//            CreateOwnerResponse res = (CreateOwnerResponse) EIDService.getInstant().v1OwnerCreate(createOwner, access_token);
         //Call SignHashWitness
         List<byte[]> result1 = null;
         if (photo[1] instanceof String) {
@@ -148,8 +139,10 @@ public class ProcessELaborContract {
                 null,
                 null,
                 user.getEmail(),
-                result2.get(0), true);
-        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
+                result2.get(0),
+                true,
+                transactionID);
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 woAc
         );
     }
@@ -158,21 +151,26 @@ public class ProcessELaborContract {
             WorkflowActivity woAc,
             List<ItemDetails> fileItem,
             User user,
-            String file_name
-    ) throws IOException {
+            String file_name,
+            String transactionID
+    ) throws IOException { 
         Database DB = new DatabaseImpl();
         //Get Workflow Detail to get Asset
-        InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(woAc.getWorkflow_id());
-        if (response.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+        InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(
+                woAc.getWorkflow_id(),
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
 
         //Get Asset template file from DB        
-        DatabaseResponse template = DB.getAsset(((WorkflowDetail_Option) response.getData()).getAsset_Template());
-        if (template.getStatus() != QryptoConstant.CODE_SUCCESS) {
-            return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                    QryptoMessageResponse.getErrorMessage(
-                            QryptoConstant.CODE_FAIL,
+        DatabaseResponse template = DB.getAsset(
+                ((WorkflowDetail_Option) response.getData()).getAsset_Template(),
+                transactionID
+        );
+        if (template.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             template.getStatus(),
                             "en",
                             null)
@@ -213,7 +211,9 @@ public class ProcessELaborContract {
                 null,
                 null,
                 user.getEmail(),
-                pdf, false);
+                pdf,
+                false,
+                transactionID);
 
 //        if (photo instanceof String) {
 //            Resources.getListPDFWaiting().put(String.valueOf(woAc.getId()), (String) photo);
@@ -234,7 +234,7 @@ public class ProcessELaborContract {
         get.setRequestData(new ObjectMapper().writeValueAsString(object));
         Resources.getListWorkflowActivity().replace(String.valueOf(get.getId()), get);
         
-        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 ""
         );
     }
@@ -246,7 +246,8 @@ public class ProcessELaborContract {
             String object, // dữ liệu truyền lên từ client
             JWT_Authenticate jwt,
             List<FileDataDetails> image,
-            SigningProperties signing            
+            SigningProperties signing,
+            String transactionID
     ) throws IOException {
         List<byte[]> result1;
         List<byte[]> result2;
@@ -254,7 +255,9 @@ public class ProcessELaborContract {
         try {
             //Assign JWT Data
             if (jwt != null && jwt.isMath_result()) {
-                LOG.info("Get KYC data from JWT!");
+                if(LogHandler.isShowDebugLog()){
+                    LogHandler.debug(ProcessELaborContract.class,"Get data from JWT!");
+                }
                 objects.setFullName(jwt.getName());
                 objects.setNationality(jwt.getNationality());
                 objects.setPersonalNumber(jwt.getDocument_number());
@@ -277,17 +280,23 @@ public class ProcessELaborContract {
                 photo = (String)data.getValue();
             }
 
-            result1 = SigningService.getInstant(3).signHashWitness(name, (String) photo, pdf, jwt, signing);
+            result1 = SigningService.getInstant(3).signHashWitness(
+                    name,
+                    (String) photo,
+                    pdf,
+                    jwt,
+                    signing,
+                    transactionID
+            );
             result2 = SigningService.getInstant(3).signHashBussiness(result1.get(0));
         } catch (Exception ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("Error while Signing - Detail:" + ex);
+                LogHandler.error(ProcessELaborContract.class,transactionID,"Error while Signing - Detail:" + ex);
             }
-            return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
-                    QryptoMessageResponse.getErrorMessage(
-                            QryptoConstant.CODE_FAIL,
-                            QryptoConstant.SUBCODE_SIGNING_ERROR,
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_SIGNING_ERROR,
                             "en",
                             null)
             );
@@ -315,8 +324,9 @@ public class ProcessELaborContract {
                 null,
                 user.getEmail(),
                 result2.get(0),
-                true);
-        if (res.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS) {
+                true,
+                transactionID);
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
         
@@ -325,7 +335,7 @@ public class ProcessELaborContract {
         get.getFile().setName(file.getName());
         get.setRequestData(new ObjectMapper().writeValueAsString(objects));
         Resources.getListWorkflowActivity().replace(String.valueOf(get.getId()), get);
-        return new InternalResponse(QryptoConstant.HTTP_CODE_SUCCESS,
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 ""
         );
     }
@@ -364,11 +374,11 @@ public class ProcessELaborContract {
                     return oldValue;
                 } catch (IllegalArgumentException ex) {
                     if (LogHandler.isShowErrorLog()) {
-                        LOG.error("Cannot assign Data into KYC Object - Details:" + ex);
+                        LogHandler.error(ProcessELaborContract.class,"Cannot assign Data into KYC Object - Details:" + ex);
                     }
                 } catch (IllegalAccessException ex) {
                     if (LogHandler.isShowErrorLog()) {
-                        LOG.error("Cannot assign Data into KYC Object - Details:" + ex);
+                        LogHandler.error(ProcessELaborContract.class,"Cannot assign Data into KYC Object - Details:" + ex);
                     }
                 }
             }

@@ -5,21 +5,15 @@
  */
 package vn.mobileid.id.general;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import javax.naming.ldap.HasControls;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.crypto.tls.HashAlgorithm;
-import org.bouncycastle.jcajce.provider.digest.GOST3411;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
 
@@ -71,17 +65,21 @@ public class Resources {
 
     public static void reloadListWorkflowActivity() {
         Database db = new DatabaseImpl();
-        ListWorkflowActivity = new HashMap();
+        if (ListWorkflowActivity.isEmpty() || ListWorkflowActivity == null) {
+            ListWorkflowActivity = new HashMap();
+        }
         List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
         for (WorkflowActivity workflowAc : listOfWA) {
-            ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
+            if (!ListWorkflowActivity.containsKey(String.valueOf(workflowAc.getId()))) {
+                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
+            }
         }
     }
 
     public static void reloadListWorkflowTemplateTypeName() {
         Database db = new DatabaseImpl();
         listWorkflowTemplateTypeName = new HashMap();
-        DatabaseResponse res = db.getAllWorkflowTemplateType();
+        DatabaseResponse res = db.getHashMapWorkflowTemplateType();
         if (res != null) {
             listWorkflowTemplateTypeName = (HashMap<Integer, String>) res.getObject();
         }
@@ -100,9 +98,9 @@ public class Resources {
         Database db = new DatabaseImpl();
         listWoTemplateType = new HashMap();
         DatabaseResponse res = db.getListWorkflowTemplateType();
-        if (res.getStatus() != QryptoConstant.CODE_SUCCESS) {
-            List<WorkflowTemplateType> list = (List<WorkflowTemplateType>)res.getObject();
-            for(WorkflowTemplateType temp : list){
+        if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            List<WorkflowTemplateType> list = (List<WorkflowTemplateType>) res.getObject();
+            for (WorkflowTemplateType temp : list) {
                 listWoTemplateType.put(String.valueOf(temp.getId()), temp);
             }
         }

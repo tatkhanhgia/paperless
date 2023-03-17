@@ -17,11 +17,21 @@ public class RefreshToken {
     private Date issued_on;
     private Date expired_on;
     private int status;
+    private String email;
 
     public RefreshToken() {
     }
 
-   
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+
+    
 
     public Date getIssued_on() {
         return issued_on;

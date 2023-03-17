@@ -6,7 +6,7 @@
 package vn.mobileid.id.general.objects;
 
 import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -35,8 +35,8 @@ public class InternalResponse {
     public InternalResponse(int status, String message) {
         this.status = status;
         this.message = message;
-        this.processId = QryptoConstant.FEDERAL_ID;
-        this.subjectId = QryptoConstant.FEDERAL_ID;
+        this.processId = PaperlessConstant.FEDERAL_ID;
+        this.subjectId = PaperlessConstant.FEDERAL_ID;
     }
 
     public InternalResponse(int status, Object data) {
@@ -65,7 +65,7 @@ public class InternalResponse {
 
     public long getProcessId() {
         if (this.processId == 0) {
-            this.processId = QryptoConstant.FEDERAL_ID;
+            this.processId = PaperlessConstant.FEDERAL_ID;
         }
         return processId;
     }
@@ -108,7 +108,7 @@ public class InternalResponse {
 
     public long getSubjectId() {
         if (this.subjectId == 0) {
-            this.subjectId = QryptoConstant.FEDERAL_ID;
+            this.subjectId = PaperlessConstant.FEDERAL_ID;
         }
         return subjectId;
     }
@@ -120,7 +120,7 @@ public class InternalResponse {
     public String getProcessUUID() {
         if (!Utils.isNullOrEmpty(this.processUUID)) {
             if (this.processId == 0
-                    || this.processId == QryptoConstant.FEDERAL_ID) {
+                    || this.processId == PaperlessConstant.FEDERAL_ID) {
                 this.processUUID = null;
             }
         }
@@ -134,7 +134,7 @@ public class InternalResponse {
     public String getSubjectUUID() {
         if (!Utils.isNullOrEmpty(this.subjectUUID)) {
             if (this.subjectId == 0
-                    || this.subjectId == QryptoConstant.FEDERAL_ID) {
+                    || this.subjectId == PaperlessConstant.FEDERAL_ID) {
                 this.subjectUUID = null;
             }
         }

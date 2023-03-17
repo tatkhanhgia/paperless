@@ -7,16 +7,13 @@ package vn.mobileid.id.paperless.kernel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
-import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.paperless.objects.WorkflowTemplate;
-import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -24,32 +21,41 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class GetWorkflowTemplate {
-    final private static Logger LOG = LogManager.getLogger(GetWorkflowTemplate.class);
+//    final private static Logger LOG = LogManager.getLogger(GetWorkflowTemplate.class);
     
-    public  static InternalResponse getWorkflowTemplate(int id){
+    /**
+     * Using to get all data in Workflow template with ID workflow input
+     * @param id
+     * @param transactionID
+     * @return 
+     */
+    public  static InternalResponse getWorkflowTemplate(
+            int id,
+            String transactionID){
         try {
             Database DB = new DatabaseImpl();
             //Data                        
             InternalResponse response = null;
                     
-            DatabaseResponse callDB = DB.getWorkflowTemplate(id);
+            DatabaseResponse callDB = DB.getWorkflowTemplate(
+                    id,
+                    transactionID);
             
-            if(callDB.getStatus() == QryptoConstant.CODE_FAIL){
-                return new InternalResponse(QryptoConstant.HTTP_CODE_500,
-                        QryptoConstant.INTERNAL_EXP_MESS
+            if(callDB.getStatus() == PaperlessConstant.CODE_FAIL){
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_500,
+                        PaperlessConstant.INTERNAL_EXP_MESS
                 );
             }
             
-            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
-                String message = null;
-                if(LogHandler.isShowErrorLog()){
-                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
+                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                                 callDB.getStatus(),
                                 "en"
                                 , null);
-                    LOG.error("Cannot get Workflow Template - Detail:"+message);
+                if(LogHandler.isShowErrorLog()){                    
+                    LogHandler.error(GetWorkflowTemplate.class,transactionID,"Cannot get Workflow Template - Detail:"+message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -57,15 +63,15 @@ public class GetWorkflowTemplate {
             WorkflowTemplate template = (WorkflowTemplate) callDB.getObject();
             
             return new InternalResponse(
-                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     template.getMeta_data_template());
             
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
             e.printStackTrace();
-            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(GetWorkflowTemplate.class,transactionID,"UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }            
+            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 }

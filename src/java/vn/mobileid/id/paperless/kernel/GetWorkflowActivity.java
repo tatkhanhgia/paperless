@@ -4,65 +4,64 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
-import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
-import vn.mobileid.id.paperless.objects.Asset;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
-import vn.mobileid.id.utils.Utils;
 
 /**
  *
  * @author GiaTK
  */
 public class GetWorkflowActivity {
-    final private static Logger LOG = LogManager.getLogger(GetWorkflowActivity.class);   
     
-    public static WorkflowActivity getWorkflowActivity(int id){  
-        if(Resources.getListWorkflowActivity().isEmpty()){
-                Resources.reloadListWorkflowActivity();
-        }
+    public static WorkflowActivity getWorkflowActivity(
+            int id,
+            String transactionID){  
+//        if(Resources.getListWorkflowActivity().isEmpty()){
+//                Resources.reloadListWorkflowActivity();
+//        }
         WorkflowActivity check =  Resources.getListWorkflowActivity().get(String.valueOf(id));
         if(check == null){            
-            WorkflowActivity get = getWorkflowActivityFromDB(id);
+            WorkflowActivity get = getWorkflowActivityFromDB(id,transactionID);
             if(get == null){
                 return null;
             }
             Resources.getListWorkflowActivity().put(String.valueOf(get.getId()), get);
+            Thread temp = new Thread(){
+                public void run(){
+                    Resources.reloadListWorkflowActivity();
+                }
+            };
+            temp.start();
             return get;
         }        
         return check;
     }
     
-    public  static WorkflowActivity getWorkflowActivityFromDB(int id){
+    public  static WorkflowActivity getWorkflowActivityFromDB(
+            int id,
+            String transactionID){
         try{
             Database db = new DatabaseImpl();
-            DatabaseResponse res = db.getWorkflowActivity(id);
-            if(res.getStatus() != QryptoConstant.CODE_SUCCESS){
+            DatabaseResponse res = db.getWorkflowActivity(id,transactionID);
+            if(res.getStatus() != PaperlessConstant.CODE_SUCCESS){
                 return null;
             }
             return (WorkflowActivity) res.getObject();
         } catch (Exception e){
             if(LogHandler.isShowErrorLog()){
-                LOG.error("Cannot get WoAC!");
+                LogHandler.error(GetWorkflowActivity.class,transactionID,"Cannot get WoAC!");
             }
             return null;
         }
     }
     
-    public static boolean isContains(int id){    
-        return true;
+//    public static boolean isContains(int id){    
+//        return true;
 //        try {
 //            Database DB = new DatabaseImpl();
 //            //Data                        
@@ -70,16 +69,16 @@ public class GetWorkflowActivity {
 //                    
 //            DatabaseResponse callDB = DB.getAsset(id);
 //            
-//            if(callDB.getStatus() != QryptoConstant.CODE_SUCCESS ){              
+//            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
 //                String message = null;
 //                if(LogHandler.isShowErrorLog()){
-//                    message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+//                    message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
 //                                callDB.getStatus(),
 //                                "en"
 //                                , null);
 //                    LOG.error("Cannot get Asset - Detail:"+message);
 //                }
-//                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+//                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
 //                        message
 //                );
 //            }
@@ -87,7 +86,7 @@ public class GetWorkflowActivity {
 //            Asset asset = (Asset) callDB.getObject();
 //            
 //            return new InternalResponse(
-//                    QryptoConstant.CODE_SUCCESS,
+//                    PaperlessConstant.CODE_SUCCESS,
 //                    new ObjectMapper().writeValueAsString(asset));
 //            
 //        } catch (Exception e) {
@@ -95,9 +94,9 @@ public class GetWorkflowActivity {
 //                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
 //            }
 //            e.printStackTrace();
-//            return new InternalResponse(500,QryptoConstant.INTERNAL_EXP_MESS);
+//            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
 //        } 
-    }
+//    }
     
     public static void main(String[] args){
 //        DatabaseImpl db = new DatabaseImpl();

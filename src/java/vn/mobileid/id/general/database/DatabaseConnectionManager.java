@@ -43,7 +43,7 @@ public class DatabaseConnectionManager {
 
     private DatabaseConnectionManager() {
 
-        readOnlyUrl = Configuration.getInstance().getDbReadOnlyUrl();
+        readOnlyUrl = Configuration.getInstance().getDbReadOnlyUrl();        
         readOnlyUsername = Configuration.getInstance().getDbReadOnlyUsername();
         readOnlyPassword = Configuration.getInstance().getDbReadOnlyPassword();
 

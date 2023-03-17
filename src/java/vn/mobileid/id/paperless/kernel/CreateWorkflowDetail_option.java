@@ -14,7 +14,7 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.utils.Utils;
@@ -25,9 +25,14 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateWorkflowDetail_option {
 
-    final private static Logger LOG = LogManager.getLogger(CreateWorkflowDetail_option.class);
+//    final private static Logger LOG = LogManager.getLogger(CreateWorkflowDetail_option.class);
 
-    public static InternalResponse createWorkflowDetail(int id, WorkflowDetail_Option detail, String hmac, String created_by) {
+    public static InternalResponse createWorkflowDetail(
+            int id,
+            WorkflowDetail_Option detail,
+            String hmac,
+            String created_by,
+            String transactionID) {
         try {
             InternalResponse response = null;
             Database DB = new DatabaseImpl();
@@ -35,32 +40,37 @@ public class CreateWorkflowDetail_option {
             DatabaseResponse callDB = DB.createWorkflowDetail(id,
                     detail.getHashMap(),
                     hmac,
-                    created_by);
+                    created_by,
+                    transactionID);
 
-            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
-                message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+                message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
                             null);
                 if (LogHandler.isShowErrorLog()) {                    
-                    LOG.error("Cannot create Workflow Detail - Detail:" + message);
+                    LogHandler.error(CreateWorkflowDetail_option.class,
+                            "TransactionID:"+transactionID+
+                            "\nCannot create Workflow Detail - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }                        
 
             return new InternalResponse(
-                    QryptoConstant.CODE_SUCCESS,
+                    PaperlessConstant.CODE_SUCCESS,
                     "");
 
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
             e.printStackTrace();
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(CreateWorkflowDetail_option.class,
+                        "TransactionID:"+transactionID+
+                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }            
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 

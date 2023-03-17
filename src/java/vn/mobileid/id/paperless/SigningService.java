@@ -5,50 +5,31 @@
 package vn.mobileid.id.paperless;
 
 import RestfulFactory.Model.CertificateDetails;
-import RestfulFactory.Model.DocumentDigests;
 import RestfulFactory.Model.Identification;
 import RestfulFactory.SessionFactory;
-import RestfulFactory.UserSession;
 import SignFile.IPdfSignFile;
 import SignFile.SignFileFactory;
 import com.itextpdf.text.pdf.BaseFont;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import restful.sdk.API.APIException;
-import restful.sdk.API.CertificateInfo;
 import restful.sdk.API.ICertificate;
 import restful.sdk.API.IServerSession;
 import restful.sdk.API.ISessionFactory;
 import restful.sdk.API.IUserSession;
 import restful.sdk.API.Property;
-import restful.sdk.API.Types;
 import restful.sdk.API.Types.AuthMode;
 import restful.sdk.API.Types.IdentificationType;
 import restful.sdk.API.Types.SharedMode;
 import vn.mobileid.exsig.Algorithm;
 import vn.mobileid.exsig.Color;
-import vn.mobileid.exsig.DefaultFont;
 import vn.mobileid.exsig.ImageGenerator;
 import vn.mobileid.exsig.ImageProfile;
 import vn.mobileid.exsig.PdfForm;
@@ -59,11 +40,8 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.paperless.objects.Enterprise;
-import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.SigningProperties;
-import vn.mobileid.id.paperless.objects.ValueSignHash;
 import vn.mobileid.id.utils.AnnotationJWT;
-import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -72,8 +50,6 @@ import vn.mobileid.id.utils.Utils;
  */
 public class SigningService {
 
-    private static final Logger LOG = LogManager.getLogger(SigningService.class);
-
     private int enterprise_id_instant;
 
     private Property prop;
@@ -81,8 +57,7 @@ public class SigningService {
     private ISessionFactory sessionFactory;
     private IServerSession session;
 
-    private static HashMap<String, IUserSession> listSession;
-
+    private static HashMap<String, IUserSession> listSession;    
     private static SigningService signingService;
 
     public static SigningService getInstant(int i) {
@@ -109,10 +84,13 @@ public class SigningService {
         Enterprise object;        
 
         try {
-            object = (Enterprise) callDB.getDataRP(enterprise_id).getObject();
+            object = (Enterprise) callDB.getDataRP(
+                    enterprise_id,
+                    "transactionID").getObject();
         } catch (ClassCastException ex) {
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Cannot cast data - Details:" + ex);
+                ex.printStackTrace();
+                LogHandler.error(SigningService.class,"Cannot cast data - Details:" + ex);
             }
             return;
         }
@@ -140,9 +118,8 @@ public class SigningService {
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("Cannot init sessionFactory - Details:" + ex);
-            }
-            return;
+                LogHandler.error(SigningService.class,"Cannot init sessionFactory - Details:" + ex);
+            }           
         }
     }
 
@@ -206,16 +183,14 @@ public class SigningService {
         } catch (APIException ex) {
             ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error While Signing - Detail:" + ex);
-            }
-            System.out.println("Ex:" + ex);
+                LogHandler.error(SigningService.class,"Error While Signing - Detail:" + ex);
+            }            
             return null;
         } catch (Exception ex) {
             ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error While Signing - Detail:" + ex);
-            }
-            System.out.println("Ex:" + ex);
+                LogHandler.error(SigningService.class,"Error While Signing - Detail:" + ex);
+            }            
             return null;
         }
     }
@@ -225,7 +200,8 @@ public class SigningService {
             String base64Evidence,
             byte[] content,
             JWT_Authenticate jwt,
-            SigningProperties signing
+            SigningProperties signing,
+            String transactionID
     ) {
         try {
             fullNameWitness = new String(fullNameWitness.getBytes(StandardCharsets.UTF_8));
@@ -253,7 +229,7 @@ public class SigningService {
             try {
                 picture2 = Base64.getDecoder().decode(base64Evidence.replaceAll("\n", "").getBytes());
             } catch (IllegalArgumentException ex) {
-
+                
             }
             byte[] imgData = ImageGenerator.combineImage(picture2, picture);
 
@@ -324,9 +300,8 @@ public class SigningService {
         } catch (Exception e) {
             e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error While Signing - Detail:" + e);
-            }
-            System.out.println("Ex:" + e);
+                LogHandler.error(SigningService.class,transactionID,"Error While Signing - Detail:" + e);
+            }            
             return null;
         }
     }
@@ -339,7 +314,7 @@ public class SigningService {
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("User " + user + " cannot Login! - Details:" + ex);
+                LogHandler.error(SigningService.class,"User " + user + " cannot Login! - Details:" + ex);
             }
             return false;
         }
@@ -365,12 +340,12 @@ public class SigningService {
         } catch (Exception ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("User " + user + " cannot list Certificate! - Details:" + ex);
+                LogHandler.error(SigningService.class,"User " + user + " cannot list Certificate! - Details:" + ex);
             }
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("User " + user + " cannot list Certificate! - Details:" + ex);
+                LogHandler.error(SigningService.class,"User " + user + " cannot list Certificate! - Details:" + ex);
             }
         }
         return null;
@@ -386,12 +361,12 @@ public class SigningService {
         } catch (Exception ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("User " + user + " cannot get CertificateInfo! - Details:" + ex);
+                LogHandler.error(SigningService.class,"User " + user + " cannot get CertificateInfo! - Details:" + ex);
             }
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("User " + user + " cannot get CertificateInf! - Details:" + ex);
+                LogHandler.error(SigningService.class,"User " + user + " cannot get CertificateInf! - Details:" + ex);
             }
         }
         return null;
@@ -407,12 +382,12 @@ public class SigningService {
         } catch (Exception ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("User " + user + " cannot authorize! - Details:" + ex);
+                LogHandler.error(SigningService.class,"User " + user + " cannot authorize! - Details:" + ex);
             }
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LOG.error("User " + user + " cannot authorize! - Details:" + ex);
+                LogHandler.error(SigningService.class,"User " + user + " cannot authorize! - Details:" + ex);
             }
         }
         return null;
@@ -520,12 +495,14 @@ public class SigningService {
         } catch (Exception e) {
             e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error While Signing - Detail:" + e);
-            }
-            System.out.println("Ex:" + e);
+                LogHandler.error(SigningService.class,"Error While Signing - Detail:" + e);
+            }            
             return null;
         } catch (Throwable ex) {
-            java.util.logging.Logger.getLogger(SigningService.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(SigningService.class,"Error While Signing - Detail:" + ex);
+            } 
         }
         return null;
     }
@@ -538,7 +515,10 @@ public class SigningService {
         try {
             this.session.createUser(user, email, phone, "PERSONAL-ID", documentID);
         } catch (Throwable ex) {
-            java.util.logging.Logger.getLogger(SigningService.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(SigningService.class,"User:"+user+"\nError While Create Owner - Detail:" + ex);
+            } 
         }
     }
 
@@ -570,8 +550,9 @@ public class SigningService {
         try {
             session.createCertificate(username, "", "", certProfile, sharedMode, authMode, 1, crtDetails);
         } catch (Throwable ex) {
+            ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LOG.error("Cannot issue Certificate!");
+                LogHandler.error(SigningService.class,"User:"+username+" Cannot issue Certificate!");
             }
         }
     }

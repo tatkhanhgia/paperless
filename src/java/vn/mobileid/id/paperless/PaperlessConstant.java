@@ -8,7 +8,7 @@ package vn.mobileid.id.paperless;
  *
  * @author GiaTK
  */
-public class QryptoConstant {
+public class PaperlessConstant {
 
     //System
     final public static long FEDERAL_ID = 0;
@@ -94,6 +94,7 @@ public class QryptoConstant {
     final public static int SUBCODE_MISSING_ACCESS_TOKEN = 13;
     final public static int SUBCODE_UNAUTHORIZED_USER = 14;
     final public static int SUBCODE_MISSING_REFRESH_TOKEN = 15;
+    final public static int SUBCODE_INVALID_CLIENT_ID = 16;
 
     //SUBCODE INVALID WORKFLOW - 5001
     final public static int SUBCODE_MISSING_WORKFLOW_LABEL = 2;

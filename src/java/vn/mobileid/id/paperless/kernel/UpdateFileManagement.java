@@ -14,7 +14,7 @@ import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.QryptoConstant;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
 
@@ -24,7 +24,7 @@ import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
  */
 public class UpdateFileManagement {
 
-    final private static Logger LOG = LogManager.getLogger(GetWorkflowActivity.class);
+//    final private static Logger LOG = LogManager.getLogger(GetWorkflowActivity.class);
 
     public static InternalResponse updateFileManagement(
             int id,
@@ -39,11 +39,14 @@ public class UpdateFileManagement {
             String created_by,
             String last_modified_by,
             byte[] data,
-            boolean isSigned) {
+            boolean isSigned,
+            String transactionID) {
         try {
             Database DB = new DatabaseImpl();                      
-            InternalResponse res = GetFileManagement.getFileManagement(id);
-            if(res.getStatus() != QryptoConstant.HTTP_CODE_SUCCESS){
+            InternalResponse res = GetFileManagement.getFileManagement(
+                    id,
+                    transactionID);
+            if(res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
                 return res;
             }
             FileManagement fileOriginal = (FileManagement) res.getData();
@@ -71,53 +74,54 @@ public class UpdateFileManagement {
                     fileOriginal.getCreated_by(),
                     fileOriginal.getLastmodified_by(),
                     data,
-                    isSigned);
+                    isSigned,
+                    transactionID);
 
-            if (callDB.getStatus() != QryptoConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(QryptoConstant.CODE_FAIL,
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                          null);
                 if (LogHandler.isShowErrorLog()) {
-                    LOG.error("Cannot update File Management - Detail:" + message);
+                    LogHandler.error(UpdateFileManagement.class,transactionID,"Cannot update File Management - Detail:" + message);
                 }
-                return new InternalResponse(QryptoConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
 
             return new InternalResponse(
-                    QryptoConstant.HTTP_CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     "");
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
 //                e.printStackTrace();
-                LOG.error("UNKNOWN EXCEPTION. Details: " + e);
+                LogHandler.error(UpdateFileManagement.class,transactionID,"UNKNOWN EXCEPTION. Details: " + e);
             }
-            return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
     public static void main(String[] arhs) throws IOException {
-        String test = "D:\\NetBean\\QryptoServices\\file\\result.pdf";
-        byte[] data = Files.readAllBytes(new File(test).toPath());
-        int id = 23;
-        InternalResponse res = UpdateFileManagement.updateFileManagement(
-                id,
-                "uuid",
-                "dbms",                
-                "name",
-                1,
-                0,
-                0,
-                1,
-                "hmac",
-                "GIA TK",
-                "GIA TK",
-                data, true);
-        
-        System.out.println(res.getStatus());
-        System.out.println(res.getMessage());
+//        String test = "D:\\NetBean\\QryptoServices\\file\\result.pdf";
+//        byte[] data = Files.readAllBytes(new File(test).toPath());
+//        int id = 23;
+//        InternalResponse res = UpdateFileManagement.updateFileManagement(
+//                id,
+//                "uuid",
+//                "dbms",                
+//                "name",
+//                1,
+//                0,
+//                0,
+//                1,
+//                "hmac",
+//                "GIA TK",
+//                "GIA TK",
+//                data, true);
+//        
+//        System.out.println(res.getStatus());
+//        System.out.println(res.getMessage());
     }
 }
