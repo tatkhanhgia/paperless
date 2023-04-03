@@ -193,7 +193,8 @@ public class ServerSession implements IServerSession {
             try {
                 throw new Exception(response.getMsg());
             } catch (Exception ex) {
-                Logger.getLogger(ServerSession.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
+                LogHandler.error(ServerSession.class, "Error - Detail:"+ex);
             }
         }
 //        System.out.println("credentials/list response.getMsg() = "+ response.getMsg());
@@ -851,7 +852,9 @@ public class ServerSession implements IServerSession {
                             "Err code: " + signCloudResp.getError() +
                             "\nErr Desscription: " + signCloudResp.getErrorDescription());
                 } 
-            if (signCloudResp.getError() == 0 && response.getHttpCode() == 200) {
+            System.out.println("ErrorCode:"+signCloudResp.getError());
+            System.out.println("HttpCode:"+response.getHttpCode());
+            if (signCloudResp.getError() == 0 && response.isStatus()) {
                 return true;
             }
             return false;

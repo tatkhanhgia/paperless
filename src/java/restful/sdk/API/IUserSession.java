@@ -10,7 +10,7 @@ import java.util.List;
 public interface IUserSession {
     boolean sendUserOTP() throws Throwable;
     
-        List<ICertificate> listCertificates() throws Throwable;
+    public List<ICertificate> listCertificates() throws Throwable;
 
     public ICertificate certificateInfo( String credentialID) throws Throwable;
 

@@ -11,14 +11,12 @@ import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
-import vn.mobileid.id.general.email.Email;
-import vn.mobileid.id.general.email.EmailReq;
 import vn.mobileid.id.general.objects.Attachment;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.PaperlessService;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.Enterprise;
+import vn.mobileid.id.utils.AnnotationJWT;
 
 /**
  *
@@ -40,7 +38,7 @@ public class SendMail extends Thread {
         this.sendTo = sendTo;
         this.Subject = Subject;
         this.Content = Content;
-        this.EntityName = EntityName;
+        this.EntityName = EntityName == null? "Paperless Service": EntityName;
         this.file = file;
         this.fileName = fileName;
     }
@@ -57,31 +55,58 @@ public class SendMail extends Thread {
         this.EntityName = "eLaborContract";
     }
 
-    public SendMail(String sendTo, int enterprise_id, String name, String CCCD, byte[] file, String filename) {
+    //Contructor for create email to user.
+    public SendMail(
+            String sendTo,
+            int enterprise_id,
+            String name,
+            String CCCD,
+            byte[] file,
+            String filename) {
         this.sendTo = sendTo;
         this.file = file;
         this.fileName = filename;
         EmailTemplate template = getTemplate(enterprise_id);
         if (template == null) {
+//            System.out.println("Default template!");
             this.Subject = "eLaborContract - " + name + " - " + CCCD;
             this.Content = "Dear " + name;
             this.Content += "<br /><br /> Paperless service would like to thank you for trusting and using our services";
             this.Content += "<br /><br /> Your eLaborContract has been created successfully.";
         } else {
-            this.Subject = template.getSubject().replace("@name", name);
-            this.Subject = this.Subject.replace("@CCCD", CCCD);
-            this.Content = template.getBody().replace("@name", name);
+            this.Subject = template.getSubject().replace(AnnotationJWT.Name.getNameAnnot(), name);
+            this.Subject = this.Subject.replace(AnnotationJWT.DocNumber.getNameAnnot(), CCCD);
+            this.Content = template.getBody().replace(AnnotationJWT.Name.getNameAnnot(), name);
         }
+//        System.out.println("Subject:"+this.Subject);
     }
 
-    public  void send() {
+    public void setPassword(String password) {
+        this.Content = this.Content.replace(AnnotationJWT.Password.getNameAnnot(), password);
+    }
+    
+    public void setNameUser(String name){
+        this.Subject = this.Subject.replace(AnnotationJWT.Name.getNameAnnot(), name);
+        this.Content = this.Content.replace(AnnotationJWT.Name.getNameAnnot(), name);
+    }
+    
+    public void setDocNumber(String docNumber){
+        this.Subject = this.Subject.replace(AnnotationJWT.DocNumber.getNameAnnot(), docNumber);
+        this.Content = this.Content.replace(AnnotationJWT.DocNumber.getNameAnnot(), docNumber);
+    }
+    
+    public void send() {
         try {
+            Subject = Subject.replace(AnnotationJWT.DocNumber.getNameAnnot(), "");
             EmailReq request = new EmailReq();
             request.setSendTo(sendTo);
             request.setSubject(Subject);
-            List<Attachment> attachs = new ArrayList<>();
-            attachs.add(new Attachment(file, fileName));
-            request.setAttachments(attachs);
+            if (file != null && fileName != null) {
+                List<Attachment> attachs = new ArrayList<>();
+                attachs.add(new Attachment(file, fileName));
+                request.setAttachments(attachs);
+            }
+
             request.setContent(Content);
             request.setEntityName(EntityName);
 
@@ -98,7 +123,7 @@ public class SendMail extends Thread {
         try {
             String email_notification = "";
             Database db = new DatabaseImpl();
-            DatabaseResponse res = db.getEnterpriseInfo(enterprise_id);
+            DatabaseResponse res = db.getEnterpriseInfo(enterprise_id, null);
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 email_notification = "defaultemail";
             } else {
@@ -124,4 +149,8 @@ public class SendMail extends Thread {
         return null;
     }
 
+    @Override
+    public void run(){
+        send();
+    }
 }

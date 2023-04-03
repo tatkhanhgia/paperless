@@ -16,7 +16,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.FileManagement;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 
 /**
  *
@@ -78,7 +78,7 @@ public class UpdateFileManagement {
                     transactionID);
 
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                          null);

@@ -13,6 +13,8 @@ public class EmailTemplate {
     private String body;
     private byte[] data;
     private String filename;
+    private String password;
+    
 
     public EmailTemplate() {
     }
@@ -54,6 +56,14 @@ public class EmailTemplate {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
     
     

@@ -21,7 +21,7 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
 
 /**
@@ -69,7 +69,7 @@ public class UploadAsset {
                     transactionID);
 
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                          null);
@@ -94,6 +94,7 @@ public class UploadAsset {
         }
     }
 
+    
     public static void main(String[] ags) throws IOException {
 //        User user = new User();
 //        user.setEmail("giatk@mobile-id.vn");

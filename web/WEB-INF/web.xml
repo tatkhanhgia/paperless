@@ -25,10 +25,17 @@
             <param-name>jersey.config.server.provider.packages</param-name>
             <param-value>vn.mobileid.id.general.api</param-value>
         </init-param>
-<!--        <servlet-name>jersey</servlet-name>
-        <servlet-class>vn.mobileid.id.general.api.ServicesController</servlet-class>-->
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>adminServlet</servlet-name>
+        <servlet-class>vn.mobileid.id.general.api.AdminServicesController</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>adminServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>jersey</servlet-name>
         <url-pattern>/*</url-pattern>

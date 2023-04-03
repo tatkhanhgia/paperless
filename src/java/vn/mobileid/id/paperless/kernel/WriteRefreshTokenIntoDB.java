@@ -13,7 +13,7 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 
 /**
  *
@@ -49,7 +49,7 @@ public class WriteRefreshTokenIntoDB {
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 if (LogHandler.isShowErrorLog()) {
-                    message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             res.getStatus(),
                             "en",
                              null);
@@ -81,7 +81,7 @@ public class WriteRefreshTokenIntoDB {
                     sessionID,
                     transactionID);
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         res.getStatus(),
                         "en",
                         null);
@@ -109,7 +109,7 @@ public class WriteRefreshTokenIntoDB {
                     session,
                     transactionID);
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         res.getStatus(),
                         "en",
                         null);
@@ -134,7 +134,7 @@ public class WriteRefreshTokenIntoDB {
                     session,
                     transactionID);
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         res.getStatus(),
                         "en",
                         null);
@@ -176,7 +176,7 @@ public class WriteRefreshTokenIntoDB {
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 if (LogHandler.isShowErrorLog()) {
-                    message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             res.getStatus(),
                             "en",
                              null);

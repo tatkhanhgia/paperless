@@ -13,7 +13,7 @@ import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.paperless.objects.response.Create_WorkflowActivity_MessageJSNObject;
@@ -30,7 +30,7 @@ public class CreateWorkflowActivity {
     public static InternalResponse checkDataWorkflowActivity(WorkflowActivity workflowAc) {
 //        if (workflowAc.getEnterprise_name() == null && workflowAc.getEnterprise_id() <= 0) {
 //            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
 //                            PaperlessConstant.SUBCODE_MISSING_ENTERPRISE_DATA,
 //                            "en",
 //                            null));
@@ -38,13 +38,13 @@ public class CreateWorkflowActivity {
 
         if (workflowAc.getWorkflow_id() <= 0) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                             PaperlessConstant.SUBCODE_MISSING_WORKFLOW_ID,
                             "en",
                             null));
         }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
                         PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
@@ -123,7 +123,7 @@ public class CreateWorkflowActivity {
                     user.getName(),
                     transaction);  //created by
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                         null);

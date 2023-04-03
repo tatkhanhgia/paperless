@@ -25,9 +25,9 @@ import vn.mobileid.id.utils.Utils;
  *
  * @author ADMIN
  */
-public class QryptoMessageResponse {
+public class PaperlessMessageResponse {
 
-    private static final Logger LOG = LogManager.getLogger(QryptoMessageResponse.class);
+    private static final Logger LOG = LogManager.getLogger(PaperlessMessageResponse.class);
 
     final private static ObjectMapper objectMapper = new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
 

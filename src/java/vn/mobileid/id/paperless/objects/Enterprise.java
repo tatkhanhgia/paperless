@@ -14,6 +14,7 @@ public class Enterprise extends Object{
     private String name; //name of enterprise
     private String data; //Data Handshake
     private String fileP12_id;
+    private int owner_id;
     private String clientID;
     private String clientSecret;
     private String email_notification;
@@ -85,6 +86,14 @@ public class Enterprise extends Object{
 
     public void setEmail_notification(String email_notification) {
         this.email_notification = email_notification;
+    }
+
+    public int getOwner_id() {
+        return owner_id;
+    }
+
+    public void setOwner_id(int owner_id) {
+        this.owner_id = owner_id;
     }
     
     

@@ -27,7 +27,7 @@ import vn.mobileid.id.paperless.objects.FileDataDetails;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.KYC;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.SigningProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
@@ -73,7 +73,7 @@ public class ProcessELaborContract {
                 transactionID);
         if (template.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             template.getStatus(),
                             "en",
                             null)
@@ -170,7 +170,7 @@ public class ProcessELaborContract {
         );
         if (template.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             template.getStatus(),
                             "en",
                             null)
@@ -295,7 +295,7 @@ public class ProcessELaborContract {
                 LogHandler.error(ProcessELaborContract.class,transactionID,"Error while Signing - Detail:" + ex);
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_SIGNING_ERROR,
                             "en",
                             null)

@@ -206,8 +206,11 @@ public interface Database {
     
     public DatabaseResponse getWorkflowTemplate(int id,String transaction_id);
     
-    public DatabaseResponse updateWorkflowDetail_Option(int id,
-            HashMap<String, Object> map,
+    public DatabaseResponse updateWorkflowDetail_Option(
+            int id,
+            String email,
+            int ent_id,
+            HashMap<String, Object> map,            
             String hmac,
             String created_by,
             String transaction_id
@@ -265,8 +268,10 @@ public interface Database {
     
     public DatabaseResponse getUser(
             String email,
+            int user_id,
             int enterprise_id,
-            String transaction_id
+            String transaction_id,
+            boolean returnTypeUser
     );
     
     public DatabaseResponse getKEYAPI(
@@ -277,7 +282,10 @@ public interface Database {
     
     public DatabaseResponse createUser(
             String email,
+            String password,
+            String mobile_number,
             String created_user_email,
+            String created_user_name,
             int enterprise_id,
             String role_name,
             long pass_expired_at,
@@ -294,8 +302,47 @@ public interface Database {
     );
     
     public DatabaseResponse getEnterpriseInfo(
-            int enterprise_id
+            int enterprise_id,
+            String enterprise_name
     );
-        
+    
+    public DatabaseResponse getAuthenticatePassword(
+            String email,
+            int languege_id,
+            String email_type,
+            String transactionID
+    );
+    
+    public DatabaseResponse verifyEmail(
+            String email,
+            String password,
+            String transactionID
+    );
+    
+    public DatabaseResponse deactiveWorkflow(            
+            int workflow_id,
+            String email,
+            int enterprise_id,
+            String modified_by,
+            String transactionID
+    );
+    
+    public DatabaseResponse reactiveWorkflow(            
+            int workflow_id,
+            String email,
+            int enterprise_id,
+            String modified_by,
+            String transactionID
+    );
+    
+    public DatabaseResponse updateWorkflowTemplate(
+            int workflow_id,
+            String user_email,
+            int enterprise_id,
+            String meta_data,
+            String hmac,
+            String last_modified_by,
+            String transactionID
+    );
 }
 

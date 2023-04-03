@@ -14,7 +14,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
@@ -31,27 +31,27 @@ public class CreateWorkflow {
     public static InternalResponse checkDataWorkflow(Workflow workflow) {
         if (workflow == null) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             "en",
                             null));
         }
         if (Utils.isNullOrEmpty(workflow.getLabel())) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             PaperlessConstant.SUBCODE_MISSING_WORKFLOW_LABEL,
                             "en",
                             null));
         }
 //        if (Utils.isNullOrEmpty(workflow.getCreated_by())) {
 //            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
 //                            PaperlessConstant.SUBCODE_MISSING_WORKFLOW_CREATED_BY,
 //                            "en",
 //                            null));
 //        }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
                         PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
@@ -76,7 +76,7 @@ public class CreateWorkflow {
 
             if (createWorkflow.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                                 createWorkflow.getStatus(),
                                 "en",
                                  null)

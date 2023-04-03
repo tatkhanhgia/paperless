@@ -4,10 +4,15 @@
  */
 package vn.mobileid.id.paperless;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -34,11 +39,18 @@ import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.KYC;
 import vn.mobileid.id.paperless.objects.ListWorkflow;
 import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.general.email.SendMail;
+import vn.mobileid.id.paperless.kernel.ManageStatusWorkflow;
+import vn.mobileid.id.paperless.kernel.UpdateWorkflowDetail_option;
+import vn.mobileid.id.paperless.kernel.UpdateWorkflowTemplate;
+import vn.mobileid.id.paperless.objects.Item_JSNObject;
+import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
+import vn.mobileid.id.paperless.objects.WorkflowTemplate;
+import vn.mobileid.id.paperless.objects.response.QryptoErrorMessageJSNObject;
 import vn.mobileid.id.utils.Utils;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
 
@@ -114,7 +126,7 @@ public class PaperlessService {
                 LogHandler.debug(PaperlessService.class, transactionID, "No Payload found!!");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
@@ -126,9 +138,9 @@ public class PaperlessService {
                 LogHandler.debug(PaperlessService.class, transactionID, "Check Template False!!");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             PaperlessConstant.SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE,
-                            QryptoMessageResponse.getLangFromJson(payload),
+                            PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
@@ -141,9 +153,9 @@ public class PaperlessService {
                 LogHandler.error(PaperlessService.class, transactionID, "Cannot parse payload");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
-                            QryptoMessageResponse.getLangFromJson(payload),
+                            PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
@@ -184,7 +196,7 @@ public class PaperlessService {
 //                LogHandler.debug(PaperlessService.class, transactionID, "No Payload found!!");
 //            }
 //            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
 //                            PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
 //                            "en",
 //                            null));
@@ -203,9 +215,9 @@ public class PaperlessService {
 //                LogHandler.error(PaperlessService.class,transactionID,"Cannot parse payload");
 //            }
 //            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
 //                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
-//                            QryptoMessageResponse.getLangFromJson(payload),
+//                            PaperlessMessageResponse.getLangFromJson(payload),
 //                            null));
 //        }
 //
@@ -248,7 +260,7 @@ public class PaperlessService {
                 LogHandler.debug(PaperlessService.class, transactionID, "No Payload found!!");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
@@ -257,9 +269,9 @@ public class PaperlessService {
 //        //Check Workflow_Temlate_Type
 //        if (!checkTemplateTypeInRequest(payload)) {
 //            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
 //                            PaperlessConstant.SUBCODE_MISSING_OR_ERROR_TEMPLATE_TYPE,
-//                            QryptoMessageResponse.getLangFromJson(payload),
+//                            PaperlessMessageResponse.getLangFromJson(payload),
 //                            null));
 //        }
         ObjectMapper mapper = new ObjectMapper();
@@ -271,9 +283,9 @@ public class PaperlessService {
                 LogHandler.error(PaperlessService.class, transactionID, "Cannot parse payload");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
-                            QryptoMessageResponse.getLangFromJson(payload),
+                            PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
@@ -328,7 +340,7 @@ public class PaperlessService {
                 LogHandler.debug(PaperlessService.class, transactionID, "No Payload found!!");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
@@ -344,9 +356,9 @@ public class PaperlessService {
                 LogHandler.error(PaperlessService.class, transactionID, "Cannot parse payload");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
-                            QryptoMessageResponse.getLangFromJson(payload),
+                            PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
@@ -431,9 +443,9 @@ public class PaperlessService {
                 LogHandler.error(PaperlessService.class, transactionID, "Cannot parse payload");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
-                            QryptoMessageResponse.getLangFromJson(payload),
+                            PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
@@ -448,8 +460,7 @@ public class PaperlessService {
                     transactionID);
             if (res.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 //Send mail
-                sendMail(
-                        (WorkflowActivity) res.getData(),
+                sendMail((WorkflowActivity) res.getData(),
                         user_info,
                         email,
                         jwt,
@@ -485,7 +496,7 @@ public class PaperlessService {
 //        if (Utils.isNullOrEmpty(payload)) {
 //            LOG.info("No payload found");
 //            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
 //                            PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
 //                            "en",
 //                            null));
@@ -501,9 +512,9 @@ public class PaperlessService {
 //                LOG.error("Cannot parse payload");
 //            }
 //            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
 //                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
-//                            QryptoMessageResponse.getLangFromJson(payload),
+//                            PaperlessMessageResponse.getLangFromJson(payload),
 //                            null));
 //        }
 //
@@ -611,7 +622,10 @@ public class PaperlessService {
             if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
-            return new InternalResponse(response.getStatus(), new ObjectMapper().writeValueAsString(response.getData()));
+            return new InternalResponse(response.getStatus(), 
+                    new ObjectMapper()
+                            .enable(SerializationFeature.WRAP_ROOT_VALUE)
+                            .writeValueAsString(response.getData()));
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LogHandler.error(PaperlessService.class, transactionID, "Cannot getWorkflowDetail");
@@ -742,7 +756,11 @@ public class PaperlessService {
                 if (LogHandler.isShowErrorLog()) {
                     LogHandler.error(PaperlessService.class, transactionID, "File Type Asset is invalid");
                 }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST, PaperlessConstant.SUBCODE_INVALID_FILE_TYPE);
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                        PaperlessConstant.SUBCODE_INVALID_FILE_TYPE,
+                        "en",
+                         null);                
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST, message);
             }
             Asset asset = new Asset(
                     0,
@@ -756,6 +774,68 @@ public class PaperlessService {
                     "",
                     "",
                     outputStream.toByteArray(),
+                    null
+            );
+
+            return UploadAsset.uploadAsset(user_info, asset, transactionID);
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(PaperlessService.class, transactionID, "Cannot upload an Asset");
+            }
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        }
+    }
+    
+    //Upload Asset
+    public static InternalResponse uploadAssetBase64(
+            final HttpServletRequest request,
+            String payload,
+            String transactionID) {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Get header         
+        String x_file_type = Utils.getRequestHeader(request, "x-file-type");
+        String x_file_name = Utils.getRequestHeader(request, "x-file-name");
+        Asset temp = new Asset();
+        try{
+            temp = new ObjectMapper().readValue(payload, Asset.class);
+        } catch (Exception ex){
+            
+        }
+        byte[] temp2 = Base64.getDecoder().decode(temp.getBase64().getBytes());
+        
+        //Processing
+        try {
+            int i = convertStringIntoAssetType(x_file_type);
+            if (i == -1) {
+                if (LogHandler.isShowErrorLog()) {
+                    LogHandler.error(PaperlessService.class, transactionID, "File Type Asset is invalid");
+                }
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                        PaperlessConstant.SUBCODE_INVALID_FILE_TYPE,
+                        "en",
+                         null);                
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST, message);
+            }
+            Asset asset = new Asset(
+                    0,
+                    x_file_name,
+                    i,
+                    0,
+                    "",
+                    null,
+                    "",
+                    null,
+                    "",
+                    "",
+                    temp2,
                     null
             );
 
@@ -790,6 +870,30 @@ public class PaperlessService {
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, response.getMessage());
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(PaperlessService.class, transactionID, "Cannot getAssetTemplate");
+            }
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        }
+    }
+    
+    public static InternalResponse getAssetDetails(
+            final HttpServletRequest request,
+            int id,
+            String transactionID) {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Processing
+        try {
+            return  GetAsset.getAsset(id, transactionID);            
         } catch (Exception e) {
             e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
@@ -901,8 +1005,69 @@ public class PaperlessService {
             return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
+    
+    public static InternalResponse deactiveWorkflow(
+            final HttpServletRequest request,
+            int id,            
+            String transactionID) {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
 
-    //UPDATE WORKFLOW DETAIL/OPTION
+        User user_info = response.getUser();
+        
+        //Processing
+        try {
+            response = ManageStatusWorkflow.deactiveWorkflow(
+                    id,
+                    user_info.getEmail(),
+                    user_info.getAid(),
+                    transactionID);
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return response;
+            }
+            return new InternalResponse(response.getStatus(), "");
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(PaperlessService.class, transactionID, "Cannot deactive Workflow");
+            }
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        }
+    }
+    
+    public static InternalResponse reactiveWorkflow(
+            final HttpServletRequest request,
+            int id,            
+            String transactionID) {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+        
+        //Processing
+        try {
+            response = ManageStatusWorkflow.reactiveWorkflow(
+                    id,
+                    user_info.getEmail(),
+                    user_info.getAid(),
+                    transactionID);
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return response;
+            }
+            return new InternalResponse(response.getStatus(), "");
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(PaperlessService.class, transactionID, "Cannot reactive Workflow");
+            }
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        }
+    }
+    
     public static InternalResponse updateWorkflowDetail_option(
             final HttpServletRequest request,
             int id,
@@ -922,37 +1087,43 @@ public class PaperlessService {
                 LogHandler.debug(PaperlessService.class, transactionID, "No Payload found!!");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        Workflow workflow = new Workflow();
+        WorkflowDetail_Option workflow = new WorkflowDetail_Option();
         try {
-            workflow = mapper.readValue(payload, Workflow.class);
+            System.out.println("payload:"+payload);
+            workflow = mapper.enable(DeserializationFeature.UNWRAP_ROOT_VALUE).readValue(payload, WorkflowDetail_Option.class);
+            System.out.println("Data:"+mapper.writeValueAsString(workflow));
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LogHandler.error(PaperlessService.class, transactionID, "Cannot parse payload");
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
-                            QryptoMessageResponse.getLangFromJson(payload),
+                            PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
         //Processing
         try {
-//            response = UpdateWorkflowDetail_option.updateWorkflowOption(
-//                    id,
-//                    detail,
-//                    "hmac", user_info.getEmail());
+            response = UpdateWorkflowDetail_option.updateWorkflowOption(
+                    id,
+                    user_info.getEmail(),
+                    user_info.getAid(),
+                    workflow,
+                    "hmac",
+                    user_info.getEmail(),
+                    transactionID);
             if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
-            return new InternalResponse(response.getStatus(), new ObjectMapper().writeValueAsString(response.getData()));
+            return response;
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
                 LogHandler.error(PaperlessService.class, transactionID, "Cannot updateWorkflowDetail_option");
@@ -961,6 +1132,73 @@ public class PaperlessService {
         }
     }
 
+    public static InternalResponse updateWorkflowTemplate(
+            final HttpServletRequest request,
+            int id,
+            String payload,
+            String transactionID) {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Get data 
+        if (Utils.isNullOrEmpty(payload)) {
+            if (LogHandler.isShowDebugLog()) {
+                LogHandler.debug(PaperlessService.class, transactionID, "No Payload found!!");
+            }
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
+                            "en",
+                            null));
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        Item_JSNObject workflowtemplate = new Item_JSNObject();
+        try {
+            workflowtemplate = mapper.readValue(payload, Item_JSNObject.class);
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(PaperlessService.class, transactionID, "Cannot parse payload");
+            }
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            PaperlessMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+
+        //Check data
+        InternalResponse res = UpdateWorkflowTemplate.checkWorkflowTemplate(workflowtemplate);
+        if(res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+            return res;
+        }
+        
+        //Processing
+        try {
+            res = UpdateWorkflowTemplate.updateWorkflowTemplate(
+                    id,
+                    user_info.getEmail(),
+                    user_info.getAid(),
+                    workflowtemplate,
+                    "hmac",
+                    transactionID);
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return response;
+            }
+            return new InternalResponse(response.getStatus(),"");
+        } catch (Exception e) {
+            if (LogHandler.isShowErrorLog()) {
+                LogHandler.error(PaperlessService.class, transactionID, "Cannot updateWorkflowDetail_option");
+            }
+            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        }
+    }
+    
     //=================== INTERNAL FUNCTION - METHOD============================
     /**
      * Hàm check workflow_template_type từ chuỗi payload truyền vào
@@ -998,7 +1236,8 @@ public class PaperlessService {
         }
         HashMap<String, Integer> hashmap = Resources.getListAssetType();
         for (String temp : hashmap.keySet()) {
-            if (temp.contains(assetType.toLowerCase()) || temp.contains(assetType.toUpperCase()) || temp.contains(assetType)) {
+            String type = temp.split(" ")[temp.split(" ").length -1 ];
+            if (type.equalsIgnoreCase(assetType) || type.equals(assetType)) {
                 return hashmap.get(temp);
             }
         }
@@ -1048,12 +1287,6 @@ public class PaperlessService {
 
                 LogHandler.request(PaperlessService.class,
                         "SendToMail:" + email);
-//                SendMail mail = new SendMail(
-//                        email,
-//                        name,
-//                        CCCD,
-//                        filemanagement.getData(),
-//                        filemanagement.getName());
                 SendMail mail = new SendMail(
                         email,
                         user_info.getAid(),
@@ -1065,6 +1298,6 @@ public class PaperlessService {
                 mail.send();
             }
         };
-        temp.run();
+        temp.start();
     }
 }

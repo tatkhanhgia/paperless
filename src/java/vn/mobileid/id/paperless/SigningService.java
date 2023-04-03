@@ -57,7 +57,7 @@ public class SigningService {
     private ISessionFactory sessionFactory;
     private IServerSession session;
 
-    private static HashMap<String, IUserSession> listSession;    
+    private static HashMap<String, IUserSession> listSession;
     private static SigningService signingService;
 
     public static SigningService getInstant(int i) {
@@ -81,7 +81,7 @@ public class SigningService {
 
     private void init(int enterprise_id) {
         Database callDB = new DatabaseImpl();
-        Enterprise object;        
+        Enterprise object;
 
         try {
             object = (Enterprise) callDB.getDataRP(
@@ -90,7 +90,7 @@ public class SigningService {
         } catch (ClassCastException ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"Cannot cast data - Details:" + ex);
+                LogHandler.error(SigningService.class, "Cannot cast data - Details:" + ex);
             }
             return;
         }
@@ -118,8 +118,8 @@ public class SigningService {
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"Cannot init sessionFactory - Details:" + ex);
-            }           
+                LogHandler.error(SigningService.class, "Cannot init sessionFactory - Details:" + ex);
+            }
         }
     }
 
@@ -183,14 +183,14 @@ public class SigningService {
         } catch (APIException ex) {
             ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class,"Error While Signing - Detail:" + ex);
-            }            
+                LogHandler.error(SigningService.class, "Error While Signing - Detail:" + ex);
+            }
             return null;
         } catch (Exception ex) {
             ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class,"Error While Signing - Detail:" + ex);
-            }            
+                LogHandler.error(SigningService.class, "Error While Signing - Detail:" + ex);
+            }
             return null;
         }
     }
@@ -229,7 +229,7 @@ public class SigningService {
             try {
                 picture2 = Base64.getDecoder().decode(base64Evidence.replaceAll("\n", "").getBytes());
             } catch (IllegalArgumentException ex) {
-                
+
             }
             byte[] imgData = ImageGenerator.combineImage(picture2, picture);
 
@@ -293,43 +293,42 @@ public class SigningService {
             List<byte[]> results = signFile.sign(agreementUUID, credentials, "12345678", src, this.session);
 
             return results;
-//        OutputStream OS = new FileOutputStream("D:\\NetBean\\QryptoServices\\file\\signed." + filename);
-//        IOUtils.write(results.get(0), OS);
-//        OS.close();
-//        return valueSignHash;
         } catch (Exception e) {
             e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class,transactionID,"Error While Signing - Detail:" + e);
-            }            
+                LogHandler.error(SigningService.class, transactionID, "Error While Signing - Detail:" + e);
+            }
             return null;
         }
     }
 
     public boolean initUser(String user, String pass) {
         try {
+            if (SigningService.listSession.containsKey(user)) {
+                return true;
+            }
             IUserSession users = this.sessionFactory.newUserSession(user, pass);
             SigningService.listSession.put(user, users);
             return true;
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"User " + user + " cannot Login! - Details:" + ex);
+                LogHandler.error(SigningService.class, "User " + user + " cannot Login! - Details:" + ex);
             }
             return false;
         }
     }
 
-    public IUserSession getUser(String user, String pass){
-        if( SigningService.listSession.containsKey(user)){
+    public IUserSession getUser(String user, String pass) {
+        if (SigningService.listSession.containsKey(user)) {
             return SigningService.listSession.get(user);
         }
-        if(initUser(user, pass)){
+        if (initUser(user, pass)) {
             return SigningService.listSession.get(user);
         }
         return null;
     }
-    
+
     public List<ICertificate> listUserCertificate(String user, String pass) throws Throwable {
         try {
             if (SigningService.listSession.containsKey(user)) {
@@ -340,12 +339,12 @@ public class SigningService {
         } catch (Exception ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"User " + user + " cannot list Certificate! - Details:" + ex);
+                LogHandler.error(SigningService.class, "User " + user + " cannot list Certificate! - Details:" + ex);
             }
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"User " + user + " cannot list Certificate! - Details:" + ex);
+                LogHandler.error(SigningService.class, "User " + user + " cannot list Certificate! - Details:" + ex);
             }
         }
         return null;
@@ -361,12 +360,12 @@ public class SigningService {
         } catch (Exception ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"User " + user + " cannot get CertificateInfo! - Details:" + ex);
+                LogHandler.error(SigningService.class, "User " + user + " cannot get CertificateInfo! - Details:" + ex);
             }
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"User " + user + " cannot get CertificateInf! - Details:" + ex);
+                LogHandler.error(SigningService.class, "User " + user + " cannot get CertificateInf! - Details:" + ex);
             }
         }
         return null;
@@ -382,12 +381,12 @@ public class SigningService {
         } catch (Exception ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"User " + user + " cannot authorize! - Details:" + ex);
+                LogHandler.error(SigningService.class, "User " + user + " cannot authorize! - Details:" + ex);
             }
         } catch (Throwable ex) {
             if (LogHandler.isShowErrorLog()) {
                 ex.printStackTrace();
-                LogHandler.error(SigningService.class,"User " + user + " cannot authorize! - Details:" + ex);
+                LogHandler.error(SigningService.class, "User " + user + " cannot authorize! - Details:" + ex);
             }
         }
         return null;
@@ -473,36 +472,48 @@ public class SigningService {
             profile.setCheckText(false);
             profile.setCheckMark(false);
             profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
-//            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
             profile.setFont(font, BaseFont.IDENTITY_H, true, 8, 0, TextAlignment.ALIGN_LEFT, Color.BLACK);
 
             List<byte[]> src = new ArrayList<>();
             src.add(content);
 
             //====================================================
-            this.initUser(user, pass);     
-            this.listUserCertificate(user, pass);
+            this.initUser(user, pass);
+            List<ICertificate> listCert = this.listUserCertificate(user, pass);
+            int number = -1;
+            for (int i = 0; i < listCert.size(); i++) {
+                ICertificate cert = certificateInfo(user, pass, listCert.get(0).baseCredentialInfo().getCredentialID());
+                if (!cert.baseCredentialInfo().getStatus().equals("EXPIRES")) {
+                    number = i;
+                }
+            }
+            if(number == -1){
+                issueCertificate(jwt.getDocument_number(),
+                            jwt.getEmail(),
+                            jwt.getPhone_number(),
+                            jwt.getCity_province(),
+                            jwt.getNationality(),
+                            jwt.getDocument_number());
+                listCert = this.listUserCertificate(user, pass);
+            }
+
             List<byte[]> results = signFile.sign(
-                    this.listUserCertificate(user, pass).get(0).baseCredentialInfo().getCredentialID(),
+                    listCert.get(number).baseCredentialInfo().getCredentialID(),
                     "12345678",
                     src,
                     this.getUser(user, pass));
-            return results;            
-//        OutputStream OS = new FileOutputStream("D:\\NetBean\\QryptoServices\\file\\signed." + filename);
-//        IOUtils.write(results.get(0), OS);
-//        OS.close();
-//        return valueSignHash;
+            return results;
         } catch (Exception e) {
             e.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class,"Error While Signing - Detail:" + e);
-            }            
+                LogHandler.error(SigningService.class, "Error While Signing - Detail:" + e);
+            }
             return null;
         } catch (Throwable ex) {
             ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class,"Error While Signing - Detail:" + ex);
-            } 
+                LogHandler.error(SigningService.class, "Error While Signing - Detail:" + ex);
+            }
         }
         return null;
     }
@@ -517,8 +528,8 @@ public class SigningService {
         } catch (Throwable ex) {
             ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class,"User:"+user+"\nError While Create Owner - Detail:" + ex);
-            } 
+                LogHandler.error(SigningService.class, "User:" + user + "\nError While Create Owner - Detail:" + ex);
+            }
         }
     }
 
@@ -552,21 +563,24 @@ public class SigningService {
         } catch (Throwable ex) {
             ex.printStackTrace();
             if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class,"User:"+username+" Cannot issue Certificate!");
+                LogHandler.error(SigningService.class, "User:" + username + " Cannot issue Certificate!");
             }
         }
     }
 
-    public boolean checkExist(String user, String pass){
-        try{
-            return session.preLogin(user);            
-        } catch (Exception e){
+    public boolean checkExist(String user, String pass) {
+        try {
+            boolean check = session.preLogin(user);
+            System.out.println("Username:" + user);
+            System.out.println("Check Existed:" + check);
+            return check;
+        } catch (Exception e) {
             return false;
         } catch (Throwable ex) {
             return false;
         }
     }
-    
+
     public static void main(String[] arhs) throws IOException {
 //        String filename = "resul.pdf";
 //        String CombineImage = "D:\\NetBean\\QryptoServices\\file\\file\\CombineImage.png";

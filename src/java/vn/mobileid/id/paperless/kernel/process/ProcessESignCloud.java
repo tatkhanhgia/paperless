@@ -29,7 +29,7 @@ import vn.mobileid.id.paperless.objects.FileDataDetails;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.KYC;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.SigningProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
@@ -66,7 +66,7 @@ public class ProcessESignCloud {
                 transactionID);
         if (template.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             template.getStatus(),
                             "en",
                             null)
@@ -176,7 +176,7 @@ public class ProcessESignCloud {
                 LogHandler.error(ProcessESignCloud.class,transactionID,"Error while Signing - Detail:" + ex);
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_SIGNING_ERROR,
                             "en",
                             null)

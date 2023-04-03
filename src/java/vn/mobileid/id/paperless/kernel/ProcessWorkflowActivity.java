@@ -24,7 +24,7 @@ import vn.mobileid.id.paperless.objects.FileDataDetails;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.SigningProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
@@ -49,7 +49,7 @@ public class ProcessWorkflowActivity {
             }
         }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
                         PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
@@ -64,14 +64,14 @@ public class ProcessWorkflowActivity {
             boolean gate = checkFile_type(obj.getFile_type());
             if (!gate) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_MISSING_OR_ERROR_FILE_TYPE,
                                 "en",
                                 null));
             }
         }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
                         PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
@@ -97,7 +97,7 @@ public class ProcessWorkflowActivity {
                     transactionID);
             if (woAc == null) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
                                 "en",
                                 null)
@@ -112,7 +112,7 @@ public class ProcessWorkflowActivity {
             FileManagement file = (FileManagement) response.getData();
             if (file.getData() != null) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
                                 "en",
                                 null)
@@ -187,7 +187,7 @@ public class ProcessWorkflowActivity {
                     transactionID);
             if (woAc == null) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
                                 "en",
                                 null)
@@ -204,7 +204,7 @@ public class ProcessWorkflowActivity {
             FileManagement file = (FileManagement) response.getData();
             if (file.getData() == null) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
                                 "en",
                                 null)
@@ -212,7 +212,7 @@ public class ProcessWorkflowActivity {
             }
             if (file.isIsSigned() == true) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
                                 "en",
                                 null)

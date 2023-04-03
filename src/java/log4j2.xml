@@ -69,6 +69,12 @@
 		<Logger name="RestfulFactory" additivity="false" level="ALL">
             <AppenderRef ref="LogToSigningfile"/>			
         </Logger>
+		<Logger name="restful.sdk.API" additivity="false" level="ALL">
+            <AppenderRef ref="LogToSigningfile"/>			
+        </Logger>
+		<Logger name="SignFile" additivity="false" level="ALL">
+            <AppenderRef ref="LogToSigningfile"/>			
+        </Logger>
 		
 		<Logger name="vn.mobileid.id.general.database" additivity="false" level="ALL">           
 			<AppenderRef ref="LogToDEBUGfile"/>

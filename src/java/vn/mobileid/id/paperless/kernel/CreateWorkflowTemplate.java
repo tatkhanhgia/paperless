@@ -15,7 +15,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.utils.Utils;
 
@@ -36,7 +36,7 @@ public class CreateWorkflowTemplate {
         }
 
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
                         PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
@@ -45,35 +45,35 @@ public class CreateWorkflowTemplate {
     public static InternalResponse checkDataWorkflowTemplate(ItemDetails workflow) {
         if (workflow == null) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             "en",
                             null));
         }
         if (workflow.getField() == null || workflow.getField().isEmpty() || workflow.getField().length() <= 0) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             PaperlessConstant.SUBCODE_MISSING_INPUT_FIELD,
                             "en",
                             null));
         }
         if (workflow.getType() <= 0 || workflow.getType() > PaperlessConstant.NUMBER_OF_ITEMS_TYPE) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             PaperlessConstant.SUBCODE_MISSING_OR_ERROR_FIELD_TYPE,
                             "en",
                             null));
         }
         if( workflow.getValue() == null){
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             PaperlessConstant.SUBCODE_MISSING_OR_ERROR_VALUE,
                             "en",
                             null));
         }
 
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
                         PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
@@ -97,7 +97,7 @@ public class CreateWorkflowTemplate {
 
             if (createWorkflow.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                                 createWorkflow.getStatus(),
                                 "en",
                                  null)

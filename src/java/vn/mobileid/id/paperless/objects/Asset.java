@@ -36,8 +36,11 @@ public class Asset {
     private String metadata;
     private String dbms;
     private String hmac;
-    
+    private String base64;
 
+    public Asset() {
+    }    
+    
     public Asset(int id, String name, int type, long size, String file_uuid, Date created_at, String created_by, Date modified_at, String modified_by, String used_by) {
         this.id = id;
         this.name = name;
@@ -186,6 +189,15 @@ public class Asset {
 
     public void setUsed_by(String used_by) {
         this.used_by = used_by;
+    }
+
+    @JsonProperty("file")
+    public String getBase64() {
+        return base64;
+    }
+
+    public void setBase64(String base64) {
+        this.base64 = base64;
     }
     
     

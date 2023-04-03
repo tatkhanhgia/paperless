@@ -14,6 +14,7 @@ import java.util.Date;
 public class WorkflowTemplate {
     private int workflow_id;
     private String meta_data_template;
+    private Item_JSNObject meta_data;
     private String type_name;
     private int status;
     private String hmac;
@@ -50,8 +51,6 @@ public class WorkflowTemplate {
     public void setType_name(String type_name) {
         this.type_name = type_name;
     }
-
-
 
     public int getStatus() {
         return status;
@@ -99,6 +98,14 @@ public class WorkflowTemplate {
 
     public void setLast_modified_at(Date last_modified_at) {
         this.last_modified_at = last_modified_at;
+    }
+
+    public Item_JSNObject getMeta_data() {
+        return meta_data;
+    }
+
+    public void setMeta_data(Item_JSNObject meta_data) {
+        this.meta_data = meta_data;
     }
     
     

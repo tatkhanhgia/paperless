@@ -27,6 +27,7 @@ public class Account {
     private String security_answer;
     private String notification;
     private String service_agreement;
+    private String authorization_code;    
 
     public Account() {
     }
@@ -137,6 +138,15 @@ public class Account {
 
     public void setService_agreement(String service_agreement) {
         this.service_agreement = service_agreement;
+    }
+
+    @JsonProperty("authorization_code")
+    public String getAuthorization_code() {
+        return authorization_code;
+    }
+
+    public void setAuthorization_code(String authorization_code) {
+        this.authorization_code = authorization_code;
     }
     
     

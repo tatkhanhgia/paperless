@@ -43,6 +43,7 @@ public class JWT_Authenticate {
     private String jti;
     private String document_type;
     private String phone_number;    
+    private String email;
 
     public JWT_Authenticate() {
     }
@@ -178,6 +179,11 @@ public class JWT_Authenticate {
     public String getDocument_type() {
         return document_type;
     }
+
+    @JsonProperty("email")
+    public String getEmail() {
+        return email;
+    }        
     
     public String getKid() {
         return kid;

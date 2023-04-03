@@ -10,50 +10,51 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.objects.FileManagement;
+import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 
 /**
  *
  * @author GiaTK
  */
-public class GetFileManagement {
-//    final private static Logger LOG = LogManager.getLogger(GetFileManagement.class);
-    
-    public static InternalResponse getFileManagement(int id,
+public class GetEnterpriseInfo {
+    public static InternalResponse getEnterprise(
+            String enterprise_name,
+            int enterprise_id,
             String transactionID){
         try {
-            Database DB = new DatabaseImpl();
-            //Data                        
+            Database DB = new DatabaseImpl();                         
             InternalResponse response = null;
 
-            DatabaseResponse callDB = DB.getFileManagement(id, transactionID);
-
-            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                        callDB.getStatus(),
-                        "en",
-                         null);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(GetFileManagement.class,
+            DatabaseResponse callDB = DB.getEnterpriseInfo(
+                    enterprise_id <=0 ? 0 : enterprise_id,
+                    enterprise_name);
+            
+            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
+                String message = null;
+                if(LogHandler.isShowErrorLog()){
+                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                                callDB.getStatus(),
+                                "en"
+                                , null);
+                    LogHandler.error(GetUser.class,
                             "TransactionID:"+transactionID+
-                            "\nCannot get File Management - Detail:" + message);
+                            "\nCannot get Enterprise - Detail:"+message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-
-            FileManagement file = (FileManagement) callDB.getObject();
             
+            Enterprise ent = (Enterprise) callDB.getObject();
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
-                    file);
+                    ent);
 
         } catch (Exception e) {
             if (LogHandler.isShowErrorLog()) {
 //                e.printStackTrace();
-                LogHandler.error(GetFileManagement.class,
+                LogHandler.error(GetUser.class,
                         "TransactionID:"+transactionID+
                         "\nUNKNOWN EXCEPTION. Details: " + e);
             }
@@ -62,9 +63,10 @@ public class GetFileManagement {
     }
     
     public static void main(String[] args){
-//        InternalResponse res = GetFileManagement.getFileManagement(27
-//        );
-//        FileManagement a = (FileManagement) res.getData();
-//        System.out.println("A:"+a.getData());
+        InternalResponse res = getEnterprise("Mobile-ID Company", 0, "tran");
+        Enterprise ent = (Enterprise) res.getData();
+        System.out.println("Ent:"+ent.getName());
+        System.out.println("Ent:"+ent.getId());
     }
+
 }

@@ -12,7 +12,7 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.utils.Utils;
 
@@ -25,6 +25,8 @@ public class UpdateWorkflowDetail_option {
     
     public static InternalResponse updateWorkflowOption(
             int id,
+            String email,
+            int aid,
             WorkflowDetail_Option detail,
             String hmac,
             String created_by,
@@ -35,13 +37,15 @@ public class UpdateWorkflowDetail_option {
 
             DatabaseResponse callDB = DB.updateWorkflowDetail_Option(
                     id,
+                    email,
+                    aid,
                     detail.getHashMap(),
                     hmac,
                     created_by,
                     transactionID);
 
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
                             null);
@@ -54,7 +58,7 @@ public class UpdateWorkflowDetail_option {
             }                        
 
             return new InternalResponse(
-                    PaperlessConstant.CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     "");
 
         } catch (Exception e) {

@@ -21,11 +21,18 @@ public class PaperlessConstant {
     final public static String TOKEN_TYPE_BASIC = "Basic";
     final public static String TOKEN_TYPE_REFRESH = "Refresh";
 
+    final public static String EMAIL_SEND_PASSWORD = "email_send_password";
+    
     //AccessToken Data
     final public static String alg = "RS256";
     final public static String typ = "JWT";
     final public static long expired_in = 1800;
     final public static long refresh_token_expired_in = 3600;
+
+    //Default data
+    final public static long password_expired_at = 4800;
+    final public static int BUSINESSTYPE_PERSONAL = 1;
+    final public static int BUSINESSTYPE_BUSINESS = 2;
 
     final public static int ASSET_TYPE_BACKGROUND = 1;
     final public static int ASSET_TYPE_APPEND = 2;
@@ -95,6 +102,8 @@ public class PaperlessConstant {
     final public static int SUBCODE_UNAUTHORIZED_USER = 14;
     final public static int SUBCODE_MISSING_REFRESH_TOKEN = 15;
     final public static int SUBCODE_INVALID_CLIENT_ID = 16;
+    final public static int SUBCODE_MISSING_USER_EMAIL = 17;
+    final public static int SUBCODE_MISSING_AUTHORIZATION_CODE = 18;
 
     //SUBCODE INVALID WORKFLOW - 5001
     final public static int SUBCODE_MISSING_WORKFLOW_LABEL = 2;
@@ -113,14 +122,16 @@ public class PaperlessConstant {
     final public static int SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED = 7;
     final public static int SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET = 8;
     final public static int SUBCODE_FILE_DOCUMENT_DOES_NOT_EXISTED = 9;
-    final public static int SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS=10;
+    final public static int SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS = 10;
 
     //SUBCPDE INVALID WORKFLOW TEMPLATE - 5003
 //    final public static int SUBCODE_WORKFLOW_TEMPLATE_ALREADY_EXISTED = 2;
+    
     //SUBCODE INVALID ASSET - 5004
     final public static int SUBCODE_CANNOT_UPLOAD_ASSET = 2;
     final public static int SUBCODE_INVALID_FILE_TYPE = 3;
 
     //SUBCODE INVALID JWT - 5005
     final public static int SUBCODE_INVALID_JWT_TOKEN = 2;
+    final public static int SUBCODE_MISSING_EMAIL_IN_JWT = 3;
 }

@@ -15,7 +15,7 @@ import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.KYC;
 import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 
 /**
  *

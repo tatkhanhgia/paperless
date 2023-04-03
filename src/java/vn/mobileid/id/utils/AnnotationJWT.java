@@ -12,7 +12,8 @@ import vn.mobileid.id.eid.object.JWT_Authenticate;
  */
 public enum AnnotationJWT {
     Name("@Name"),
-    DocNumber("@DocNumber");
+    DocNumber("@DocNumber"),
+    Password("@Password");
     
     private String name;
 
@@ -30,6 +31,9 @@ public enum AnnotationJWT {
         }
         if (original.contains(AnnotationJWT.Name.getNameAnnot())){
             original = original.replace(AnnotationJWT.Name.getNameAnnot(), jwt.getName());
+        }
+        if (original.contains(AnnotationJWT.Password.getNameAnnot())){
+            original = original.replace(AnnotationJWT.Password.getNameAnnot(), jwt.getName());
         }
         return original;
     }

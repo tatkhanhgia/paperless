@@ -10,7 +10,7 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.FileManagement;
-import vn.mobileid.id.paperless.objects.QryptoMessageResponse;
+import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 
 /**
@@ -30,7 +30,7 @@ public class GetDocument {
                     transactionID);
             if(woAc == null){
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
                                 "en",
                                 null)
@@ -46,7 +46,7 @@ public class GetDocument {
                     
             if(file.getData() == null ){
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        QryptoMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
                                 "en",
                                 null)
