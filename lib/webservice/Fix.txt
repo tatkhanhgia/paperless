@@ -1,0 +1,2 @@
+duplicate class definition bug occured? Please report this : vn/mobileid/esigncloud/AgreementDetails$JaxbAccessorM_getApplicationForm_setApplicationForm_[B: java.lang.ClassFormatError: Illegal class name "vn/mobileid/esigncloud/AgreementDetails$JaxbAccessorM_getApplicationForm_setApplicationForm_[B" in class file vn/mobileid/esigncloud/AgreementDetails$JaxbAccessorM_getApplicationForm_setApplicationForm_[B
+        at java.lang.ClassLoader.defineClass1(Native Method)
