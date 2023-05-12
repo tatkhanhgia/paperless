@@ -9,7 +9,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Date;
+import vn.mobileid.id.paperless.serializer.CustomFileManagementSerializer;
 
 /**
  *
@@ -18,6 +20,7 @@ import java.util.Date;
 //@JsonRootName("file")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonSerialize(using = CustomFileManagementSerializer.class)
 public class FileManagement extends Object{
     private byte[] data;
     private String name;
@@ -27,8 +30,8 @@ public class FileManagement extends Object{
     private String DBMS;
     private int pages;
     private int size;
-    private int width;
-    private int height;
+    private float width;
+    private float height;
     private int status;    //Disable - enable
     private String hmac;
     private Date created_ad;
@@ -119,12 +122,8 @@ public class FileManagement extends Object{
         this.size = size;
     }
 
-    public int getHeight() {
+    public float getHeight() {
         return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
     }
 
     public int getStatus() {
@@ -167,13 +166,9 @@ public class FileManagement extends Object{
         this.lastmodified_at = lastmodified_at;
     }
 
-    public int getWidth() {
+    public float getWidth() {
         return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
+    }   
 
     public boolean isIsSigned() {
         return isSigned;
@@ -182,8 +177,14 @@ public class FileManagement extends Object{
     public void setIsSigned(boolean isSigned) {
         this.isSigned = isSigned;
     }
-    
-    
+
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
+    }            
                 
     public static void main(String[] args) throws JsonProcessingException{
         FileManagement a = new FileManagement();

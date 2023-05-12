@@ -27,7 +27,6 @@ import vn.mobileid.id.utils.Utils;
 public class CreateWorkflow {
 
 //    final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
-
     public static InternalResponse checkDataWorkflow(Workflow workflow) {
         if (workflow == null) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
@@ -61,29 +60,29 @@ public class CreateWorkflow {
             Workflow workflow,
             User user,
             String transactionID
-        ) {
-        try {
-            Database DB = new DatabaseImpl();
-            
-            DatabaseResponse createWorkflow = DB.createWorkflow(
-                    workflow.getTemplate_type(),
-                    workflow.getLabel(),
-                    user.getName(),
-                    user.getEmail(),
-                    user.getAid(),
-                    transactionID
+    ) throws Exception {
+
+        Database DB = new DatabaseImpl();
+
+        DatabaseResponse createWorkflow = DB.createWorkflow(
+                workflow.getWorkflowTemplate_type(),
+                workflow.getLabel(),
+                user.getName(),
+                user.getEmail(),
+                user.getAid(),
+                transactionID
+        );
+
+        if (createWorkflow.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            createWorkflow.getStatus(),
+                            "en",
+                            null)
             );
+        }
 
-            if (createWorkflow.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                                createWorkflow.getStatus(),
-                                "en",
-                                 null)
-                );
-            }
-
-            //Create Workflow Detail - This is default Data
+        //Create Workflow Detail - This is default Data
 ////            WorkflowDetail_Option detail = new WorkflowDetail_Option();
 ////            detail.setQr_background("WHITE");
 ////            detail.setQr_size(4);
@@ -108,31 +107,24 @@ public class CreateWorkflow {
 //                    detail,
 //                    hmac,
 //                    user.getEmail());
-            //Get Default data detail - template of template Type 
-            try {
-                InternalResponse res = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(
-                        workflow.getTemplate_type(),
-                        transactionID);
-                WorkflowTemplateType template = (WorkflowTemplateType) res.getData();                 
-                Item_JSNObject object = new ObjectMapper().readValue(template.getMetadata_template(), Item_JSNObject.class);
-                CreateWorkflowTemplate.processingCreateWorkflowTemplate(createWorkflow.getIDResponse_int(), object, user.getEmail(),transactionID);
+        //Get Default data detail - template of template Type 
+        try {
+            InternalResponse res = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(
+                    workflow.getWorkflowTemplate_type(),
+                    transactionID);
+            WorkflowTemplateType template = (WorkflowTemplateType) res.getData();
+            Item_JSNObject object = new ObjectMapper().readValue(template.getMetadata_template(), Item_JSNObject.class);
+            CheckWorkflowTemplate.processingCreateWorkflowTemplate(createWorkflow.getIDResponse_int(), object, user.getEmail(), transactionID);
 
-                WorkflowDetail_Option object2 = new ObjectMapper().readValue(template.getMetadata_detail(), WorkflowDetail_Option.class);
-                CreateWorkflowDetail_option.createWorkflowDetail(createWorkflow.getIDResponse_int(), object2, "HMAC", user.getEmail(), transactionID);
-            } catch (Exception e) {
-                e.printStackTrace();                
-            }
+            WorkflowDetail_Option object2 = new ObjectMapper().readValue(template.getMetadata_detail(), WorkflowDetail_Option.class);
+            CreateWorkflowDetail_option.createWorkflowDetail(createWorkflow.getIDResponse_int(), object2, "HMAC", user.getEmail(), transactionID);
+
             return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                     "{\"workflow_id\":" + createWorkflow.getIDResponse_int() + "}"
             );
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(CreateWorkflow.class,
-                        "TransactionID:"+transactionID+
-                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }            
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        } catch (Exception e) {                                        
+            throw new Exception("Cannot create Workflow!", e);
+//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 

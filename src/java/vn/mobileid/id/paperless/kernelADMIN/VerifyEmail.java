@@ -5,6 +5,7 @@
 package vn.mobileid.id.paperless.kernelADMIN;
 
 import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
@@ -20,7 +21,7 @@ import vn.mobileid.id.utils.Utils;
  */
 public class VerifyEmail {
 
-    public static InternalResponse checkData(Account account){
+    public static InternalResponse checkData(Account account) {
         if (account.getUser_email() == null || account.getUser_email().isEmpty()) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
@@ -33,15 +34,40 @@ public class VerifyEmail {
         }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");
     }
-    
+
     public static InternalResponse verifyEmail(
             String email,
-            String pass,
+            String authorizeCode,
             String transactionID
     ) {
         try {
+            if (Resources.getQueueAuthorizeCode().containsKey(email)) {
+                String code = Resources.getQueueAuthorizeCode().get(email);
+                if (code.equals(authorizeCode)) {
+                    Resources.getQueueAuthorizeCode().remove(email);
+                } else {
+                    String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_AUTHORIZED_CODE,
+                            "en",
+                            null);
+                    return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                            message
+                    );
+                }
+            } else {
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                        PaperlessConstant.SUBCODE_RESEND_ACTIVATION_EMAIL,
+                        "en",
+                        null);
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        message
+                );
+            }
             Database db = new DatabaseImpl();
-            DatabaseResponse res = db.verifyEmail(email, pass, transactionID);
+            DatabaseResponse res = db.verifyEmail(
+                    email,
+                    null,
+                    transactionID);
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 if (LogHandler.isShowErrorLog()) {

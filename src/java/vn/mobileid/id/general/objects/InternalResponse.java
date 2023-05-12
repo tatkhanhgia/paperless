@@ -5,6 +5,7 @@
  */
 package vn.mobileid.id.general.objects;
 
+import java.util.HashMap;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.utils.Utils;
@@ -31,6 +32,7 @@ public class InternalResponse {
     //Data backend
     private User object;
     private Object data;
+    private HashMap<String, Object> headers;
     
     public InternalResponse(int status, String message) {
         this.status = status;
@@ -145,6 +147,10 @@ public class InternalResponse {
         this.subjectUUID = subjectUUID;
     }
 
+    /**
+     * Get User (type User)
+     * @return 
+     */
     public User getUser() {
         return object;
     }
@@ -153,14 +159,11 @@ public class InternalResponse {
         this.object = object;
     }
 
-    public User getObject() {
-        return object;
-    }
-
-    public void setObject(User object) {
-        this.object = object;
-    }
-
+ 
+    /**
+     * Get data Object from Response
+     * @return 
+     */
     public Object getData() {
         return data;
     }
@@ -169,6 +172,12 @@ public class InternalResponse {
         this.data = data;
     }
 
-    
+    public HashMap<String, Object> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(HashMap<String, Object> headers) {
+        this.headers = headers;
+    }   
     
 }

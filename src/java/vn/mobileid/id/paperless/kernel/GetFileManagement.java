@@ -18,26 +18,26 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  * @author GiaTK
  */
 public class GetFileManagement {
-//    final private static Logger LOG = LogManager.getLogger(GetFileManagement.class);
-    
+
     public static InternalResponse getFileManagement(int id,
-            String transactionID){
+            String transactionID) throws Exception {
+
+        Database DB = new DatabaseImpl();
+        //Data                        
+        InternalResponse response = null;
+
+        DatabaseResponse callDB = DB.getFileManagement(id, transactionID);
+
         try {
-            Database DB = new DatabaseImpl();
-            //Data                        
-            InternalResponse response = null;
-
-            DatabaseResponse callDB = DB.getFileManagement(id, transactionID);
-
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
-                         null);
+                        null);
                 if (LogHandler.isShowErrorLog()) {
                     LogHandler.error(GetFileManagement.class,
-                            "TransactionID:"+transactionID+
-                            "\nCannot get File Management - Detail:" + message);
+                            "TransactionID:" + transactionID
+                            + "\nCannot get File Management - Detail:" + message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
@@ -45,23 +45,18 @@ public class GetFileManagement {
             }
 
             FileManagement file = (FileManagement) callDB.getObject();
-            
+
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     file);
 
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-//                e.printStackTrace();
-                LogHandler.error(GetFileManagement.class,
-                        "TransactionID:"+transactionID+
-                        "\nUNKNOWN EXCEPTION. Details: " + e);
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+            throw new Exception("Cannot get file management!", e);
+//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
-    
-    public static void main(String[] args){
+
+    public static void main(String[] args) {
 //        InternalResponse res = GetFileManagement.getFileManagement(27
 //        );
 //        FileManagement a = (FileManagement) res.getData();

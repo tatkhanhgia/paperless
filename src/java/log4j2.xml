@@ -2,7 +2,7 @@
 <Configuration status="ALL">
 	<CustomLevels>
 		<CustomLevel name="REQUEST" intLevel="350" />
-	</CustomLevels>
+	</CustomLevels>	
 	
     <Appenders>
         <Console name="LogToConsole" target="SYSTEM_OUT">
@@ -11,7 +11,19 @@
 		
         <RollingFile name="LogToSigningfile" fileName="/opt/wildfly/paperless/log/signingSV/paperless-INFO.log"
                     filePattern="/opt/wildfly/paperless/log/signingSV/paperless-INFO.%d{yyyy-MM-dd-HH}.log">
-			<LevelRangeFilter minLevel="INFO" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+			<LevelRangeFilter minLevel="ERROR" maxLevel="ALL" onMatch="ACCEPT" onMismatch="DENY"/>
+			<PatternLayout>
+				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+		</RollingFile> 
+		
+		<RollingFile name="LogToFatalfile" fileName="/opt/wildfly/paperless/log/fatal/paperless-FATAL.log"
+                    filePattern="/opt/wildfly/paperless/log/fatal/paperless-FATAL.%d{yyyy-MM-dd-HH}.log">
+			<LevelRangeFilter minLevel="FATAL" maxLevel="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
 			<PatternLayout>
 				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
 			</PatternLayout>
@@ -79,14 +91,16 @@
 		<Logger name="vn.mobileid.id.general.database" additivity="false" level="ALL">           
 			<AppenderRef ref="LogToDEBUGfile"/>
 			<AppenderRef ref="LogToERRORfile"/>		
-			<AppenderRef ref="LogToRequestfile"/>					
+			<AppenderRef ref="LogToRequestfile"/>	
+			<AppenderRef ref="LogToFatalfile"/>				
         </Logger>
 		
 		<Logger name="vn.mobileid.id.general.api" additivity="false" level="ALL">            
 			<AppenderRef ref="LogToDEBUGfile"/>
 			<AppenderRef ref="LogToERRORfile"/>		
 			<AppenderRef ref="LogToRequestfile"/>					
-        </Logger>
+			<AppenderRef ref="LogToFatalfile"/>	
+        </Logger>			
 		
         <Root level="ALL">            
 			<AppenderRef ref="LogToConsole"/>

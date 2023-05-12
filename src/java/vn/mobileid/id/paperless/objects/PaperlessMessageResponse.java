@@ -17,7 +17,6 @@ import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.objects.response.QryptoErrorMessageJSNObject;
 import vn.mobileid.id.paperless.objects.response.GetToken_IAM_MessageJSNObject;
 import vn.mobileid.id.utils.Utils;
 

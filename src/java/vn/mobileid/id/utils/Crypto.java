@@ -98,6 +98,7 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -111,6 +112,8 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.ejbca.util.CertTools;
+import sun.misc.BASE64Decoder;
+import sun.security.provider.X509Factory;
 import vn.mobileid.id.general.LogHandler;
 
 /**
@@ -303,16 +306,28 @@ public class Crypto {
         return (SecretKey) secretKeySpec;
     }
 
-    public static byte[] wrapSecrectKey(String algWrapping, SecretKey wrappingKey, byte[] wrappingIv, Key keyToBeWrapped) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidParameterSpecException, IllegalBlockSizeException, NoSuchProviderException {
+    public static byte[] wrapSecrectKey(
+            String algWrapping, //AES - DES - DSA - EC - GCM - PBE - RC2 - (RSASSA-PSS)
+            SecretKey wrappingKey,
+            byte[] wrappingIv,
+            Key keyToBeWrapped
+    ) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidParameterSpecException, IllegalBlockSizeException, NoSuchProviderException {
         Cipher wrappingCipher = Cipher.getInstance(algWrapping);
         String[] list = algWrapping.split("/");
         AlgorithmParameters algParams = AlgorithmParameters.getInstance(list[0]);
         algParams.init(new IvParameterSpec(wrappingIv));
-        wrappingCipher.init(Cipher.WRAP_MODE, wrappingKey, algParams);
+        wrappingCipher.init(Cipher.WRAP_MODE, wrappingKey, algParams);          
         return wrappingCipher.wrap(keyToBeWrapped);
     }
 
-    public static Key unwrapSecrectKey(String algWrap, String wrappedKeyAlgorithm, SecretKey wrappingKey, byte[] wrappingIv, byte[] wrappedKey, int wrappedKeyType) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidParameterSpecException, IllegalBlockSizeException, NoSuchProviderException {
+    public static Key unwrapSecrectKey(
+            String algWrap,
+            String wrappedKeyAlgorithm,
+            SecretKey wrappingKey,
+            byte[] wrappingIv,
+            byte[] wrappedKey,
+            int wrappedKeyType
+    ) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, InvalidParameterSpecException, IllegalBlockSizeException, NoSuchProviderException {
         Cipher wrappingCipher = Cipher.getInstance(algWrap);
         String[] list = algWrap.split("/");
         AlgorithmParameters algParams = AlgorithmParameters.getInstance(list[0]);
@@ -378,7 +393,11 @@ public class Crypto {
         }
     }
 
-    public static String sign(String data, String keystorePath, String keystorePassword, String keystoreType) throws Exception {
+    public static String signWithKeyStore(
+            String data,
+            String keystorePath,
+            String keystorePassword,
+            String keystoreType) throws Exception {
         Security.addProvider(new BouncyCastleProvider());
         KeyStore keystore = KeyStore.getInstance(keystoreType);
         Signature sig;
@@ -402,10 +421,14 @@ public class Crypto {
         return DatatypeConverter.printBase64Binary(sig.sign());
     }
 
-    public static String sign(String data, String keystr, String mimeType) throws Exception {
+    public static String sign(
+            String data,
+            String keystr,
+            String mimeType,
+            String alg) throws Exception {
         Security.addProvider(new BouncyCastleProvider());
         PrivateKey key = getPrivateKeyFromString(keystr, mimeType);
-        Signature sig = Signature.getInstance("SHA1withRSA");
+        Signature sig = Signature.getInstance(alg);
         sig.initSign(key);
         sig.update(data.getBytes());
 //        return DatatypeConverter.printBase64Binary(sig.sign());
@@ -703,7 +726,7 @@ public class Crypto {
         return ((ByteArrayOutputStream) os).toByteArray();
     }
 
-    private static X509Certificate generateSelfSignCertificate(
+    public static X509Certificate generateSelfSignCertificate(
             String subjectDN,
             byte[] encPubKey,
             PrivateKey privateKey) throws Exception {
@@ -797,14 +820,14 @@ public class Crypto {
         certBuilder.addExtension(
                 new ASN1ObjectIdentifier("2.5.29.17"),
                 false,
-                new GeneralNames(new GeneralName(GeneralName.rfc822Name, "vudp@mobile-id.vn")));
+                new GeneralNames(new GeneralName(GeneralName.rfc822Name, "giatk@mobile-id.vn")));
 
         JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256withRSA");
-        ContentSigner signer = builder.build(privateKey);
+        ContentSigner signer = builder.build(privateKey);          
         byte[] certBytes = certBuilder.build(signer).getEncoded();
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-        X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(certBytes));
-        return certificate;
+        X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(certBytes));        
+        return certificate;        
     }
 
     public static String getPKCS1Signature(String data, String relyingPartyKeyStore, String relyingPartyKeyStorePassword) throws Exception {
@@ -1299,6 +1322,33 @@ public class Crypto {
             }
         }
         return ocspSigner;
+    }
+
+    //Update by Gia
+    public static List<X509Certificate> getCertificate(String pemformat) throws IOException
+    {        
+        pemformat = pemformat.replace("\n", "");        
+        String splitString = X509Factory.END_CERT + X509Factory.BEGIN_CERT;        
+        String[] temp = pemformat.split(splitString);                
+        List<X509Certificate> result = new ArrayList<>();        
+        for (String cert : temp) {                        
+            cert = cert.replaceAll(X509Factory.BEGIN_CERT, "");
+            cert = cert.replaceAll(X509Factory.END_CERT, "");
+            cert = cert.replace("\n", "");            
+            byte[] bytes = new BASE64Decoder().decodeBuffer(cert);
+            try ( InputStream inputStream = new ByteArrayInputStream(bytes)) {
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+                java.security.cert.Certificate certificate = cf.generateCertificate(inputStream);
+
+                if (certificate instanceof X509Certificate) {
+                    result.add((X509Certificate) certificate);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 
 }

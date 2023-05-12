@@ -4,9 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -22,52 +19,50 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class GetWorkflowDetail_option {
-//    final private static Logger LOG = LogManager.getLogger(GetWorkflowDetail_option.class);
-    
+
     /**
      * Get Workflow Detail/Option of the workflow input
+     *
      * @param id Workflow ID
      * @return InternalReponse with WorkflowDetail_Option(Object).
      */
     public static InternalResponse getWorkflowDetail(
             int id,
-            String transactionID){
+            String transactionID) throws Exception {
+
+        Database DB = new DatabaseImpl();
+        //Data                        
+        InternalResponse response = null;
+
+        DatabaseResponse callDB = DB.getWorkflowDetail(id, transactionID);
+
         try {
-            Database DB = new DatabaseImpl();
-            //Data                        
-            InternalResponse response = null;
-                    
-            DatabaseResponse callDB = DB.getWorkflowDetail(id,transactionID);
-            
-            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                if(LogHandler.isShowErrorLog()){                    
-                    LogHandler.error(GetWorkflowDetail_option.class,transactionID,"Cannot get Workflow Detail - Detail:"+message);
+                        callDB.getStatus(),
+                        "en",
+                         null);
+                if (LogHandler.isShowErrorLog()) {
+                    LogHandler.error(GetWorkflowDetail_option.class, transactionID, "Cannot get Workflow Detail - Detail:" + message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            
-            WorkflowDetail_Option detail = (WorkflowDetail_Option) callDB.getObject(); 
-            
+
+            WorkflowDetail_Option detail = (WorkflowDetail_Option) callDB.getObject();
+
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     detail);
-            
+
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(GetWorkflowDetail_option.class,transactionID,"UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }            
-            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
+            throw new Exception("Cannot get workflow detail/options!", e);
+//            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
-    
-    public static void main  (String[] args){
+
+    public static void main(String[] args) {
 //        int id = 12;
 //        InternalResponse res = GetWorkflowDetail_option.getWorkflowDetail(id);
 //        System.out.println(res.getStatus());

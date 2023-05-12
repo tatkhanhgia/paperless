@@ -69,11 +69,11 @@ public class Workflow {
     }
 
     @JsonProperty("workflow_template_type")
-    public int getTemplate_type() {
+    public int getWorkflowTemplate_type() {
         return template_type;
     }
 
-    public void setTemplate_type(int template_type) {
+    public void setWorkflowTemplate_type(int template_type) {
         this.template_type = template_type;
     }
 
@@ -150,11 +150,11 @@ public class Workflow {
     }
 
     @JsonProperty("template_type_name")
-    public String getTemplate_type_name() {
+    public String getWorkflowTemplate_type_name() {
         return template_type_name;
     }
 
-    public void setTemplate_type_name(String template_type_name) {
+    public void setWorkflowTemplate_type_name(String template_type_name) {
         this.template_type_name = template_type_name;
     }
 

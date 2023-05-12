@@ -43,7 +43,7 @@ public class CreateFileManagement {
             byte[] fileData,
             User user,
             String transactionID
-            ) {
+    ) throws Exception {
         return processingCreateFileManagement(workflow, UUID, nameFile, 0, 0, 0, 0, HMAC, fileData, user, "DBMS", transactionID);
     }
 
@@ -52,7 +52,7 @@ public class CreateFileManagement {
             String HMAC,
             byte[] fileData,
             User user,
-            String transactionID) {
+            String transactionID) throws Exception {
         return processingCreateFileManagement(workflow, "UUID", null, 0, 0, 0, 0, HMAC, fileData, user, "DBMS", transactionID);
     }
 
@@ -65,7 +65,7 @@ public class CreateFileManagement {
             String HMAC,
             byte[] fileData,
             User user,
-            String transactionID) {
+            String transactionID) throws Exception {
         return processingCreateFileManagement(workflow, "UUID", null, page, size, width, height, HMAC, fileData, user, "DBMS", transactionID);
     }
 
@@ -79,7 +79,7 @@ public class CreateFileManagement {
             String HMAC,
             byte[] fileData,
             User user,
-            String transactionID) {
+            String transactionID) throws Exception {
         return processingCreateFileManagement(workflow, "UUID", nameFile, page, size, width, height, HMAC, fileData, user, "DBMS", transactionID);
     }
 
@@ -95,31 +95,32 @@ public class CreateFileManagement {
             byte[] fileData,
             User user,
             String DBMS,
-            String transactionID) {
+            String transactionID) throws Exception {
+
+        Database DB = new DatabaseImpl();
+
+        //Create new File Management
+        DatabaseResponse callDB = DB.createFileManagement(
+                UUID, //UUID
+                nameFile, //name
+                page, //page
+                size, //size
+                width, //width
+                height, //height
+                fileData, //file data
+                HMAC, //HMAC
+                user.getName(),
+                DBMS,
+                transactionID);
+
         try {
-            Database DB = new DatabaseImpl();
-
-            //Create new File Management
-            DatabaseResponse callDB = DB.createFileManagement(
-                    UUID, //UUID
-                    nameFile, //name
-                    page, //page
-                    size, //size
-                    width, //width
-                    height, //height
-                    fileData, //file data
-                    HMAC, //HMAC
-                    user.getName(),
-                    DBMS,
-                    transactionID);
-
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 if (LogHandler.isShowErrorLog()) {
                     message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
-                             null);
+                            null);
                     LogHandler.error(CreateFileManagement.class, "TransactionID:" + transactionID + "\nCannot create File Management - Detail:" + message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
@@ -128,13 +129,11 @@ public class CreateFileManagement {
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                     callDB.getIDResponse());
-        } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(CreateFileManagement.class, "TransactionID:" + transactionID + "\nCannot create User_Activity_log - Detail:" + e);
-            }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    e.getMessage()
-            );
+        } catch (Exception e) {            
+                throw new Exception("Cannot create User_Activity_log!", e);            
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                    e.getMessage()
+//            );
         }
     }
 

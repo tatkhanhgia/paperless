@@ -5,13 +5,7 @@
 package vn.mobileid.id.paperless.kernel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.taglibs.standard.tag.el.sql.UpdateTag;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -30,16 +24,13 @@ import vn.mobileid.id.utils.XSLT_PDF_Processing;
  */
 public class UploadAsset {
 
-//    final private static Logger LOG = LogManager.getLogger(UploadAsset.class);
-
     public static InternalResponse uploadAsset(
             User user,
             Asset asset,
-            String transactionID) {
-        try {
+            String transactionID) throws Exception {
+        
             Database DB = new DatabaseImpl();
             //Upload Asset Template
-//            Files.write(new File("D:\\NetBean\\qrypto\\file\\uploaded.xslt").toPath(), asset.getBinaryData(), StandardOpenOption.CREATE);
             Item_JSNObject item = XSLT_PDF_Processing.getValueFromXSLT(asset.getBinaryData());
 
             asset.setMetadata(new ObjectMapper().writeValueAsString(item));
@@ -83,15 +74,7 @@ public class UploadAsset {
 
             return new InternalResponse(
                     PaperlessConstant.CODE_SUCCESS,
-                    "{\"asset_id\":" + callDB.getIDResponse()+"}");
-
-        } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                e.printStackTrace();
-                LogHandler.error(UploadAsset.class,transactionID,"UNKNOWN EXCEPTION. Details: " + e);
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
-        }
+                    "{\"asset_id\":" + callDB.getIDResponse()+"}");      
     }
 
     

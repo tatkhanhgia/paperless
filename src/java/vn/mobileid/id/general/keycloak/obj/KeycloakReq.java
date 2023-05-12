@@ -27,6 +27,7 @@ public class KeycloakReq {
     private String[] disableableCredentialTypes;
     private String[] requiredActions;
     private long notBefore;
+    private boolean rememberMeEnable;
     
     //For create connection
     private String client_id;
@@ -190,6 +191,15 @@ public class KeycloakReq {
 
     public void setToken_type_hint(String token_type_hint) {
         this.token_type_hint = token_type_hint;
+    }
+
+    @JsonProperty("remember_me_enabled")
+    public boolean isRememberMeEnable() {
+        return rememberMeEnable;
+    }
+
+    public void setRememberMeEnable(boolean rememberMeEnable) {
+        this.rememberMeEnable = rememberMeEnable;
     }
 
     

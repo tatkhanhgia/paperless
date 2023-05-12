@@ -23,14 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Base64;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -39,22 +31,16 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.api.ServicesController;
-import vn.mobileid.id.paperless.SigningService;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
 import vn.mobileid.id.paperless.objects.KYC;
@@ -119,34 +105,12 @@ public class XSLT_PDF_Processing {
 
     public static byte[] convertHTMLtoPDF(byte[] contentHTML) {
         try {
-            String temp = new String(contentHTML, StandardCharsets.UTF_8);
-
-//            FileOutputStream outputStream = new FileOutputStream(new File("D:\\NetBean\\QryptoServices\\file\\resul.pdf"));
+            String temp = new String(contentHTML, StandardCharsets.UTF_8);            
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             PdfWriter writer = new PdfWriter(outputStream);
             ConverterProperties converter = new ConverterProperties();
 
-            FontProvider fontProvider = loadFont();
-//            InputStream input = loader.getResourceAsStream("resources/verdana.ttf");
-
-//            File fontDir = new File(loader.getResource("resources/fonts").getPath());
-//            String path = loader.getResource("resources/fonts").getPath();
-//            path = path.substring(1, path.length());
-//            System.out.println("Path:"+path);
-//            try ( Stream<Path> walk = Files.walk(Paths.get(path))) {
-//
-//            List<String> result = walk.filter(Files::isRegularFile)
-//                    .map(x -> x.toString()).collect(Collectors.toList());
-//
-//            for (String f : result) {
-//                String font = new File(path, f).getAbsolutePath();                
-//                FontProgram fontProgram = FontProgramFactory.createFont(font);
-//                fontProvider.addFont(fontProgram);
-//            }
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }        
+            FontProvider fontProvider = loadFont(); 
             converter.setFontProvider(fontProvider);
             PdfDocument pdfDoc = new PdfDocument(writer);
             pdfDoc.setDefaultPageSize(new PageSize(PageSize.A3));
@@ -254,6 +218,8 @@ public class XSLT_PDF_Processing {
         }
     }
 
+    
+    
     public static void main(String[] arhs) throws IOException {
         byte[] html = XSLT_PDF_Processing.appendData(new KYC(), Files.readAllBytes(new File("D:\\NetBean\\qrypto\\file\\result.xslt").toPath()));
         byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);

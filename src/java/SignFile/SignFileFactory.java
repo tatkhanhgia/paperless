@@ -24,7 +24,7 @@ import vn.mobileid.exsig.XmlProfile;
  */
 public class SignFileFactory {
 
-    public IPdfSignFile createPdfSignFile(SignType signType, Algorithm alg, PdfForm form) throws APIException {
+    public IPdfSignFile createPdfSignFile_SyncFlow(SignType signType, Algorithm alg, PdfForm form) throws APIException {
         PdfProfile profile;
         switch (signType) {
             case CMS:

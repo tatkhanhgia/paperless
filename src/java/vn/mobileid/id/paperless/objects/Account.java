@@ -27,7 +27,9 @@ public class Account {
     private String security_answer;
     private String notification;
     private String service_agreement;
-    private String authorization_code;    
+    private String authorization_code;   
+    private int status_id;
+    private String status_name;        
 
     public Account() {
     }
@@ -147,6 +149,24 @@ public class Account {
 
     public void setAuthorization_code(String authorization_code) {
         this.authorization_code = authorization_code;
+    }
+
+    @JsonProperty("status_id")
+    public int getStatus_id() {
+        return status_id;
+    }
+
+    public void setStatus_id(int status_id) {
+        this.status_id = status_id;
+    }
+
+    @JsonProperty("status_name")
+    public String getStatus_name() {
+        return status_name;
+    }
+
+    public void setStatus_name(String status_name) {
+        this.status_name = status_name;
     }
     
     

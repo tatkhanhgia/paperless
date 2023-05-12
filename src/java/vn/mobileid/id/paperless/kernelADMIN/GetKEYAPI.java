@@ -24,8 +24,7 @@ public class GetKEYAPI {
     public static InternalResponse getKEYAPI(            
             int enterprise_id,
             String clientID,
-            String transactionID){
-        try {
+            String transactionID) throws Exception{        
             Database DB = new DatabaseImpl();                         
             InternalResponse response = null;
             
@@ -50,20 +49,10 @@ public class GetKEYAPI {
             Enterprise user = (Enterprise) callDB.getObject();            
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
-                    user);
-
-        } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-//                e.printStackTrace();
-                LogHandler.error(GetUser.class,
-                        "TransactionID:"+transactionID+
-                        "\nUNKNOWN EXCEPTION. Details: " + e);
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
-        }
+                    user);                    
     }
     
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception{
         System.out.println(((Enterprise)(GetKEYAPI.getKEYAPI(0, "MI_MobileApp","transactionID").getData())).getClientID());
 //        System.out.println(((Enterprise)(GetKEYAPI.getKEYAPI(3, null,"transactionID").getData())).getClientSecret());
     }

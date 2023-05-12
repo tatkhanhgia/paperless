@@ -6,9 +6,6 @@ package vn.mobileid.id.paperless.kernel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -25,15 +22,13 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateWorkflowDetail_option {
 
-//    final private static Logger LOG = LogManager.getLogger(CreateWorkflowDetail_option.class);
-
     public static InternalResponse createWorkflowDetail(
             int id,
             WorkflowDetail_Option detail,
             String hmac,
             String created_by,
-            String transactionID) {
-        try {
+            String transactionID) throws Exception {
+        
             InternalResponse response = null;
             Database DB = new DatabaseImpl();
 
@@ -43,6 +38,7 @@ public class CreateWorkflowDetail_option {
                     created_by,
                     transactionID);
 
+            try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
@@ -63,14 +59,9 @@ public class CreateWorkflowDetail_option {
                     PaperlessConstant.CODE_SUCCESS,
                     "");
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(CreateWorkflowDetail_option.class,
-                        "TransactionID:"+transactionID+
-                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }            
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        } catch (Exception e) {            
+            throw new Exception("Cannot Create workflow detail!", e);
+//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 

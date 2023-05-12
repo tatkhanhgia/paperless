@@ -13,7 +13,10 @@ import vn.mobileid.id.eid.object.JWT_Authenticate;
 public enum AnnotationJWT {
     Name("@Name"),
     DocNumber("@DocNumber"),
-    Password("@Password");
+    Password("@Password"),
+    AuthorizeCode("@AuthorizeCode"),
+    Email("@Email"),
+    Link("@Link");
     
     private String name;
 

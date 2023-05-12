@@ -40,15 +40,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-//import system.io.StreamReader;
-//import system.io.StreamWriter;
-//import system.net.HttpWebRequest;
-//import system.net.HttpWebResponse;
-//import system.net.SecurityProtocolType;
-//import system.net.ServicePointManager;
-//import system.net.WebRequest;
+import vn.mobileid.id.general.LogHandler;
 
 /**
  *
@@ -56,42 +48,21 @@ import org.apache.logging.log4j.Logger;
  */
 public class HTTPUtils {
 
-//    public static String sendPost(String url, String payload, String authorizationHeader) throws Throwable {
-//        try {
-//            //Console.WriteLine("Send POST to [" + url +"]");
-//            String result;
-//            String endpointUrl = url;
-//
-//            ServicePointManager.setCheckCertificateRevocationList(false);
-//            ServicePointManager.setCheckCertificateRevocationList(true);
-//            ServicePointManager.setExpect100Continue(true);
-//            ServicePointManager.setSecurityProtocol(SecurityProtocolType.Tls12);
-//            ServicePointManager.setDefaultConnectionLimit(9999);
-//
-//            HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(endpointUrl);
-//            httpWebRequest.setContentType("application/json");
-//            httpWebRequest.setMethod("POST");
-//
-//            httpWebRequest.getHeaders().Add("Authorization", authorizationHeader);
-//            httpWebRequest.getHeaders().Add("X-RSSP-BACKEND", "rssp02");
-//
-//            try (StreamWriter streamWriter = new StreamWriter(httpWebRequest.GetRequestStream())) {
-//                streamWriter.Write(payload);
-//            }
-//
-//            HttpWebResponse httpResponse = (HttpWebResponse) httpWebRequest.GetResponse();
-//            try (StreamReader streamReader = new StreamReader(httpResponse.GetResponseStream())) {
-//                result = streamReader.ReadToEnd();
-//            }
-//            return result;
-//        } catch (Exception e) {
-//            throw e;
-//        }
-//    }
-    public final static String X_CLUSTER_NAME = "X-Cluster-Name";
-    final static Logger LOGGER = LogManager.getLogger(HTTPUtils.class);
+    public final static String X_CLUSTER_NAME = "X-Cluster-Name";    
 
-    public static HttpResponse sendPost(String endpointUrl, String requestBody, String authorizationHeader) {
+    public static HttpResponse sendPost(
+        String endpointUrl,
+        String requestBody,
+        String authorizationHeader
+    ){
+        return sendPost(endpointUrl, ContentType.JSON, requestBody, authorizationHeader);
+    }
+    
+    public static HttpResponse sendPost(
+            String endpointUrl,
+            ContentType contentType,
+            String requestBody,
+            String authorizationHeader) {
         try {
 
             String httpMethod = "POST";
@@ -101,15 +72,25 @@ public class HTTPUtils {
             headers.put("Authorization", authorizationHeader);
 //            headers.put("X-RSSP-BACKEND", "rssp02");
 
-            return invokeHttpRequest(null, endpointUrl, httpMethod, timeout, headers, requestBody);
+            return invokeHttpRequest(
+                    null,
+                    endpointUrl,
+                    httpMethod,
+                    contentType,
+                    timeout,
+                    headers,
+                    requestBody);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Request failed. " + e.getMessage(), e);
         }
     }
 
-    public static HttpResponse invokeHttpRequest(String[] truststore, String endpointUrl,
+    private static HttpResponse invokeHttpRequest(
+            String[] truststore,
+            String endpointUrl,
             String httpMethod,
+            ContentType contentType,
             int timeout,
             Map<String, String> headers,
             String requestBody) {
@@ -117,7 +98,14 @@ public class HTTPUtils {
         HttpURLConnection connection = null;
         try {            
             URL url = new URL(endpointUrl);
-            connection = createHttpConnection(truststore, url, httpMethod, timeout, timeout, headers);
+            connection = createHttpConnection(
+                    truststore,
+                    url,
+                    httpMethod,
+                    contentType,
+                    timeout,
+                    timeout,
+                    headers);            
             HttpURLConnection.setFollowRedirects(true);
             if (requestBody != null) {
                 try (BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), "UTF-8"))) {
@@ -132,7 +120,14 @@ public class HTTPUtils {
             if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
                     || responseCode == HttpURLConnection.HTTP_MOVED_PERM
                     || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-                return invokeHttpRequest(truststore, connection.getHeaderField("Location"), httpMethod, timeout, headers, requestBody);
+                return invokeHttpRequest(
+                        truststore,
+                        connection.getHeaderField("Location"),
+                        httpMethod,
+                        contentType,
+                        timeout,
+                        headers,
+                        requestBody);
             }
 
 //            LOGGER.debug("Response Code: " + responseCode);
@@ -193,96 +188,23 @@ public class HTTPUtils {
         }
     }
 
-//    public static HttpResponse invokeHttpRequest(String[] truststore, String endpointUrl,
-//            String httpMethod,
-//            int timeout,
-//            Map<String, String> headers,
-//            byte[] requestBody, int redirect) {
-//
-//        HttpURLConnection connection = null;
-//        try {
-//            URL url = new URL(endpointUrl);
-//            connection = createHttpConnection(truststore, url, httpMethod, timeout, timeout, headers);
-//            HttpURLConnection.setFollowRedirects(true);
-//            if (requestBody != null) {
-//                try (DataOutputStream dataOut = new DataOutputStream(connection.getOutputStream())) {
-//                    //LOGGER.debug(">>> SEND: {}", Utils.toHexString(requestBody));
-//                    dataOut.write(requestBody);
-//                    dataOut.flush();
-//                }
-//            }
-//
-//            int responseCode = connection.getResponseCode();
-//            if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
-//                    || responseCode == HttpURLConnection.HTTP_MOVED_PERM
-//                    || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-//                if (redirect == 0) {
-//                    LOGGER.debug("ResponseCode is [" + responseCode + "]. Redirect to reach max, skip and return");
-//                } else {
-//                    String location = connection.getHeaderField("Location");
-//                    LOGGER.debug("ResponseCode is [" + responseCode + "]. Redirect to [" + location + "]");
-//                    return invokeHttpRequest(truststore, location, httpMethod, timeout, headers, requestBody, --redirect);
-//                }
-//            }
-//
-//            HttpResponse httpResponse = new HttpResponse();
-//            httpResponse.setHttpCode(responseCode);
-//            httpResponse.setStatus(responseCode == HttpURLConnection.HTTP_OK);
-//            httpResponse.setHeaders(connection.getHeaderFields());
-//
-//            if (responseCode / HttpURLConnection.HTTP_OK == 1) {
-//                httpResponse.setStream(connection.getInputStream());
-//                StringBuilder msg = new StringBuilder();
-//                try (BufferedReader rd = new BufferedReader(new InputStreamReader(httpResponse.getStream(), "UTF-8"))) {
-//                    String line;
-//                    while ((line = rd.readLine()) != null) {
-//                        msg.append(line);
-//                        msg.append('\r');
-////                    msg.append(System.lineSeparator());
-//                    }
-//                }
-//                LOGGER.debug("<<< RECEIVE: {}", msg.toString());
-//                httpResponse.setMsg(msg.toString());
-//            } else {
-//                httpResponse.setStream(connection.getErrorStream());
-//                StringBuilder msg = new StringBuilder();
-//                try (BufferedReader rd = new BufferedReader(new InputStreamReader(httpResponse.getStream(), "UTF-8"))) {
-//                    String line;
-//                    while ((line = rd.readLine()) != null) {
-//                        msg.append(line);
-//                        msg.append('\r');
-////                    msg.append(System.lineSeparator());
-//                    }
-//                }
-//                LOGGER.debug("<<< RECEIVE: {}", msg.toString());
-//                httpResponse.setMsg(msg.toString());
-//            }
-//
-//            return httpResponse;
-//        } catch (RuntimeException e) {
-//            throw e;
-//        } catch (IOException e) {
-//            throw new RuntimeException("Request failed. " + e.getMessage(), e);
-//        } finally {
-//            if (connection != null) {
-//                connection.disconnect();
-//            }
-//        }
-//    }
-    public static InputStream invokeHttpRequestAsStream(String endpointUrl,
+    public static InputStream invokeHttpRequestAsStream(
+            String endpointUrl,
             String httpMethod,
+            ContentType contentType,
             int timeout,
             Map<String, String> headers,
             byte[] requestBody) {
         try {
-            return invokeHttpRequestAsStream(null, endpointUrl, httpMethod, timeout, headers, requestBody);
+            return invokeHttpRequestAsStream(null, endpointUrl, httpMethod, contentType, timeout, headers, requestBody);
         } catch (Exception e) {
             throw new RuntimeException("Request failed. " + e.getMessage(), e);
         }
     }
 
     public static InputStream invokeHttpRequestAsStream(String[] truststore, String endpointUrl,
-            String httpMethod,
+            String httpMethod,   
+            ContentType contentType,
             int timeout,
             Map<String, String> headers,
             byte[] requestBody) {
@@ -290,7 +212,7 @@ public class HTTPUtils {
         HttpURLConnection connection = null;
         try {
             URL url = new URL(endpointUrl);
-            connection = createHttpConnection(truststore, url, httpMethod, timeout, timeout, headers);
+            connection = createHttpConnection(truststore, url, httpMethod,contentType, timeout, timeout, headers);
             HttpURLConnection.setFollowRedirects(true);
             if (requestBody != null) {
                 try (DataOutputStream dataOut = new DataOutputStream(connection.getOutputStream())) {
@@ -304,7 +226,7 @@ public class HTTPUtils {
             if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
                     || responseCode == HttpURLConnection.HTTP_MOVED_PERM
                     || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-                return invokeHttpRequestAsStream(truststore, connection.getHeaderField("Location"), httpMethod, timeout, headers, requestBody);
+                return invokeHttpRequestAsStream(truststore, connection.getHeaderField("Location"), httpMethod, contentType, timeout, headers, requestBody);
             }
 
             if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -323,25 +245,27 @@ public class HTTPUtils {
         }
     }
 
-    public static HttpURLConnection createHttpConnection(String[] truststore, URL endpointUrl,
-            String httpMethod,
-            int connTimeout, int readTimeOut,
+    public static HttpURLConnection createHttpConnection(
+            String[] truststore,
+            URL endpointUrl,
+            String httpMethod,  
+            ContentType contentType,
+            int connTimeout,
+            int readTimeOut,
             Map<String, String> headers) {
         try {
             HttpURLConnection connection = (HttpURLConnection) endpointUrl.openConnection();
-            connection.setRequestMethod(httpMethod);
-
+            connection.setRequestMethod(httpMethod);            
             if (headers != null) {
 //                LOGGER.debug("**************** Restful Request headers ****************");
                 for (String headerKey : headers.keySet()) {
-//                    LOGGER.debug(headerKey + ": " + headers.get(headerKey));
                     connection.setRequestProperty(headerKey, headers.get(headerKey));
                 }
-            }
-
+            }            
             connection.setUseCaches(true);
             connection.setDoInput(true);
             connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", contentType.getName());
             if (connTimeout > 0) {
                 connection.setConnectTimeout(connTimeout);
             }
@@ -540,7 +464,7 @@ public class HTTPUtils {
                 ((SSLSocket) sk).addHandshakeCompletedListener(new HandshakeCompletedListener() {
                     @Override
                     public void handshakeCompleted(HandshakeCompletedEvent hce) {
-                        LOGGER.debug("CipherSuite: " + hce.getCipherSuite());
+                        LogHandler.info(this.getClass(),"CipherSuite: " + hce.getCipherSuite());
                     }
                 });
                 // now do the TLS handshake
@@ -591,16 +515,16 @@ public class HTTPUtils {
         // and set the hostname verifier.
         conHttps.setHostnameVerifier((String string, SSLSession ssls) -> {
             try {
-                LOGGER.debug("------------ HostnameVerifier ------------");
-                LOGGER.debug("\t\t String: " + string);
-                LOGGER.debug("\t\t PeerHost: " + ssls.getPeerHost());
-                LOGGER.debug("\t\t PeerPort: " + ssls.getPeerPort());
-                LOGGER.debug("\t\t CipherSuite: " + ssls.getCipherSuite());
+                LogHandler.info(HTTPUtils.class,"------------ HostnameVerifier ------------");
+                LogHandler.info(HTTPUtils.class,"\t\t String: " + string);
+                LogHandler.info(HTTPUtils.class,"\t\t PeerHost: " + ssls.getPeerHost());
+                LogHandler.info(HTTPUtils.class,"\t\t PeerPort: " + ssls.getPeerPort());
+                LogHandler.info(HTTPUtils.class,"\t\t CipherSuite: " + ssls.getCipherSuite());
 
-                LOGGER.debug("\t\t PeerPrincipal-Name: " + ssls.getPeerPrincipal().getName());
-                LOGGER.debug("------------ |||||||||||||||| ------------");
+                LogHandler.info(HTTPUtils.class,"\t\t PeerPrincipal-Name: " + ssls.getPeerPrincipal().getName());
+                LogHandler.info(HTTPUtils.class,"------------ |||||||||||||||| ------------");
             } catch (SSLPeerUnverifiedException ex) {
-                LOGGER.debug("Error when verify hostname, caused by", ex);
+                LogHandler.info(HTTPUtils.class,"Error when verify hostname");
             }
             return true;
         });
@@ -622,7 +546,7 @@ public class HTTPUtils {
                         trustStore.setCertificateEntry(x509.getSerialNumber().toString(), x509);
                     }
                 }
-                LOGGER.debug("Found X509TrustManager: " + tm.toString());
+//                LOGGER.debug("Found X509TrustManager: " + tm.toString());
                 break;
             }
         }
@@ -645,5 +569,20 @@ public class HTTPUtils {
         SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(null, tmf.getTrustManagers(), new java.security.SecureRandom());
         return sslContext;
+    }
+
+    public static enum ContentType{
+        JSON("application/json"),
+        multipart_form_data("multipart/form-data");
+        
+        private String name;
+
+        private ContentType(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }                
     }
 }

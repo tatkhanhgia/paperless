@@ -15,18 +15,30 @@ import com.fasterxml.jackson.annotation.JsonRootName;
  * @author GiaTK
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonRootName("hash_values")
 public class FileDataDetails {
 //        
 //    @JsonIgnore
 //    private FileType file_type;
     
     private int file_type;
+    private String file_field;
     private Object value;
+    private String hash_value;
 
     public FileDataDetails() {
     }
 
+    @JsonProperty("file_field")
+    public String getFile_field() {
+        return file_field;
+    }
+
+    public void setFile_field(String file_field) {
+        this.file_field = file_field;
+    }
+        
     @JsonProperty("file_type")
     public int getFile_type() {
         return file_type;
@@ -37,6 +49,17 @@ public class FileDataDetails {
         return value;
     }
 
+    @JsonProperty("hash_value")
+    public String getHash_value() {
+        return hash_value;
+    }
+
+    public void setHash_value(String hash_value) {
+        this.hash_value = hash_value;
+    }
+
+    
+    
 //    @JsonIgnore
 //    public void setFile_type(FileType file_type) {
 //        this.file_type = file_type;

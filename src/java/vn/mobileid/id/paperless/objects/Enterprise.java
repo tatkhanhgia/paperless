@@ -18,6 +18,7 @@ public class Enterprise extends Object{
     private String clientID;
     private String clientSecret;
     private String email_notification;
+    private byte[] fileP12_data;
     
     public Enterprise() {
     }   
@@ -94,6 +95,14 @@ public class Enterprise extends Object{
 
     public void setOwner_id(int owner_id) {
         this.owner_id = owner_id;
+    }
+
+    public byte[] getFileP12_data() {
+        return fileP12_data;
+    }
+
+    public void setFileP12_data(byte[] fileP12_data) {
+        this.fileP12_data = fileP12_data;
     }
     
     

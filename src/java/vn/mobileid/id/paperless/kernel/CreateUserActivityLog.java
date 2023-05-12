@@ -4,8 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -23,7 +21,6 @@ import vn.mobileid.id.paperless.objects.WorkflowActivity;
 public class CreateUserActivityLog {
 
 //    final private static Logger LOG = LogManager.getLogger(CreateUserActivityLog.class);
-
     public static boolean checkData(WorkflowActivity workflow) {
         if (workflow == null) {
             return false;
@@ -40,33 +37,34 @@ public class CreateUserActivityLog {
     public static InternalResponse processingCreateUserActivityLog(
             WorkflowActivity workflow,
             User user,
-            String transactionID) {
+            String transactionID) throws Exception {
+
+        Database DB = new DatabaseImpl();
+
+        //Create new User_Activity_log
+        DatabaseResponse callDB = DB.createUserActivityLog(
+                user.getEmail(), //email 
+                user.getAid(),//enterprise_id
+                null, //module
+                null, //action
+                null, //info_key
+                null, //info_value
+                null, //detail
+                null, //agent
+                null, //agent_detail
+                null, //HMAC
+                user.getName(),
+                transactionID);//created_by                
+
         try {
-            Database DB = new DatabaseImpl();
-
-            //Create new User_Activity_log
-            DatabaseResponse callDB = DB.createUserActivityLog(
-                    user.getEmail(), //email 
-                    user.getAid(),//enterprise_id
-                    null, //module
-                    null, //action
-                    null, //info_key
-                    null, //info_value
-                    null, //detail
-                    null, //agent
-                    null, //agent_detail
-                    null, //HMAC
-                    user.getName(),
-                    transactionID);//created_by                
-
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
-                         null);
+                        null);
                 if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(CreateUserActivityLog.class,"TransactionID:"+transactionID+"\nCannot create User_Activity_log - Detail:" + message);
+                    LogHandler.error(CreateUserActivityLog.class, "TransactionID:" + transactionID + "\nCannot create User_Activity_log - Detail:" + message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
@@ -75,14 +73,12 @@ public class CreateUserActivityLog {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                     String.valueOf(callDB.getIDResponse()));
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(CreateUserActivityLog.class,
-                        "TransactionID:"+transactionID+
-                        "\nCannot create User_Activity_log - Detail:" + e);
-            }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    e.getMessage()
-            );
+            throw new Exception(
+                    "Cannot create User_Activity_log!", e);
+
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                    e.getMessage()
+//            );
         }
     }
 

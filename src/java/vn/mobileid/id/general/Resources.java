@@ -30,9 +30,10 @@ public class Resources {
     private static volatile HashMap<Integer, String> listWorkflowTemplateTypeName = new HashMap<>();
     private static volatile HashMap<String, Integer> listAssetType = new HashMap();
     private static volatile HashMap<String, WorkflowTemplateType> listWoTemplateType = new HashMap<>();
-    private static volatile HashMap<String, String> listPDFWaitingAuthorize = new HashMap<>();
-
-    public static synchronized void init() {
+    private static volatile HashMap<String, String> queueAuthorizeCode = new HashMap();
+    private static volatile HashMap<String, String> queueForgotPassword = new HashMap<>();
+    
+    public static synchronized void init() throws Exception {
         Database db = new DatabaseImpl();
 
         if (responseCodes.isEmpty()) {
@@ -54,7 +55,7 @@ public class Resources {
         }
     }
 
-    public static void reloadResponseCodes() {
+    public static void reloadResponseCodes() throws Exception {
         Database db = new DatabaseImpl();
         responseCodes = new HashMap<>();
         List<ResponseCode> listOfResponseCode = db.getResponseCodes();
@@ -63,11 +64,11 @@ public class Resources {
         }
     }
 
-    public static void reloadListWorkflowActivity() {
+    public static void reloadListWorkflowActivity() throws Exception {
         Database db = new DatabaseImpl();
         if (ListWorkflowActivity.isEmpty() || ListWorkflowActivity == null) {
             ListWorkflowActivity = new HashMap();
-        }
+        } 
         List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
         for (WorkflowActivity workflowAc : listOfWA) {
             if (!ListWorkflowActivity.containsKey(String.valueOf(workflowAc.getId()))) {
@@ -76,7 +77,7 @@ public class Resources {
         }
     }
 
-    public static void reloadListWorkflowTemplateTypeName() {
+    public static void reloadListWorkflowTemplateTypeName() throws Exception {
         Database db = new DatabaseImpl();
         listWorkflowTemplateTypeName = new HashMap();
         DatabaseResponse res = db.getHashMapWorkflowTemplateType();
@@ -85,7 +86,7 @@ public class Resources {
         }
     }
 
-    public static void reloadListAssetType() {
+    public static void reloadListAssetType() throws Exception {
         Database db = new DatabaseImpl();
         listAssetType = new HashMap();
         DatabaseResponse res = db.getAssetType();
@@ -94,7 +95,7 @@ public class Resources {
         }
     }
 
-    public static void reloadListWorkflowTemplateType() {
+    public static void reloadListWorkflowTemplateType() throws Exception {
         Database db = new DatabaseImpl();
         listWoTemplateType = new HashMap();
         DatabaseResponse res = db.getListWorkflowTemplateType();
@@ -114,10 +115,6 @@ public class Resources {
         return ListWorkflowActivity;
     }
 
-    public static HashMap<String, String> getListPDFWaiting() {
-        return listPDFWaitingAuthorize;
-    }
-
     public static HashMap<Integer, String> getListWorkflowTemplateTypeName() {
         return listWorkflowTemplateTypeName;
     }
@@ -129,4 +126,22 @@ public class Resources {
     public static HashMap<String, WorkflowTemplateType> getListWorkflowTemplateType() {
         return listWoTemplateType;
     }
+
+    public static HashMap<String, String> getQueueAuthorizeCode() {
+        return queueAuthorizeCode;
+    }
+
+    public static void setQueueAuthorizeCode(HashMap<String, String> queueAuthorizeCode) {
+        Resources.queueAuthorizeCode = queueAuthorizeCode;
+    }      
+    
+    public static HashMap<String, String> getQueueForgotPassword(){
+        return queueForgotPassword;
+    }
+    
+    public static void setQueueForgotPassword(HashMap<String, String> queue){
+        Resources.queueForgotPassword = queue;
+    }
+    
+    
 }

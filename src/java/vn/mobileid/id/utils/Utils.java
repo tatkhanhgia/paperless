@@ -5,6 +5,7 @@
  */
 package vn.mobileid.id.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +52,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import vn.mobileid.id.general.email.EmailReq;
 import vn.mobileid.id.general.email.EmailResp;
 import vn.mobileid.id.general.objects.CredentialTokensJSNObject;
-import vn.mobileid.id.general.sms.SmsResp;
 import vn.mobileid.id.general.LogHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,6 +64,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -502,14 +503,14 @@ public class Utils {
 //        json = gson.toJson(smsReq);
 //        return json;
 //    }
-    public static String toJson(SmsResp o) {
-        String json = null;
-        byte[] byte4null = new byte[4];
-        SmsResp smsResp = (SmsResp) SerializationUtils.clone(o);
-        json = gson.toJson(smsResp);
-        return json;
-    }
-
+//    public static String toJson(SmsResp o) {
+//        String json = null;
+//        byte[] byte4null = new byte[4];
+//        SmsResp smsResp = (SmsResp) SerializationUtils.clone(o);
+//        json = gson.toJson(smsResp);
+//        return json;
+//    }
+//
 //    public static String toJson(OCRReq o) {
 //        String json = null;
 //        byte[] byte4null = new byte[4];
@@ -1171,4 +1172,12 @@ public class Utils {
         }
     }
 
+    public static String getFromJson(String name, String json) {
+        try {
+            JsonNode node = new ObjectMapper().readTree(json);
+            return node.findValue(name).asText();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 }

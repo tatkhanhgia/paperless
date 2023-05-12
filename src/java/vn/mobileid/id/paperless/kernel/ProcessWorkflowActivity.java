@@ -4,6 +4,8 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import vn.mobileid.id.paperless.kernel.process.ProcessELaborContract;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +22,7 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.EIDService;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.kernel.process.ProcessESignCloud;
+import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.FileDataDetails;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.ItemDetails;
@@ -27,6 +30,7 @@ import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.SigningProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
+import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
 
 /**
@@ -35,48 +39,283 @@ import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
  */
 public class ProcessWorkflowActivity {
 
-//    final private static Logger LOG = LogManager.getLogger(ProcessWorkflowActivity.class);
+    public static InternalResponse assign(
+            int id,
+            String filename,
+            JWT_Authenticate jwt,
+            User user,
+            ProcessWorkflowActivity_JSNObject request,
+            boolean isAssigned,
+            String transactionID) throws Exception {
 
-    public static InternalResponse checkItem(ProcessWorkflowActivity_JSNObject request) {
-        List<ItemDetails> listItem = request.getItem();
-        InternalResponse result;
+        //Get Data from request
+        List<FileDataDetails> fileData = request.getFile_data();
+        List<ItemDetails> fileItem = request.getItem();
+        Database DB = new DatabaseImpl();
 
-        //Check item details
-        for (ItemDetails obj : listItem) {
-            result = CreateWorkflowTemplate.checkDataWorkflowTemplate(obj);
-            if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return result;
+        //Get workflow Activity and check existed    
+        InternalResponse response = GetWorkflowActivity.getWorkflowActivity(
+                id,
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
+//                            "en",
+//                            null)
+//            );
+        }
+        WorkflowActivity woAc = (WorkflowActivity) response.getData();
+
+        //If Existed => update request data
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        //Check file management to ensure that WoAc already process.
+        response = GetFileManagement.getFileManagement(
+                Integer.parseInt(woAc.getFile().getID()),
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        FileManagement file = (FileManagement) response.getData();
+        if (file.getData() != null) {
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
+                            "en",
+                            null)
+            );
+        }
+
+        //Check Type Process
+//        woAc = GetWorkflowActivity.getWorkflowActivityFromDB(id, transactionID);
+        response = GetWorkflowTemplateType.getWorkflowTemplateType(
+                woAc.getWorkflow_template_type(),
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+
+        WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
+
+        switch (templateType.getName()) {
+            case "E-LABOR CONTRACT": {
+                if (isAssigned) {
+                    response = ProcessELaborContract.assignELaborContract(
+                            woAc,
+                            fileItem,
+                            user,
+                            filename,
+                            transactionID);
+                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                        return response;
+                    }
+
+                    //After Assign Success. Replace Data WorkflowAc in listWorkflow Resources
+                    response = GetWorkflowActivity.getWorkflowActivityFromDB(
+                            woAc.getId(),
+                            transactionID);
+                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                        return response;
+                    }
+                    woAc = (WorkflowActivity) response.getData();
+                    Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
+                    return response;
+                }
+                return new InternalResponse(500, "Pending");
+            }
+            case "ESIGNCLOUD": {
+                if (isAssigned) {
+                    response = ProcessESignCloud.assignEsignCloud(
+                            woAc,
+                            fileItem,
+                            user,
+                            filename,
+                            transactionID);
+                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                        return response;
+                    }
+                    //After Assign Success. Replace Data WorkflowAc in listWorkflow Resources
+                    response = GetWorkflowActivity.getWorkflowActivityFromDB(
+                            woAc.getId(),
+                            transactionID);
+                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                        return response;
+                    }
+                    woAc = (WorkflowActivity) response.getData();
+                    Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
+                    return response;
+                }
+            }
+            default: {
+                return new InternalResponse(500, "NOT PROVIDED YET");
             }
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
-                        PaperlessConstant.SUBCODE_SUCCESS,
-                        "en",
-                        null));
     }
 
-    public static InternalResponse checkFile_Data(ProcessWorkflowActivity_JSNObject request) {
-        List<FileDataDetails> listFile = request.getFile_data();
-        InternalResponse result;
+    /**
+     * Using this function to process the workflow activity which type is
+     * "ESignCloud" - "E-laborcontract"
+     *
+     * @param user
+     * @param idWA
+     * @param jwt
+     * @param request
+     * @param headers
+     * @param transactionID
+     * @return
+     * @throws IOException
+     * @throws Exception
+     */
+    public static InternalResponse processAuthen(
+            User user,
+            int idWA,
+            JWT_Authenticate jwt,
+            ProcessWorkflowActivity_JSNObject request,
+            HashMap<String, String> headers,
+            String transactionID) throws IOException, Exception {
 
-        //Check file details
-        for (FileDataDetails obj : listFile) {
-            boolean gate = checkFile_type(obj.getFile_type());
-            if (!gate) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                PaperlessConstant.SUBCODE_MISSING_OR_ERROR_FILE_TYPE,
-                                "en",
-                                null));
+        List<FileDataDetails> fileData = request.getFile_data();
+        SigningProperties signingObject = request.getSigning_properties();
+
+        Database DB = new DatabaseImpl();
+
+        //Get workflow Activity and check existed            
+        InternalResponse response = GetWorkflowActivity.getWorkflowActivity(
+                idWA,
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
+//                            "en",
+//                            null)
+//            );
+        }
+        WorkflowActivity woAc = (WorkflowActivity) response.getData();
+
+        if (woAc.getRequestData() == null) {            
+            response = GetWorkflowActivity.getWorkflowActivityFromDB(
+                    idWA,
+                    transactionID);
+            woAc = (WorkflowActivity) response.getData();
+            Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
+        }
+
+        response = GetFileManagement.getFileManagement(
+                Integer.parseInt(woAc.getFile().getID()),
+                transactionID);
+
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        FileManagement file = (FileManagement) response.getData();
+        if (file.getData() == null) {
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
+                            "en",
+                            null)
+            );
+        }
+        if (file.isIsSigned() == true) {
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
+                            "en",
+                            null)
+            );
+        }
+
+        //Check Type Process
+//            WorkflowActivity woAcTemp = GetWorkflowActivity.getWorkflowActivityFromDB(
+//                    idWA,
+//                    transactionID);        
+        response = GetWorkflowTemplateType.getWorkflowTemplateType(
+                woAc.getWorkflow_template_type(),
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+
+        WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
+
+        switch (templateType.getName()) {
+            case "E-LABOR CONTRACT": {
+                InternalResponse res = ProcessELaborContract.processELaborContractWithAuthen(
+                        user,
+                        woAc.getId(),
+                        file,
+                        woAc.getRequestData(),
+                        jwt,
+                        fileData,
+                        signingObject,
+                        transactionID);
+                if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return res;
+                }
+                res.setData(woAc);
+
+                //After Signing Success. Replace Data WorkflowAc in listWorkflow Resources
+                response = GetWorkflowActivity.getWorkflowActivity(
+                        idWA,
+                        transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
+                }
+                woAc = (WorkflowActivity) response.getData();
+                Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
+                return res;
+            }
+            case "ESIGNCLOUD": {
+                InternalResponse res = ProcessESignCloud.processEsignCloudWithAuthen(
+                        user,
+                        woAc.getId(),
+                        file,
+                        woAc.getRequestData(),
+                        jwt,
+                        fileData,
+                        signingObject,
+                        transactionID);
+                if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return res;
+                }
+                res.setData(woAc);
+
+                //After Signing Success. Replace Data WorkflowAc in listWorkflow Resources
+                response = GetWorkflowActivity.getWorkflowActivity(
+                        idWA,
+                        transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
+                }
+                woAc = (WorkflowActivity) response.getData();
+                Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
+                return res;
+            }
+            default: {
+                return new InternalResponse(500, "NOT PROVIDED YET");
             }
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
-                        PaperlessConstant.SUBCODE_SUCCESS,
-                        "en",
-                        null));
     }
 
+    /**
+     * Using this function to process the workflow activity which type is "QR",
+     * ..
+     *
+     * @param id
+     * @param filename
+     * @param jwt
+     * @param uer_info
+     * @param request
+     * @param isAssigned
+     * @param transactionID
+     * @return
+     * @throws Exception
+     */
     public static InternalResponse process(
             int id,
             String filename,
@@ -84,221 +323,162 @@ public class ProcessWorkflowActivity {
             User uer_info,
             ProcessWorkflowActivity_JSNObject request,
             boolean isAssigned,
-            String transactionID) {
-        try {
-            //Get Data from request
-            List<FileDataDetails> fileData = request.getFile_data();
-            List<ItemDetails> fileItem = request.getItem();
-            Database DB = new DatabaseImpl();
+            String transactionID) throws Exception {
 
-            //Get workflow Activity and check existed            
-            WorkflowActivity woAc = GetWorkflowActivity.getWorkflowActivity(
-                    id,
-                    transactionID);
-            if (woAc == null) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
-                                "en",
-                                null)
-                );
-            }
-            InternalResponse response = GetFileManagement.getFileManagement(
-                    Integer.parseInt(woAc.getFile().getID()),
-                    transactionID);
-            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return response;
-            }
-            FileManagement file = (FileManagement) response.getData();
-            if (file.getData() != null) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
-                                "en",
-                                null)
-                );
-            }
+        //Get Data from request
+        List<FileDataDetails> fileData = request.getFile_data();
+        List<ItemDetails> fileItem = request.getItem();
+        Database DB = new DatabaseImpl();
 
-            //Check Type Process
-            woAc = GetWorkflowActivity.getWorkflowActivityFromDB(id, transactionID);
-            response = GetWorkflowTemplateType.getWorkflowTemplateType(
-                    woAc.getWorkflow_template_type(),
-                    transactionID);
-            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return response;
-            }
-
-            WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
-
-            switch (templateType.getName()) {
-                case "EID CONTRACT": {
-                    if (isAssigned) {
-                        return ProcessELaborContract.assignELaborContract(
-                                woAc,
-                                fileItem,
-                                uer_info,
-                                filename,
-                                transactionID);
-                    }
-//                    return ProcessELaborContract.processELaborContract(woAc, fileItem, photo, uer_info, filename, jwt);
-                    return new InternalResponse(500, "Pending");
-                }
-                case "ESIGNCLOUD": {
-                    if (isAssigned) {
-                        return ProcessESignCloud.assignEsignCloud(
-                                woAc,
-                                fileItem,
-                                uer_info,
-                                filename,
-                                transactionID);
-                    }
-                }
-                default: {
-                    return new InternalResponse(500, "NOT PROVIDED YET");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(ProcessWorkflowActivity.class,transactionID,"UNKNOWN EXCEPTION. Details: " + e);
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        //Check data of request
+        InternalResponse response = CheckWorkflowTemplate.checkDataWorkflowTemplate(request);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
         }
-//        return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
-//        return new InternalResponse(500, QryptoConstant.INTERNAL_EXP_MESS);
+
+        //Get workflow Activity and check existed            
+        response = GetWorkflowActivity.getWorkflowActivity(
+                id,
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
+//                            "en",
+//                            null)
+//            );
+        }
+        WorkflowActivity woAc = (WorkflowActivity) response.getData();
+
+        //Check Type Process
+//        woAc = GetWorkflowActivity.getWorkflowActivityFromDB(id, transactionID);
+        response = GetWorkflowTemplateType.getWorkflowTemplateType(
+                woAc.getWorkflow_template_type(),
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+
+        WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
+
+        switch (templateType.getName()) {
+            case "E-LABOR CONTRACT": {
+                return new InternalResponse(500, "NOT PROVIDED YET");
+            }
+            case "ESIGNCLOUD": {
+                return new InternalResponse(500, "NOT PROVIDED YET");
+            }
+            case "SECURE QR TEMPLATE": {
+
+            }
+            default: {
+                return new InternalResponse(500, "NOT PROVIDED YET");
+            }
+        }
     }
 
-    public static InternalResponse processAuthen(
+    public static InternalResponse getDocumentHash(
             User user,
             int idWA,
             JWT_Authenticate jwt,
             ProcessWorkflowActivity_JSNObject request,
             HashMap<String, String> headers,
-            String transactionID) {
-        try {
-            List<FileDataDetails> fileData = request.getFile_data();
-            SigningProperties signingObject = request.getSigning_properties();
+            String transactionID
+    ) throws Exception {
+        List<FileDataDetails> fileData = request.getFile_data();
+        SigningProperties signingObject = request.getSigning_properties();
 
-            Database DB = new DatabaseImpl();
-
-            //Get workflow Activity and check existed            
-            WorkflowActivity woAc = GetWorkflowActivity.getWorkflowActivity(
-                    idWA,
-                    transactionID);
-            if (woAc == null) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
-                                "en",
-                                null)
-                );
-            }
-
-            InternalResponse response = GetFileManagement.getFileManagement(
-                    Integer.parseInt(woAc.getFile().getID()),
-                    transactionID);
-
-            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return response;
-            }
-            FileManagement file = (FileManagement) response.getData();
-            if (file.getData() == null) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
-                                "en",
-                                null)
-                );
-            }
-            if (file.isIsSigned() == true) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
-                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
-                                "en",
-                                null)
-                );
-            }
-
-            //Check Type Process
-            WorkflowActivity woAcTemp = GetWorkflowActivity.getWorkflowActivityFromDB(
-                    idWA,
-                    transactionID);
-            response = GetWorkflowTemplateType.getWorkflowTemplateType(
-                    woAcTemp.getWorkflow_template_type(),
-                    transactionID);
-            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return response;
-            }
-
-            WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
-
-            switch (templateType.getName()) {
-                case "EID CONTRACT": {
-                    InternalResponse res = ProcessELaborContract.processELaborContractWithAuthen(
-                            user,
-                            woAc.getId(),
-                            woAc.getFile(),
-                            woAc.getRequestData(),
-                            jwt,
-                            fileData,
-                            signingObject,
-                            transactionID);
-                    if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                        return res;
-                    }
-                    res.setData(woAc);
-
-                    //After Signing Success. Replace Data WorkflowAc in listWorkflow Resources
-                    WorkflowActivity temp = GetWorkflowActivity.getWorkflowActivityFromDB(
-                            idWA,
-                            transactionID);
-                    Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), temp);
-                    return res;
-                }
-                case "ESIGNCLOUD": {
-                   InternalResponse res = ProcessESignCloud.processEsignCloudWithAuthen(
-                            user,
-                            woAc.getId(),
-                            woAc.getFile(),
-                            woAc.getRequestData(),
-                            jwt,
-                            fileData,
-                            signingObject,
-                            transactionID);
-                    if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                        return res;
-                    }
-                    res.setData(woAc);
-
-                    //After Signing Success. Replace Data WorkflowAc in listWorkflow Resources
-                    WorkflowActivity temp = GetWorkflowActivity.getWorkflowActivityFromDB(
-                            idWA,
-                            transactionID);
-                    Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), temp);
-                    return res;
-                }
-                default: {
-                    return new InternalResponse(500, "NOT PROVIDED YET");
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(ProcessWorkflowActivity.class,transactionID,"UNKNOWN EXCEPTION. Details: " + ex);
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        //Get workflow Activity and check existed            
+        InternalResponse response = GetWorkflowActivity.getWorkflowActivity(
+                idWA,
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
+//                            "en",
+//                            null)
+//            );
         }
+        WorkflowActivity woAc = (WorkflowActivity) response.getData();
+        response = GetWorkflowDetail_option.getWorkflowDetail(woAc.getWorkflow_id(), transactionID);
+        WorkflowDetail_Option details = (WorkflowDetail_Option) response.getData();
+        response = GetAsset.getAsset(details.getAsset_Template(), transactionID);
 
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        Asset file = (Asset) response.getData();
+//            if (file.getData() == null) {
+//                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
+//                                "en",
+//                                null)
+//                );
+//            }
+//            if (file.isIsSigned() == true) {
+//                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+//                                PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
+//                                "en",
+//                                null)
+//                );
+//            }
+
+        //Check Type Process
+        String item = "{\"items\":" + new ObjectMapper().writeValueAsString(request.getItem()) + "}";
+//            System.out.println("String:"+item);
+        InternalResponse res = ProcessELaborContract.getHashDocument(
+                user,
+                woAc.getId(),
+                file,
+                item,
+                jwt,
+                fileData,
+                signingObject,
+                transactionID);
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return res;
+        }
+        return res;
+
+//            response = GetWorkflowTemplateType.getWorkflowTemplateType(
+//                    woAcTemp.getWorkflow_template_type(),
+//                    transactionID);
+//            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+//                return response;
+//            }
+//
+//            WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();            
+//            switch (templateType.getName()) {
+//                case "EID CONTRACT": {
+//                    InternalResponse res = ProcessELaborContract.getHashDocument(
+//                            user,
+//                            woAc.getId(),
+//                            woAc.getFile(),
+//                            woAc.getRequestData(),
+//                            jwt,
+//                            fileData,
+//                            signingObject,
+//                            transactionID);
+//                    if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+//                        return res;
+//                    }                    
+//                    return res;
+//                }
+//                case "ESIGNCLOUD": {
+//                    return new InternalResponse(500, "NOT PROVIDED YET");
+//                }
+//                default: {
+//                    return new InternalResponse(500, "NOT PROVIDED YET");
+//                }
+//            }       
     }
 
     //==================INTERAL METHOD/FUNCTION===================
-    private static boolean checkFile_type(int i) {
-        if (i <= 0 || i > 4) {
-            return false;
-        }
-        return true;
-    }
-
     //=========================MAIN================================
     public static void main(String[] arhs) {
 //        ItemDetails a = new ItemDetails();

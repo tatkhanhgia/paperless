@@ -4,8 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -21,7 +19,6 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class UpdateWorkflowDetail_option {
-//    final private static Logger LOG = LogManager.getLogger(UpdateWorkflowDetail_option.class);
     
     public static InternalResponse updateWorkflowOption(
             int id,
@@ -30,8 +27,8 @@ public class UpdateWorkflowDetail_option {
             WorkflowDetail_Option detail,
             String hmac,
             String created_by,
-            String transactionID){
-        try {
+            String transactionID) throws Exception{
+        
             InternalResponse response = null;
             Database DB = new DatabaseImpl();
 
@@ -59,15 +56,7 @@ public class UpdateWorkflowDetail_option {
 
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
-                    "");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(UpdateWorkflowDetail_option.class,transactionID,"UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }            
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
-        }
+                    "");      
     }
     
     public static void main(String[] args){

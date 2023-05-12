@@ -33,8 +33,24 @@ public class SendMail extends Thread {
     private byte[] file;
     private String fileName;
 
-    //Contructor for custom
-    public SendMail(String sendTo, String Subject, String Content, String EntityName, byte[] file, String fileName) {
+    public SendMail(){};
+    
+    /**
+     * Contructor for custom
+     * SendTo : email destination
+     * Subject: Subject of email
+     * Content: body of email
+     * EntityName : xxx
+     * file: binary of file PDF
+     * filename: name of file PDF
+    */
+    public SendMail(
+            String sendTo,
+            String Subject,
+            String Content,
+            String EntityName,
+            byte[] file,
+            String fileName) {
         this.sendTo = sendTo;
         this.Subject = Subject;
         this.Content = Content;
@@ -43,8 +59,20 @@ public class SendMail extends Thread {
         this.fileName = fileName;
     }
 
-    //Constructor for Elabor
-    public SendMail(String sendTo, String name, String CCCD, byte[] file, String filename) {
+    /**Constructor for Elabor
+     * 
+     * @param sendTo : email destination
+     * @param name: name of user email
+     * @param CCCD: cccd
+     * @param file: binary data of file PDF
+     * @param filename : filename of file PDF
+     */
+    public SendMail(
+            String sendTo,
+            String name,
+            String CCCD,
+            byte[] file,
+            String filename) {
         this.sendTo = sendTo;
         this.Subject = "eLaborContract - " + name + " - " + CCCD;
         this.Content = "Dear " + name;
@@ -55,7 +83,15 @@ public class SendMail extends Thread {
         this.EntityName = "eLaborContract";
     }
 
-    //Contructor for create email to user.
+    /**Contructor for create email and send to user. 
+     * 
+     * @param sendTo
+     * @param enterprise_id
+     * @param name
+     * @param CCCD
+     * @param file
+     * @param filename 
+     */
     public SendMail(
             String sendTo,
             int enterprise_id,
@@ -68,7 +104,6 @@ public class SendMail extends Thread {
         this.fileName = filename;
         EmailTemplate template = getTemplate(enterprise_id);
         if (template == null) {
-//            System.out.println("Default template!");
             this.Subject = "eLaborContract - " + name + " - " + CCCD;
             this.Content = "Dear " + name;
             this.Content += "<br /><br /> Paperless service would like to thank you for trusting and using our services";
@@ -81,23 +116,86 @@ public class SendMail extends Thread {
 //        System.out.println("Subject:"+this.Subject);
     }
 
-    public void setPassword(String password) {
-        this.Content = this.Content.replace(AnnotationJWT.Password.getNameAnnot(), password);
+    public void appendAuthorizationCode(String authorizeCode) {
+        this.Content = this.Content.replace(AnnotationJWT.AuthorizeCode.getNameAnnot(), authorizeCode);
     }
     
-    public void setNameUser(String name){
+    public void appendNameUser(String name){
         this.Subject = this.Subject.replace(AnnotationJWT.Name.getNameAnnot(), name);
         this.Content = this.Content.replace(AnnotationJWT.Name.getNameAnnot(), name);
     }
     
-    public void setDocNumber(String docNumber){
+    public void appendDocNumber(String docNumber){
         this.Subject = this.Subject.replace(AnnotationJWT.DocNumber.getNameAnnot(), docNumber);
         this.Content = this.Content.replace(AnnotationJWT.DocNumber.getNameAnnot(), docNumber);
     }
     
+    public void appendEmailUser(String email){
+        this.Subject = this.Subject.replace(AnnotationJWT.Email.getNameAnnot(), email);
+        this.Content = this.Content.replace(AnnotationJWT.Email.getNameAnnot(), email);
+    }
+    
+    public void appendLink(String link){
+        this.Subject = this.Subject.replace(AnnotationJWT.Link.getNameAnnot(), link);
+        this.Content = this.Content.replace(AnnotationJWT.Link.getNameAnnot(), link);
+    }        
+
+    public String getSendTo() {
+        return sendTo;
+    }
+
+    public void setSendTo(String sendTo) {
+        this.sendTo = sendTo;
+    }
+
+    public String getSubject() {
+        return Subject;
+    }
+
+    public void setSubject(String Subject) {
+        this.Subject = Subject;
+    }
+
+    public String getContent() {
+        return Content;
+    }
+
+    public void setContent(String Content) {
+        this.Content = Content;
+    }
+
+    public String getEntityName() {
+        return EntityName;
+    }
+
+    public void setEntityName(String EntityName) {
+        this.EntityName = EntityName;
+    }
+
+    public byte[] getFile() {
+        return file;
+    }
+
+    public void setFile(byte[] file) {
+        this.file = file;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+    
+    
+    
     public void send() {
         try {
             Subject = Subject.replace(AnnotationJWT.DocNumber.getNameAnnot(), "");
+            Subject = Subject.replace(AnnotationJWT.Name.getNameAnnot(), "");
+            Content = Content.replace(AnnotationJWT.DocNumber.getNameAnnot(), "");
+            Content = Content.replace(AnnotationJWT.Name.getNameAnnot(), "");
             EmailReq request = new EmailReq();
             request.setSendTo(sendTo);
             request.setSubject(Subject);

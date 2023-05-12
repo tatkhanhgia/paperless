@@ -28,20 +28,20 @@ import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.FileManagement;
+import vn.mobileid.id.paperless.objects.QRSize;
 import vn.mobileid.id.paperless.objects.RefreshToken;
 import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.paperless.objects.WorkflowTemplate;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
-import vn.mobileid.id.utils.Utils;
 
 /**
  *
  * @author ADMIN
  */
 public class DatabaseImpl implements Database {
-
+    
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private int retryTimes = 1; // default no retry
 
@@ -61,26 +61,29 @@ public class DatabaseImpl implements Database {
     @Override
     public ResponseCode getResponse(
             String name,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         ResponseCode responseCode = null;
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call SP_REST_IDENTITY_RESPONSE_CODE_GET_BY_NAME(?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
             cals.setString("pRESPONSE_CODE_NAME", name);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
             if (rs != null) {
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "Transaction:" + transactionID + "\nCall getResponse successfull");
-                }
+                
+                debugString += "\n\tCall getResponse successfull\n";
+//                    LogHandler.debug(this.getClass(), "Transaction:" + transactionID + "\nCall getResponse successfull\n");
+
                 while (rs.next()) {
                     responseCode = new ResponseCode();
                     responseCode.setId(rs.getInt("ID"));
@@ -91,18 +94,14 @@ public class DatabaseImpl implements Database {
                 }
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while getting Response Code. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while getting Response Code", e);
+//                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while getting Response Code. Details: " + Utils.printStackTrace(e));            
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
         long endTime = System.nanoTime();
         long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
-//            LogHandler.debug("Execution time of getResponse in milliseconds: " + timeElapsed / 1000000);
-//        }
+        LogHandler.debug(this.getClass(), debugString);
         return responseCode;
     }
 
@@ -112,55 +111,52 @@ public class DatabaseImpl implements Database {
      * @return
      */
     @Override
-    public List<ResponseCode> getResponseCodes() {
+    public List<ResponseCode> getResponseCodes() throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         List<ResponseCode> responseCodes = new ArrayList<>();
+        String debugString = "\n";
         try {
             String str = "{ call USP_RESPONSE_GET_LIST() }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
-            }
+
+//                LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
             if (rs != null) {
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "Call getResponseCodes successfull");
-                }
+
+//                    LogHandler.debug(this.getClass(), "Call getResponseCodes successfull\n");
+                debugString += "\n\tCall getResponseCodes successfull";
+                
                 while (rs.next()) {
                     try {
                         int code = Integer.parseInt(rs.getString("NAME"));
-
+                        
                         ResponseCode responseCode = new ResponseCode();
                         responseCode.setName(rs.getString("NAME"));
                         responseCode.setCode_description(rs.getString("ERROR_DESCRIPTION"));
                         responseCodes.add(responseCode);
-
+                        
                     } catch (NumberFormatException ex) {
-
                     }
                 }
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "Error while getting Response Code. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while getting Response Code!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
         long endTime = System.nanoTime();
         long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
-//            LOG.debug("Execution time of getResponseCodes in milliseconds: " + timeElapsed / 1000000);
-//        }
+        LogHandler.debug(this.getClass(), debugString);
         return responseCodes;
     }
-
+    
     @Override
     public List<Integer> getVerificationFunctionIDGrantForRP(
             int relyingPartyId) {
@@ -174,30 +170,29 @@ public class DatabaseImpl implements Database {
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
             cals.setInt("pRELYING_PARTY_ID", relyingPartyId);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
-            }
+            
+            LogHandler.debug(this.getClass(), "\t[SQL] " + cals.toString());
+            
             cals.execute();
             rs = cals.getResultSet();
             if (rs != null) {
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "Call getResponseCodes successfull");
-                }
+                
+                LogHandler.debug(this.getClass(), "\n\tCall getResponseCodes successfull");
+                
                 while (rs.next()) {
                     functionIds.add(rs.getInt("VERIFICATION_FUNCTION_ID"));
                 }
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "Error while getting list of function id for relying party. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+//            if (LogHandler.isShowErrorLog()) {
+//                LogHandler.error(this.getClass(), "Error while getting list of function id for relying party. Details: " + Utils.printStackTrace(e));
+//            }
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
         long endTime = System.nanoTime();
         long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of getVerificationFunctionIDGrantForRP in milliseconds: " + timeElapsed / 1000000);
 //        }
         return functionIds;
@@ -218,14 +213,13 @@ public class DatabaseImpl implements Database {
             String created_by,
             String email,
             int enterprise_id,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_WORKFLOW_ADD(?,?,?,?,?,?,?,?) }";
@@ -237,18 +231,19 @@ public class DatabaseImpl implements Database {
                 cals.setString("pLABEL", label);
                 cals.setString("pHMAC", "null");
                 cals.setString("pCREATED_BY", created_by);
-
+                
                 cals.registerOutParameter("pWORKFLOW_ID", java.sql.Types.BIGINT);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult + "\n");
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     databaseResponse.setID_Response_int(cals.getInt("pWORKFLOW_ID"));
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -257,21 +252,15 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while creating Workflow. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while creating Workflow!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
-//        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
-//            LOG.debug("Execution time of createWorkflow in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        long timeElapsed = endTime - startTime;        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -290,7 +279,7 @@ public class DatabaseImpl implements Database {
             String metadata,
             String HMAC,
             String created_by,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
@@ -298,6 +287,7 @@ public class DatabaseImpl implements Database {
         boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_WORKFLOW_TEMPLATE_ADD(?,?,?,?,?) }";
@@ -307,17 +297,18 @@ public class DatabaseImpl implements Database {
                 cals.setString("pMETA_DATA_TEMPLATE", metadata);
                 cals.setString("pHMAC", HMAC);
                 cals.setString("pCREATED_BY", created_by);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
                 } else {
@@ -325,21 +316,15 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while creating Workflow Template. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while creating Workflow Template!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
-//        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
-//            LOG.debug("Execution time of Workflow Template in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        long timeElapsed = endTime - startTime;        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -372,12 +357,11 @@ public class DatabaseImpl implements Database {
             String agent_detail,
             String HMAC,
             String create_by,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
+        String debugString = transactionID + "\n";
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
         while (numOfRetry > 0) {
@@ -396,18 +380,19 @@ public class DatabaseImpl implements Database {
                 cals.setString("pAGENT_DETAIL", agent_detail);
                 cals.setString("pHMAC", HMAC);
                 cals.setString("pCREATED_BY", create_by);
-
+                
                 cals.registerOutParameter("pLOG_ID", java.sql.Types.BIGINT);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     databaseResponse.setID_Response_int(cals.getInt("pLOG_ID"));
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -416,21 +401,15 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while creating User Activity Log. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while creating User Activity Log!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
-//        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
-//            LOG.debug("Execution time of create User ActivityLog in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        long timeElapsed = endTime - startTime;                
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -455,14 +434,14 @@ public class DatabaseImpl implements Database {
             String name,
             int pages,
             int size,
-            int width,
-            int height,
+            float width,
+            float height,
             byte[] file_data,
             String HMAC,
             String created_by,
             String DBMS,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         if (name == null) {
             name = String.valueOf(startTime);
@@ -470,7 +449,7 @@ public class DatabaseImpl implements Database {
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
+        String debugString = transactionID + "\n";
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
         while (numOfRetry > 0) {
@@ -487,23 +466,24 @@ public class DatabaseImpl implements Database {
                 cals.setString("pNAME", name);
                 cals.setInt("PAGES", pages);
                 cals.setInt("pSIZE", size);
-                cals.setInt("pWIDTH", width);
-                cals.setInt("pHEIGHT", height);
+                cals.setFloat("pWIDTH", width);
+                cals.setFloat("pHEIGHT", height);
                 cals.setBlob("pBINARY_DATA", blob);
                 cals.setString("pHMAC", HMAC);
                 cals.setString("pCREATED_BY", created_by);
-
+                
                 cals.registerOutParameter("pFILE_ID", java.sql.Types.BIGINT);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     databaseResponse.setID_Response_int(cals.getInt("pFILE_ID"));
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -512,21 +492,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), transactionID, "Error while creating FileManagement. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while creating FileManagement!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of create File Management in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -566,14 +543,13 @@ public class DatabaseImpl implements Database {
             String hmac,
             String created_by,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_TRANSACTION_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
@@ -593,18 +569,19 @@ public class DatabaseImpl implements Database {
                 cals.setString("pDESCRIPTION", des);
                 cals.setString("pHMAC", hmac);
                 cals.setString("pCREATED_BY", created_by);
-
+                
                 cals.registerOutParameter("pTRANSACTION_ID", java.sql.Types.VARCHAR);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     databaseResponse.setID_Response_String(cals.getString("pTRANSACTION_ID"));
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -613,21 +590,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while creating Transaction. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while creating Transaction!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of create Transaction in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -666,14 +640,13 @@ public class DatabaseImpl implements Database {
             String request_data,
             String HMAC,
             String created_by,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_WORKFLOW_ACTIVITY_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
@@ -693,18 +666,19 @@ public class DatabaseImpl implements Database {
                 cals.setString("pREQUEST_DATA", request_data);
                 cals.setString("pHMAC", HMAC);
                 cals.setString("pCREATED_BY", created_by);
-
+                
                 cals.registerOutParameter("pWORKFLOW_ACTIVITY_ID", java.sql.Types.BIGINT);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     databaseResponse.setID_Response_int(cals.getInt("pWORKFLOW_ACTIVITY_ID"));
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -713,21 +687,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while creating Workflow Activity. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while creating Workflow Activity!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of create Workflow Activity in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -740,31 +711,32 @@ public class DatabaseImpl implements Database {
     @Override
     public DatabaseResponse getDataRP(
             int enterprise_id,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_ENTERPRISE_GET_DATA_RESTFUL_FILE_P12(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setInt("pENTERPRISE_ID", enterprise_id);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     rs.next();
                     Enterprise temp = new Enterprise();
@@ -777,21 +749,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while getting Data RelyingParty. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while getting Data RelyingParty!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get DataRP in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -808,14 +777,13 @@ public class DatabaseImpl implements Database {
             String meta_data,
             String hmac,
             String created_by,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_QR_ADD(?,?,?,?,?) }";
@@ -824,18 +792,19 @@ public class DatabaseImpl implements Database {
                 cals.setString("pMETA_DATA", meta_data);
                 cals.setString("pHMAC", hmac);
                 cals.setString("pCREATED_BY", created_by);
-
+                
                 cals.registerOutParameter("pQR_UUID", java.sql.Types.BIGINT);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     databaseResponse.setID_Response_int(cals.getInt("pQR_UUID"));
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -844,21 +813,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while create QR. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while create QR!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of create QR in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -871,31 +837,32 @@ public class DatabaseImpl implements Database {
     @Override
     public DatabaseResponse getFileManagement(
             int fileID,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        ResultSet rs = null;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_FILE_MANAGEMENT_GET(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setInt("pFILE_ID", fileID);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     rs.next();
                     FileManagement file = new FileManagement();
@@ -909,7 +876,7 @@ public class DatabaseImpl implements Database {
                     file.setStatus(rs.getInt("STATUS"));
                     file.setData(rs.getBytes("BINARY_DATA"));
                     file.setIsSigned(rs.getBoolean("PROCESSED_ENABLED"));
-
+                    
                     databaseResponse.setObject(file);
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
                 } else {
@@ -917,21 +884,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while getting File Management. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while getting File Management!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get File  in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -944,31 +908,32 @@ public class DatabaseImpl implements Database {
     @Override
     public DatabaseResponse getAsset(
             int assetID,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_ASSET_GET(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setInt("pASSET_ID", assetID);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     rs.next();
                     Asset asset = new Asset(
@@ -992,21 +957,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while getting Asset. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while getting Asset!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get Asset in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -1039,15 +1001,14 @@ public class DatabaseImpl implements Database {
             byte[] file_data,
             String hmac,
             String createdBy,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         if (file_name == null) {
             file_name = String.valueOf(startTime);
         }
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
+        String debugString = transactionID + "\n";
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
         while (numOfRetry > 0) {
@@ -1070,18 +1031,19 @@ public class DatabaseImpl implements Database {
                 cals.setBlob("pBINARY_DATA", blob);
                 cals.setString("pHMAC", hmac);
                 cals.setString("pCREATED_BY", createdBy);
-
+                
                 cals.registerOutParameter("pASSET_ID", java.sql.Types.BIGINT);
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+                
                 if (mysqlResult == 1) {
                     databaseResponse.setID_Response_int(cals.getInt("pASSET_ID"));
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -1090,21 +1052,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while uploading Asset. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while uploading Asset!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of upload Asset in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }       
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -1114,17 +1073,18 @@ public class DatabaseImpl implements Database {
      * @return
      */
     @Override
-    public List<WorkflowActivity> getListWorkflowActivity() {
+    public List<WorkflowActivity> getListWorkflowActivity() throws Exception {
         List<WorkflowActivity> list = new ArrayList<>();
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
+        String debugString = "\n";
         try {
-            String str = "{ call USP_WORKFLOW_ACTIVITY_LIST(?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+            String str = "{ call USP_WORKFLOW_ACTIVITY_LIST(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
-
+            
             cals.setString("U_EMAIL", "bcd@gmail.com");
             cals.setInt("pENTERPRISE_ID", 3);
             cals.setString("EMAIL_SEARCH", null);
@@ -1137,18 +1097,20 @@ public class DatabaseImpl implements Database {
             cals.setDate("FROM_DATE", null);
             cals.setDate("TO_DATE", null);
             cals.setString("pLANGUAGE_NAME", "ENG");
-
+            cals.setInt("pOFFSET", 0);
+            cals.setInt("pROW_COUNT", 100);
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
-            }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
             int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + mysqlResult;
+            
             if (mysqlResult == 1) {
                 if (rs != null) {
                     while (rs.next()) {
@@ -1159,17 +1121,18 @@ public class DatabaseImpl implements Database {
                         wa.setUser_email(rs.getString("USER"));
                         wa.setCreated_by(rs.getString("DATE"));
                         wa.setTransaction(rs.getString("TRANSACTION_ID"));
-
+                        wa.setEnterprise_id(rs.getInt("ENTERPRISE_ID"));
+                        
                         FileManagement file = new FileManagement();
                         file.setID(rs.getString("FILE_ID"));
                         file.setName(rs.getString("DOWNLOAD_LINK"));
 //                        file.setData(rs.getBytes("BINARY_DATA"));                        
                         wa.setFile(file);
-
+                        wa.setRequestData(rs.getString("REQUEST_DATA"));
                         wa.setCSV_id(rs.getString("CSV"));
                         wa.setRemark(rs.getString("REMARK"));
                         wa.setStatus(rs.getString("STATUS_NAME"));
-
+                        wa.setCreated_at(new Date(rs.getTimestamp("DATE").getTime()));
                         list.add(wa);
                     }
                 } else {
@@ -1178,20 +1141,12 @@ public class DatabaseImpl implements Database {
             } else {
                 return null;
             }
-
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "Error while getting List WorkflowActivity. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while getting List WorkflowActivity!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
-//        long endTime = System.nanoTime();
-//        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
-//            LOG.debug("Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
-//        }
+        LogHandler.debug(this.getClass(), debugString);
         return list;
     }
 
@@ -1204,55 +1159,53 @@ public class DatabaseImpl implements Database {
     @Override
     public DatabaseResponse getWorkflowDetail(
             int id,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse res = new DatabaseResponse();
-
+        String debugString = transactionID + "\n";
+        
         try {
             String str = "{ call USP_WORKFLOW_DETAIL_GET(?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
             cals.setInt("pWORKFLOW_ID", id);
-
+            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
-            WorkflowDetail_Option detail = null;
-            detail = new WorkflowDetail_Option();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+            WorkflowDetail_Option detail = new WorkflowDetail_Option();
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+            
             if (rs != null && Integer.parseInt(cals.getString("pRESPONSE_CODE")) == 1) {
                 while (rs.next()) {
                     String name = rs.getString("ATTRIBUTE_NAME");
-                    detail.set(name, rs.getString("ATTRIBUTE_VALUE"));                    
+                    detail.set(name, rs.getString("ATTRIBUTE_VALUE"));
                 }
+                res.setObject(detail);
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
             } else {
                 res.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
             }
-            res.setObject(detail);
-            res.setStatus(PaperlessConstant.CODE_SUCCESS);
-
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "Error while getting Workflow Details - Option. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while getting Workflow Details - Option!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get Workflow Details - Option in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return res;
     }
 
@@ -1271,42 +1224,40 @@ public class DatabaseImpl implements Database {
             HashMap<String, Object> map,
             String hmac,
             String created_by,
-            String transactionID) {
+            String transactionID) throws Exception {
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         for (String temp : map.keySet()) {
             long startTime = System.nanoTime();
             Connection conn = null;
-            ResultSet rs = null;
             CallableStatement cals = null;
             try {
                 String str = "{ call USP_WORKFLOW_DETAIL_ADD(?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
                 cals = conn.prepareCall(str);
-
+                
                 cals.setInt("W_ID", id);
                 cals.setString("pATTRIBUTE_NAME", temp);
                 cals.setString("pATTRIBUTE_VALUE", map.get(temp).toString());
                 cals.setString("pHMAC", hmac);
                 cals.setString("pCREATED_BY", created_by);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int result = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\tResponseCode get from DB:" + result + "\n";
+                
                 if (result != 1) {
                     response.setStatus(result);
-                    return response;
                 }
             } catch (Exception e) {
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while creating workflow detail - option. Details: " + Utils.printStackTrace(e));
-                }
-                e.printStackTrace();
+                throw new Exception("Error while creating workflow detail - option!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
@@ -1314,6 +1265,9 @@ public class DatabaseImpl implements Database {
 //            long timeElapsed = endTime - startTime;
         }
         response.setStatus(PaperlessConstant.CODE_SUCCESS);
+        
+        LogHandler.debug(this.getClass(), debugString);
+        
         return response;
     }
 
@@ -1326,27 +1280,30 @@ public class DatabaseImpl implements Database {
     @Override
     public DatabaseResponse getTemplateType(
             int id,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_TEMPLATE_TYPE_GET(?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
             cals.setInt("pTEMPLATE_TYPE_ID", id);
-
+            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (rs != null && cals.getString("pRESPONSE_CODE").equals("1")) {
                 while (rs.next()) {
                     ResultSetMetaData columns = rs.getMetaData();
@@ -1373,61 +1330,59 @@ public class DatabaseImpl implements Database {
                     response.setObject(templateType);
                     response.setStatus(PaperlessConstant.CODE_SUCCESS);
                 }
+            } else {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "Error while getting Workflow Template Type. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while getting Workflow Template Type!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get Workflow Template Type in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
-    public HashMap<Integer, String> initTemplateTypeForProcessClass() {
+    public HashMap<Integer, String> initTemplateTypeForProcessClass() throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         HashMap<Integer, String> temp = new HashMap<>();
+        String debugString = "\n";
         try {
             String str = "{ call USP_TEMPLATE_TYPE_GET() }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
-            }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
             if (rs != null) {
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-                }
                 while (rs.next()) {
                     temp.put(rs.getInt("ID"), rs.getString("TYPE_NAME"));
                 }
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "Error while getting Workflow Template Type. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while getting Workflow Template Type!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get Workflow Template Type in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+
+        LogHandler.debug(
+                this.getClass(), debugString);
         return temp;
     }
 
@@ -1439,6 +1394,7 @@ public class DatabaseImpl implements Database {
      * @param DBMS
      * @param name
      * @param pages
+     * @param size
      * @param width
      * @param height
      * @param status
@@ -1446,6 +1402,7 @@ public class DatabaseImpl implements Database {
      * @param created_by
      * @param last_modified_by
      * @param data
+     * @param is_signed
      * @return
      */
     @Override
@@ -1455,20 +1412,21 @@ public class DatabaseImpl implements Database {
             String DBMS,
             String name,
             int pages,
-            int width,
-            int height,
+            int size,
+            float width,
+            float height,
             int status,
             String hmac,
             String created_by,
             String last_modified_by,
             byte[] data,
             boolean is_signed,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             Blob blob = null;
             if (data != null) {
@@ -1477,14 +1435,14 @@ public class DatabaseImpl implements Database {
             String str = "{ call USP_FILE_MANAGEMENT_UPDATE(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
-
+            
             cals.setString("pUUID", UUID);
             cals.setString("pDMS_PROPERTY", DBMS);
             cals.setString("pNAME", name);
             cals.setInt("pPAGES", pages);
-            cals.setInt("pSIZE", width);
-            cals.setInt("pWIDTH", width);
-            cals.setInt("pHEIGHT", height);
+            cals.setInt("pSIZE", size);
+            cals.setFloat("pWIDTH", width);
+            cals.setFloat("pHEIGHT", height);
             cals.setInt("pSTATUS", status);
             cals.setBlob("pBINARY_DATA", blob);
             cals.setString("pHMAC", hmac);
@@ -1492,33 +1450,33 @@ public class DatabaseImpl implements Database {
             cals.setInt("pFILE_ID", id);
             cals.setString("pLAST_MODIFIED_BY", last_modified_by);
             cals.setBoolean("pPROCESSED_ENABLED", is_signed);
-
+            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(PaperlessConstant.CODE_SUCCESS);
             } else {
                 response.setStatus(PaperlessConstant.CODE_FAIL);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionUD:" + transactionID + "\nError while update File Management. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while update File Management!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update File Management in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
 
@@ -1526,47 +1484,48 @@ public class DatabaseImpl implements Database {
      * Get Workflow
      *
      * @param id
+     * @param transactionID
      * @return
      */
     @Override
     public DatabaseResponse getWorkflow(
             int id,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_WORKFLOW_GET(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setInt("pWORKFLOW_ID", id);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-                }
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+                
                 if (mysqlResult == 1) {
                     rs.next();
                     Workflow workflow = new Workflow();
                     workflow.setWorkflow_id(rs.getInt("ID"));
                     workflow.setInitiator_id(rs.getInt("INITIATOR_ID"));
                     workflow.setStatus(rs.getInt("STATUS"));
-                    workflow.setTemplate_type_name(rs.getString("TEMPLATE_TYPE"));
+                    workflow.setWorkflowTemplate_type_name(rs.getString("TEMPLATE_TYPE"));
                     workflow.setLabel(rs.getString("LABEL"));
                     workflow.setWorkflow_type_name(rs.getString("WORKFLOW_TYPE_NAME"));
-                    workflow.setTemplate_type(rs.getInt("TEMPLATE_ID"));
+                    workflow.setWorkflowTemplate_type(rs.getInt("TEMPLATE_ID"));
                     workflow.setWorkflow_type(rs.getInt("WORKFLOW_TYPE"));
                     workflow.setCreated_by(rs.getString("CREATED_BY"));
                     workflow.setCreated_at(new Date(rs.getTimestamp("CREATED_AT").getTime()));
@@ -1581,21 +1540,18 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while getting Workflow. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while getting Workflow!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get Workflow in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -1605,26 +1561,26 @@ public class DatabaseImpl implements Database {
      * @return
      */
     @Override
-    public DatabaseResponse getHashMapWorkflowTemplateType() {
+    public DatabaseResponse getHashMapWorkflowTemplateType() throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         HashMap<Integer, String> list = new HashMap<>();
         int numOfRetry = retryTimes;
+        String debugString = "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_TEMPLATE_TYPE_LIST() }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
-
+                
                 if (rs != null) {
                     while (rs.next()) {
                         list.put(rs.getInt("ID"), rs.getString("TYPE_NAME"));
@@ -1636,21 +1592,20 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while getting Workflow template. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while getting list of Workflow template type!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get Workflow template in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+
+        LogHandler.debug(
+                this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -1660,30 +1615,27 @@ public class DatabaseImpl implements Database {
      * @return
      */
     @Override
-    public DatabaseResponse getAssetType() {
+    public DatabaseResponse getAssetType() throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         HashMap<String, Integer> list = new HashMap<>();
         int numOfRetry = retryTimes;
+        String debugString = "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_ASSET_TYPE_LIST() }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
-
+                
                 if (rs != null) {
-//                    if (LogHandler.isShowDebugLog()) {
-//                        LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-//                    }
                     while (rs.next()) {
                         list.put(rs.getString("ASSET_TYPE_NAME"), rs.getInt("ID"));
                     }
@@ -1694,21 +1646,20 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "Error while getting Asset type. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while getting Asset type!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get Asset type in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+
+        LogHandler.debug(
+                this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -1736,74 +1687,77 @@ public class DatabaseImpl implements Database {
             int offset,
             int rowcount,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         List<Workflow> list = new ArrayList<>();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
-                String str = "{ call USP_WORKFLOW_LIST_GET(?,?) }";
+                String str = "{ call USP_WORKFLOW_LIST(?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-
-//                cals.setString("pUSER_EMAIL", str);
+                
+                cals.setString("pUSER_EMAIL", email);
                 cals.setInt("pENTERPRISE_ID", enterprise_id);
-//                cals.setString("pWORKFLOW_STATUS", str);
-//                cals.setString("pLIST_TYPE", str);
-//                cals.setBoolean("pUSE_META_DATA", result);
-//                cals.setString("pMETA_DATA", str);
-//                cals.setInt("pOFFSET", offset);
-//                cals.setInt("pROW_COUNT", offset);
-
+                cals.setString("pWORKFLOW_STATUS", status);
+                cals.setString("pLIST_TYPE", type);
+                cals.setBoolean("pUSE_META_DATA", use_metadata);
+                cals.setString("pMETA_DATA", metadata);
+                cals.setInt("pOFFSET", offset);
+                cals.setInt("pROW_COUNT", rowcount);
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
-
                 if (cals.getString("pRESPONSE_CODE").equals("1")) {
-                    if (LogHandler.isShowDebugLog()) {
-                        LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-                    }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                    debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+                    
                     while (rs.next()) {
                         Workflow workflow = new Workflow();
                         workflow.setWorkflow_id(rs.getInt("ID"));
-                        workflow.setCreated_at(rs.getDate("CREATED_AT"));
-//                        workflow.setWorkflow_type(rs.getInt("WORKFLOW_TYPE"));
-                        workflow.setWorkflow_type_name(rs.getString("WORKFLOW_TYPE"));
+                        workflow.setCreated_at(rs.getDate("DATE_CREATED"));
+                        workflow.setCreated_by(rs.getString("CREATED_BY"));
+                        workflow.setWorkflow_type(rs.getInt("TYPE"));
                         workflow.setLabel(rs.getString("LABEL"));
-//                        workflow.setNote(rs.getString("NOTE"));
-//                        workflow.setMetadata(rs.getString("METADATA"));                        
+                        workflow.setNote(rs.getString("NOTE"));
+                        workflow.setStatus(Integer.parseInt(rs.getString("STATUS")));
+                        workflow.setMetadata(rs.getString("METADATA"));
+                        workflow.setWorkflowTemplate_type(rs.getInt("TEMPLATE_TYPE"));
+                        workflow.setWorkflowTemplate_type_name(rs.getString("WORKFLOW_TEMPLATE_TYPE_NAME"));
+                        workflow.setLast_modified_at(rs.getDate("LAST_MODIFIED_AT"));
+                        workflow.setLast_modified_by(rs.getString("LAST_MODIFIED_BY"));
+                        workflow.setWorkflow_type_name(rs.getString("WORKFLOW_TYPE_NAME"));
                         list.add(workflow);
                     }
                     databaseResponse.setObject(list);
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
                 } else {
-                    databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
+                    databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while getting list Workflow. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while getting list Workflow!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get list Workflow in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -1811,45 +1765,48 @@ public class DatabaseImpl implements Database {
      * Get the Workflow Template of the Workflow
      *
      * @param id ID of the Workflow
+     * @param transactionID
      * @return
      */
     @Override
     public DatabaseResponse getWorkflowTemplate(
             int id,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_WORKFLOW_TEMPLATE_GET(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setInt("pWORKFLOW_ID", id);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+                
                 if (mysqlResult == 1 && rs != null) {
                     rs.next();
                     WorkflowTemplate wtem = new WorkflowTemplate();
                     wtem.setWorkflow_id(rs.getInt("WORKFLOW_ID"));
                     wtem.setMeta_data_template(rs.getString("META_DATA_TEMPLATE"));
                     wtem.setType_name(rs.getString("TEMPLATE_TYPE"));
+                    wtem.setType_id(rs.getInt("TYPE_ID"));
                     wtem.setStatus(rs.getInt("STATUS"));
-
+                    
                     databaseResponse.setObject(wtem);
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
                 } else {
@@ -1857,21 +1814,19 @@ public class DatabaseImpl implements Database {
                 }
                 break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while getting Workflow Template. Details: " + Utils.printStackTrace(e));
-                }
+                LogHandler.debug(this.getClass(), debugString);
+                throw new Exception("Error while getting Workflow Template!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get Asset in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -1879,9 +1834,11 @@ public class DatabaseImpl implements Database {
      * Update the Workflow Detail/Option of the Workflow
      *
      * @param id
+     * @param email
      * @param map
      * @param hmac
      * @param created_by
+     * @param transactionID
      * @return
      */
     @Override
@@ -1893,8 +1850,9 @@ public class DatabaseImpl implements Database {
             String hmac,
             String created_by,
             String transactionID
-    ) {
+    ) throws Exception {
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         for (String temp : map.keySet()) {
             long startTime = System.nanoTime();
             Connection conn = null;
@@ -1904,40 +1862,40 @@ public class DatabaseImpl implements Database {
                 String str = "{ call USP_WORKFLOW_DETAIL_UPDATE(?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
                 cals = conn.prepareCall(str);
-
+                
                 cals.setInt("W_ID", id);
                 cals.setString("pUSER_EMAIL", email);
-                cals.setInt("pENTERPRISE_ID",aid);
+                cals.setInt("pENTERPRISE_ID", aid);
                 cals.setString("pATTRIBUTE_NAME", temp);
                 cals.setString("pATTRIBUTE_VALUE", map.get(temp).toString());
                 cals.setString("pHMAC", hmac);
                 cals.setString("pLAST_MODIFIED_BY", created_by);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 cals.execute();
                 int result = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE") + "\n";
+                
                 if (result != 1) {
                     response.setStatus(result);
-                    return response;
+                } else {
+                    response.setStatus(PaperlessConstant.CODE_SUCCESS);
                 }
             } catch (Exception e) {
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while update workflow detail - option. Details: " + Utils.printStackTrace(e));
-                }
-                e.printStackTrace();
+                throw new Exception("Error while update workflow detail - option!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
             long endTime = System.nanoTime();
             long timeElapsed = endTime - startTime;
         }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
 
@@ -1946,6 +1904,7 @@ public class DatabaseImpl implements Database {
      *
      * @param email
      * @param pass
+     * @param transactionID
      * @return
      */
     @Override
@@ -1953,52 +1912,53 @@ public class DatabaseImpl implements Database {
             String email,
             String pass,
             String transactionID
-    ) {
+    ) throws Exception {
         DatabaseResponse response = new DatabaseResponse();
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_LOGIN(?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
-
+            
             cals.setString("U_EMAIL", email);
             cals.setString("PASS", pass);
-
+            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pSTATUS_NAME", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             rs = cals.executeQuery();
             int result = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (result != 1) {
                 response.setStatus(result);
-                return response;
+            } else {
+                rs.next();
+                User user = new User();
+                user.setEmail(rs.getString("EMAIL"));
+                user.setMobile(rs.getString("MOBILE_NUMBER"));
+                user.setId(rs.getInt("ID"));
+                user.setName(rs.getString("USER_NAME"));
+                response.setObject(user);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
-            rs.next();
-            User user = new User();
-            user.setEmail(rs.getString("EMAIL"));
-            user.setMobile(rs.getString("MOBILE_NUMBER"));
-            user.setId(rs.getInt("ID"));
-            user.setName(rs.getString("USER_NAME"));
-            response.setObject(user);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while login. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while login!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
-//        long timeElapsed = endTime - startTime;
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        long timeElapsed = endTime - startTime;                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
 
@@ -2006,37 +1966,39 @@ public class DatabaseImpl implements Database {
      * Get Workflow Activity
      *
      * @param id ID of the Workflow Activity
+     * @param transactionID
      * @return
      */
     @Override
     public DatabaseResponse getWorkflowActivity(
             int id,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
-        boolean result = false;
         DatabaseResponse databaseResponse = new DatabaseResponse();
         int numOfRetry = retryTimes;
+        String debugString = transactionID + "\n";
         while (numOfRetry > 0) {
             try {
                 String str = "{ call USP_WORKFLOW_ACTIVITY_GET(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
                 cals.setInt("pWO_AC_ID", id);
-
+                
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-                }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+                debugString += "\t[SQL] " + cals.toString();
+                
                 rs = cals.executeQuery();
                 int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-                if (LogHandler.isShowDebugLog()) {
-                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-                }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+                debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+                
                 if (mysqlResult == 1) {
                     rs.next();
                     WorkflowActivity wa = new WorkflowActivity();
@@ -2044,42 +2006,43 @@ public class DatabaseImpl implements Database {
                     wa.setWorkflow_id(rs.getInt("WORKFLOW_ID"));
                     wa.setWorkflow_label(rs.getString("WORKFLOW_LABEL"));
                     wa.setUser_email(rs.getString("USER"));
-                    wa.setCreated_by(rs.getString("DATE"));
+                    wa.setCreated_at(new Date(rs.getTimestamp("DATE").getTime()));
                     wa.setTransaction(rs.getString("TRANSACTION_ID"));
                     wa.setWorkflow_template_type(rs.getInt("WORKFLOW_TEMPLATE_TYPE_ID"));
-
+                    wa.setRequestData(rs.getString("REQUEST_DATA"));
                     FileManagement file = new FileManagement();
                     file.setID(rs.getString("FILE_ID"));
                     file.setName(rs.getString("DOWNLOAD_LINK"));
                     file.setData(rs.getBytes("BINARY_DATA"));
-
+                    
                     wa.setFile(file);
                     wa.setCSV_id(rs.getString("CSV"));
                     wa.setRemark(rs.getString("REMARK"));
                     wa.setStatus(rs.getString("STATUS_NAME"));
-
+                    wa.setCreated_by(rs.getString("CREATED_BY"));
+                    wa.setModified_at(new Date(rs.getTimestamp("LAST_MODIFIED_AT").getTime()));
+                    wa.setModified_by(rs.getString("LAST_MODIFIED_BY"));
+                    
                     databaseResponse.setObject(wa);
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
+                    numOfRetry--;
                 } else {
                     databaseResponse.setStatus(mysqlResult);
+                    numOfRetry--;
                 }
-                break;
             } catch (Exception e) {
-                e.printStackTrace();
                 numOfRetry--;
-                databaseResponse.setStatus(PaperlessConstant.CODE_FAIL);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while getting WorkflowActivity. Details: " + Utils.printStackTrace(e));
-                }
+                throw new Exception("Error while getting WorkflowActivity!", e);
             } finally {
                 DatabaseConnectionManager.getInstance().close(conn);
             }
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get WorkflowAtivity in milliseconds: " + timeElapsed / 1000000);
-//        }
+//        }        
+        LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
     }
 
@@ -2093,52 +2056,52 @@ public class DatabaseImpl implements Database {
     public DatabaseResponse getEnterpriseInfoOfUser(
             String email,
             String transactionID
-    ) {
+    ) throws Exception {
         DatabaseResponse response = new DatabaseResponse();
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         List<Enterprise> list = new ArrayList<>();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_USER_GET_ENTERPRISE_INFO(?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
-
+            
             cals.setString("pUSER_EMAIL", email);
-
+            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             rs = cals.executeQuery();
             int result = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (result != 1) {
                 response.setStatus(result);
-                return response;
+            } else {
+                while (rs.next()) {
+                    Enterprise data = new Enterprise();
+                    data.setId(rs.getInt("ID"));
+                    data.setName(rs.getString("NAME"));
+                    list.add(data);
+                }
+                response.setObject(list);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
-            while (rs.next()) {
-                Enterprise data = new Enterprise();
-                data.setId(rs.getInt("ID"));
-                data.setName(rs.getString("NAME"));
-                list.add(data);
-            }
-            response.setObject(list);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while login. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while getEnterpriseInfoOfUser!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
-//        long timeElapsed = endTime - startTime;
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        long timeElapsed = endTime - startTime;               
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
 
@@ -2148,21 +2111,22 @@ public class DatabaseImpl implements Database {
      * @return
      */
     @Override
-    public DatabaseResponse getListWorkflowTemplateType() {
+    public DatabaseResponse getListWorkflowTemplateType() throws Exception {
         List<WorkflowTemplateType> list = new ArrayList<>();
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = "\n";
         try {
             String str = "{ call USP_TEMPLATE_TYPE_LIST() }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "[SQL] " + cals.toString());
-            }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
             if (rs != null) {
@@ -2173,27 +2137,25 @@ public class DatabaseImpl implements Database {
                     list.add(data);
                 }
                 response.setObject(list);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             } else {
                 response.setStatus(PaperlessConstant.CODE_FAIL);
                 return response;
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "Error while getting List WorkflowActivity. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while getting List WorkflowActivity!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse writeRefreshToken(
             String email,
@@ -2205,12 +2167,12 @@ public class DatabaseImpl implements Database {
             String hmac,
             String created_by,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_REFRESH_TOKEN_ADD(?,?,?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2227,45 +2189,45 @@ public class DatabaseImpl implements Database {
             cals.setString("pCREATED_BY", created_by);
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            rs = cals.getResultSet();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while writing refreshToken. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while writing refreshToken!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse removeRefreshToken(
             String refreshtoken,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
+        
         try {
             String str = "{ call USP_REFRESH_TOKEN_DELETE(?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2274,46 +2236,45 @@ public class DatabaseImpl implements Database {
             cals.setString("pSESSION_TOKEN", refreshtoken);
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            rs = cals.getResultSet();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while remove refreshToken. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while remove refreshToken!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of remove refreshToken in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse checkAccessToken(
             String email,
             String accesstoken,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_REFRESH_TOKEN_CHECK_EXISTS(?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2325,44 +2286,45 @@ public class DatabaseImpl implements Database {
 
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            rs = cals.getResultSet();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while writing refreshToken. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while check refreshToken!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
-    public DatabaseResponse getRefreshToken(String sessionID,
+    public DatabaseResponse getRefreshToken(
+            String sessionID,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = "\n";
         try {
             String str = "{ call USP_REFRESH_TOKEN_GET(?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2373,9 +2335,10 @@ public class DatabaseImpl implements Database {
 
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
             if (cals.getString("pRESPONSE_CODE").equals("1")) {
@@ -2387,27 +2350,24 @@ public class DatabaseImpl implements Database {
                 data.setExpired_on(new Date(rs.getTimestamp("EXPIRED_AT").getTime()));
                 data.setEmail(rs.getString("USER_EMAIL"));
                 response.setObject(data);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             } else {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while writing refreshToken. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while getRefreshToken!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LogHandler.debug(this.getClass(),"Execution time of get List WA in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse updateRefreshToken(
             String email,
@@ -2419,12 +2379,12 @@ public class DatabaseImpl implements Database {
             String hmac,
             String created_by,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_REFRESH_TOKEN_UPDATE(?,?,?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2441,35 +2401,34 @@ public class DatabaseImpl implements Database {
             cals.setString("pLAST_MODIFIED_BY", created_by);
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            rs = cals.getResultSet();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while update refreshToken. Details: " + Utils.printStackTrace(e));
-            }
-            e.printStackTrace();
+            throw new Exception("Error while update refreshToken!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse getUser(
             String email,
@@ -2477,12 +2436,13 @@ public class DatabaseImpl implements Database {
             int enterprise_id,
             String transactionID,
             boolean returnTypeUser //Sử dụng để ép kiểu trả về cho phù hợp
-            ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_USER_GET(?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2495,58 +2455,58 @@ public class DatabaseImpl implements Database {
 
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
-            cals.execute();
-            rs = cals.getResultSet();
-            rs.next();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(),
-                        "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            rs = cals.executeQuery();
+            
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
-            }
-            if (returnTypeUser) {
-                User user = new User();
-                user.setEmail(rs.getString("EMAIL"));
-                user.setName(rs.getString("USER_NAME"));
-                response.setObject(user);
             } else {
-                Account account = new Account();
-                account.setUser_email(rs.getString("EMAIL"));
-                account.setUser_name(rs.getString("USER_NAME"));                
-                account.setMobile_number(rs.getString("MOBILE_NUMBER"));
-                response.setObject(account);
-            }                    
-        } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(), "TransactionID:" + transactionID + "\nError while getting User. Details: " + Utils.printStackTrace(e));
+                rs.next();
+                if (returnTypeUser) {
+                    User user = new User();
+                    user.setEmail(rs.getString("EMAIL"));
+                    user.setName(rs.getString("USER_NAME"));
+                    response.setObject(user);
+                    response.setStatus(PaperlessConstant.CODE_SUCCESS);
+                } else {
+                    Account account = new Account();
+                    account.setUser_email(rs.getString("EMAIL"));
+                    account.setUser_name(rs.getString("USER_NAME"));
+                    account.setMobile_number(rs.getString("MOBILE_NUMBER"));
+                    response.setObject(account);
+                    response.setStatus(PaperlessConstant.CODE_SUCCESS);
+                }
             }
+        } catch (Exception e) {
+            throw new Exception("Error while getting User!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse getKEYAPI(
             int enterprise_id,
             String client_ID,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_ENTERPRISE_API_KEY_GET(?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2557,54 +2517,51 @@ public class DatabaseImpl implements Database {
             cals.setString("pCLIENT_ID", client_ID);
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
-            System.out.println(cals.toString());
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             rs = cals.executeQuery();
-            rs.next();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
-            System.out.println("Code:" + cals.getString("pRESPONSE_CODE"));
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                rs.next();
+                Enterprise ent = new Enterprise();
+                ent.setId(rs.getInt("ENTERPRISE_ID"));
+                ent.setClientID(rs.getString("CLIENT_ID"));
+                ent.setClientSecret(rs.getString("CLIENT_SECRET"));
+                response.setObject(ent);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
-            Enterprise ent = new Enterprise();
-            ent.setClientID(rs.getString("CLIENT_ID"));
-            ent.setClientSecret(rs.getString("CLIENT_SECRET"));
-            response.setObject(ent);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        transactionID,
-                        "Error while getKEY API. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while getKEY API!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse getEmailTemplate(
             int language,
             String email_noti,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_EMAIL_TEMPLATE_GET(?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2618,47 +2575,49 @@ public class DatabaseImpl implements Database {
             cals.registerOutParameter("pSUBJECT", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pBODY", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
-            cals.execute();
-//            if (LogHandler.isShowDebugLog()) {
-//                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-//            }
 
-            EmailTemplate template = new EmailTemplate();
-            template.setSubject(cals.getString("pSUBJECT"));
-            template.setBody(cals.getString("pBODY"));
-            response.setObject(template);
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        transactionID,
-                        "Error while find email template. Details: " + Utils.printStackTrace(e));
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (!cals.getString("pRESPONSE_CODE").equals("1")) {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+            } else {
+                EmailTemplate template = new EmailTemplate();
+                template.setSubject(cals.getString("pSUBJECT"));
+                template.setBody(cals.getString("pBODY"));
+                response.setObject(template);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
+        } catch (Exception e) {
+            throw new Exception("Error while find email template!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
 //        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse getEnterpriseInfo(
             int enterprise_id,
             String enterprise_name
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = "\n";
         try {
             String str = "{ call USP_ENTERPRISE_INFO_GET(?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2670,43 +2629,43 @@ public class DatabaseImpl implements Database {
 
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
             rs = cals.getResultSet();
-            rs.next();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
                 return response;
+            } else {
+                rs.next();
+                Enterprise ent = new Enterprise();
+                ent.setId(rs.getInt("ID"));
+                ent.setName(rs.getString("NAME"));
+                ent.setEmail_notification(rs.getString("NOTIFICATION_EMAIL"));
+                ent.setOwner_id(rs.getInt("OWNER"));
+                response.setObject(ent);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
-            Enterprise ent = new Enterprise();
-            ent.setId(rs.getInt("ID"));
-            ent.setName(rs.getString("NAME"));
-            ent.setEmail_notification(rs.getString("NOTIFICATION_EMAIL"));
-            ent.setOwner_id(rs.getInt("OWNER"));
-            response.setObject(ent);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        "Error while getting enterprise information. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while getting enterprise information!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
 //        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse createUser(
             String email,
@@ -2720,12 +2679,12 @@ public class DatabaseImpl implements Database {
             int business_type,
             String org_web,
             String hmac,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_USER_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2748,51 +2707,49 @@ public class DatabaseImpl implements Database {
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pSTATUS_NAME", java.sql.Types.VARCHAR);
 //            System.out.println(cals.toString());
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
-            System.out.println(cals.getString("pRESPONSE_CODE"));
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+
+//            System.out.println(cals.getString("pRESPONSE_CODE"));
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                String status = cals.getString("pSTATUS_NAME");
+                response.setObject(status);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
-            String status = cals.getString("pSTATUS_NAME");
-            response.setObject(status);
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        "Error while create User. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while create User!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
 //        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse getAuthenticatePassword(
             String email,
             int language_id,
             String email_type,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_GET_EMAIL_LOGIN(?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2808,103 +2765,100 @@ public class DatabaseImpl implements Database {
             cals.registerOutParameter("pBODY", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pPASSWORD", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
-            cals.execute();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
 
-            EmailTemplate template = new EmailTemplate();
-            template.setSubject(cals.getString("pSUBJECT"));
-            template.setBody(cals.getString("pBODY"));
-            template.setPassword(cals.getString("pPASSWORD"));
-            response.setObject(template);
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        transactionID,
-                        "Error while get Authenticate password for email. Details: " + Utils.printStackTrace(e));
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (!cals.getString("pRESPONSE_CODE").equals("1")) {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+            } else {
+                EmailTemplate template = new EmailTemplate();
+                template.setSubject(cals.getString("pSUBJECT"));
+                template.setBody(cals.getString("pBODY"));
+                template.setPassword(cals.getString("pPASSWORD"));
+                response.setObject(template);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
+        } catch (Exception e) {
+            throw new Exception("Error while get Authenticate password for email!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
 //        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse verifyEmail(
             String email,
             String password,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
-            String str = "{ call USP_USER_VERIFIED_EMAIL(?,?,?) }";
+            String str = "{ call USP_USER_VERIFIED_EMAIL(?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
             //In     
             cals.setString("pUSER_EMAIL", email);
-            cals.setString("pPASSWORD", password);
+//            cals.setString("pPASSWORD", password);
 
             //Out            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
 
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        transactionID,
-                        "Error while Verify email. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while Verify email!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse deactiveWorkflow(
             int workflow_id,
             String email,
             int enterprise_id,
             String modified_by,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_WORKFLOW_DEACTIVATE(?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2919,35 +2873,30 @@ public class DatabaseImpl implements Database {
             //Out            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
 
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
-            
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        transactionID,
-                        "Error while deactive Workflow. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while deactive Workflow!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
     
@@ -2957,12 +2906,12 @@ public class DatabaseImpl implements Database {
             String email,
             int enterprise_id,
             String modified_by,
-            String transactionID) {
+            String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
-        ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_WORKFLOW_REACTIVATE(?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -2977,38 +2926,33 @@ public class DatabaseImpl implements Database {
             //Out            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
 
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
             if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
+            } else {
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
-            
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        transactionID,
-                        "Error while reactive Workflow. Details: " + Utils.printStackTrace(e));
-            }
+            throw new Exception("Error while reactive Workflow!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
 //        long endTime = System.nanoTime();
 //        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
+//         
 //            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+//        }                
+        LogHandler.debug(this.getClass(), debugString);
         return response;
     }
-
+    
     @Override
     public DatabaseResponse updateWorkflowTemplate(
             int workflow_id,
@@ -3018,12 +2962,13 @@ public class DatabaseImpl implements Database {
             String hmac,
             String last_modified_by,
             String transactionID
-    ) {
+    ) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
         try {
             String str = "{ call USP_WORKFLOW_TEMPLATE_UPDATE(?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
@@ -3039,33 +2984,514 @@ public class DatabaseImpl implements Database {
 
             //Out            
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
-            }
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
             cals.execute();
-            if (LogHandler.isShowDebugLog()) {
-                LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + cals.getString("pRESPONSE_CODE"));
-            }
-            if(!cals.getString("pRESPONSE_CODE").equals("1")){
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (!cals.getString("pRESPONSE_CODE").equals("1")) {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
-                return response;
-            }            
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(this.getClass(),
-                        transactionID,
-                        "Error while find email template. Details: " + Utils.printStackTrace(e));
+            } else {
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
+        } catch (Exception e) {
+            throw new Exception("Error while updateWorkflowTemplate!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
         }
-//        long endTime = System.nanoTime();
-//        long timeElapsed = endTime - startTime;
-//        if (LogHandler.isShowDebugLog()) {
-//            LOG.debug("Execution time of update refreshToken in milliseconds: " + timeElapsed / 1000000);
-//        }
-        response.setStatus(PaperlessConstant.CODE_SUCCESS);
+        LogHandler.debug(this.getClass(), debugString);
         return response;
+    }
+    
+    @Override
+    public DatabaseResponse getListAsset(
+            int ent_id,
+            String email,
+            String file_name,
+            String type,
+            int offset,
+            int rowcount,
+            String transactionID) throws Exception {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        List<Asset> listAsset = new ArrayList<>();
+        DatabaseResponse response = new DatabaseResponse();
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_ASSET_LIST(?,?,?,?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            //In                        
+            cals.setInt("pENTERPRISE_ID", ent_id);
+            cals.setString("pEMAIL_USER", email);
+            cals.setString("pFILE_NAME", file_name);
+            cals.setString("TYPE", type);
+            cals.setInt("pOFFSET", offset);
+            cals.setInt("pROW_COUNT", rowcount);
+
+            //Out            
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            rs = cals.executeQuery();
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (!cals.getString("pRESPONSE_CODE").equals("1") || rs == null) {
+                response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+            } else {
+                while (rs.next()) {
+                    Asset temp = new Asset();
+                    temp.setId(rs.getInt("ID"));
+                    temp.setName(rs.getString("FILE_NAME"));
+                    temp.setCreated_at(new Date(rs.getTimestamp("DATE_CREATED").getTime()));
+                    temp.setSize(rs.getLong("SIZE"));
+                    temp.setUsed_by(rs.getString("USED_BY"));
+                    temp.setType_name(rs.getString("ASSET_TYPE_NAME"));
+                    listAsset.add(temp);
+                }
+                response.setObject(listAsset);
+                response.setStatus(PaperlessConstant.CODE_SUCCESS);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while getListAsset!", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return response;
+    }
+    
+    @Override
+    public DatabaseResponse getListWorkflowActivityWithCondition(
+            String email,
+            int aid,
+            String email_search,
+            Date date,
+            String g_type,
+            String status,
+            boolean is_test,
+            boolean is_product,
+            boolean is_custom_range,
+            Date fromdate,
+            Date todate,
+            String languagename,
+            int offset,
+            int rowcount,
+            String transactionID) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        List<WorkflowActivity> list = new ArrayList<>();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_WORKFLOW_ACTIVITY_LIST(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+            
+            cals.setString("U_EMAIL", email);
+            cals.setInt("pENTERPRISE_ID", aid);
+            cals.setString("EMAIL_SEARCH", email_search);
+            cals.setDate("DATE_SEARCH", (date != null) ? (new java.sql.Date(date.getTime())) : null);
+            cals.setString("G_TYPE", g_type);
+            cals.setString("W_A_STATUS", status);
+            cals.setInt("IS_TEST", is_test ? 1 : 0);
+            cals.setInt("IS_PRODUCT", is_product ? 1 : 0);
+            cals.setInt("IS_CUSTOM_RANGE", is_custom_range ? 1 : 0);
+            cals.setDate("FROM_DATE", (fromdate != null) ? (new java.sql.Date(fromdate.getTime())) : null);
+            cals.setDate("TO_DATE", (todate != null) ? (new java.sql.Date(todate.getTime())) : null);
+            cals.setString("pLANGUAGE_NAME", languagename == null ? "ENG" : languagename);
+            cals.setInt("pOFFSET", offset);
+            cals.setInt("pROW_COUNT", rowcount == 0 ? 1 : rowcount);
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (mysqlResult == 1) {
+                if (rs != null) {
+                    while (rs.next()) {
+                        WorkflowActivity wa = new WorkflowActivity();
+                        wa.setId(rs.getInt("ID"));
+                        wa.setWorkflow_id(rs.getInt("WORKFLOW_ID"));
+                        wa.setWorkflow_label(rs.getString("WORKFLOW_LABEL"));
+                        wa.setUser_email(rs.getString("USER"));
+                        wa.setCreated_by(rs.getString("DATE"));
+                        wa.setTransaction(rs.getString("TRANSACTION_ID"));
+                        wa.setEnterprise_id(rs.getInt("ENTERPRISE_ID"));
+                        
+                        FileManagement file = new FileManagement();
+                        file.setID(rs.getString("FILE_ID"));
+                        file.setName(rs.getString("DOWNLOAD_LINK"));
+//                        file.setData(rs.getBytes("BINARY_DATA"));                        
+                        wa.setFile(file);
+                        
+                        wa.setCSV_id(rs.getString("CSV"));
+                        wa.setRemark(rs.getString("REMARK"));
+                        wa.setStatus(rs.getString("STATUS_NAME"));
+                        wa.setCreated_at(new Date(rs.getTimestamp("DATE").getTime()));
+                        list.add(wa);
+                        
+                    }
+                    res.setStatus(PaperlessConstant.CODE_SUCCESS);
+                    res.setObject(list);
+                } else {
+                    res.setStatus(mysqlResult);
+                }
+            } else {
+                res.setStatus(mysqlResult);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while getting List WorkflowActivity!", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+    
+    @Override
+    public DatabaseResponse getCertificate(
+            String service_name,
+            String remark,
+            String url,
+            String transactionID) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        CallableStatement cals = null;
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_TRUST_MANAGER_GET(?,?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+            
+            cals.setString("pSERVICE_NAME", service_name);
+            cals.setString("pREMARK", remark);
+            cals.setString("pURL", url);
+            
+            cals.registerOutParameter("pPUBLIC_KEY", java.sql.Types.LONGVARCHAR);
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (mysqlResult == 1) {
+                res.setObject(cals.getString("pPUBLIC_KEY"));
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+            } else {
+                res.setStatus(mysqlResult);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while getting getCertificate!", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+    
+    @Override
+    public DatabaseResponse getStatusUser(
+            String email,
+            String transactionID) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_USER_GET_STATUS(?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+            
+            cals.setString("pUSER_EMAIL", email);
+            
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (mysqlResult == 1) {
+                rs.next();
+                Account account = new Account();
+                account.setUser_email(rs.getString("EMAIL"));
+                account.setUser_name(rs.getString("USER_NAME"));
+                account.setStatus_name(rs.getString("STATUS_NAME"));
+                res.setObject(account);
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+            } else {
+                res.setStatus(mysqlResult);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while getting Status User!", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+    
+    @Override
+    public DatabaseResponse updateUserPassword(
+            String email,
+            String password,
+            String transactionID) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        CallableStatement cals = null;
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_USER_UPDATE_PASSWORD(?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+            
+            cals.setString("pUSER_EMAIL", email);
+            cals.setString("pPASSWORD", password);
+            
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (mysqlResult != 1) {
+                res.setStatus(mysqlResult);
+            } else {
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while update User Password!", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+    
+    @Override
+    public DatabaseResponse updateUserPassword(
+            String email,
+            String old_password,
+            String new_password,
+            String transactionID) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_USER_CHANGE_PASSWORD(?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+            
+            cals.setString("pUSER_EMAIL", email);
+            cals.setString("NEW_PASS", new_password);
+            cals.setString("OLD_PASS", old_password);
+            
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+//                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+//                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (mysqlResult != 1) {
+                res.setStatus(mysqlResult);
+            } else {
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while update User Password!", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+    
+    @Override
+    public DatabaseResponse updateEnterpriseInfo(
+            int enterprise_id,
+            String dataRP,
+            byte[] fileP12,
+            String transactionID) throws Exception {
+//        DatabaseResponse res = new DatabaseResponse();
+//        long startTime = System.nanoTime();
+//        Connection conn = null;
+//        ResultSet rs = null;
+//        CallableStatement cals = null;
+//        String debugString = transactionID + "\n";
+//        try {
+//            String str = "{ call USP_USER_CHANGE_PASSWORD(?,?,?,?) }";
+//            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+//            cals = conn.prepareCall(str);
+//
+//            cals.setString("pUSER_EMAIL", email);
+//            cals.setString("NEW_PASS", new_password);
+//            cals.setString("OLD_PASS", old_password);
+//
+//            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+//
+////                    LogHandler.debug(this.getClass(), "TransactionID:" + transactionID + "\n[SQL] " + cals.toString());
+//            debugString += "\t[SQL] " + cals.toString();
+//
+//            cals.execute();
+//            rs = cals.getResultSet();
+//            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+//
+////                    LogHandler.debug(this.getClass(), "ResponseCode get from DB:" + mysqlResult);
+//            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+//
+//            if (mysqlResult != 1) {
+//                res.setStatus(mysqlResult);
+//            } else {
+//                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+//            }
+//        } catch (Exception e) {
+//            throw new Exception("Error while update User Password!", e);
+//        } finally {
+//            DatabaseConnectionManager.getInstance().close(conn);
+//        }
+//        LogHandler.debug(this.getClass(), debugString);
+//        return res;
+        return null;
+    }
+    
+    @Override
+    public DatabaseResponse getQRSize(
+            String qr_size_name,
+            String transactionID) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_QR_SIZE_GET(?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+            
+            cals.setString("pQR_SIZE_NAME", qr_size_name);
+            
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+            
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+            
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (mysqlResult != 1) {
+                res.setStatus(mysqlResult);
+            } else {
+                rs.next();
+                QRSize qrsize = new QRSize();
+                qrsize.setSize(rs.getInt("SIZE_VALUE"));
+                qrsize.setQr_size_name(rs.getString("QR_SIZE_NAME"));
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+                res.setObject(qrsize);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while getting QRSize!", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+    
+    @Override
+    public DatabaseResponse updateRequestDataOfWorkflowActivity(
+            int id,
+            String meta_data,
+            String modified_by,
+            String transactionID) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_WORKFLOW_ACTIVITY_UPDATE_REQUEST_DATA(?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+            
+            cals.setInt("pWORKFLOW_ACTIVITY_ID", id);
+            cals.setString("pREQUEST_DATA", meta_data);
+            cals.setString("pLAST_MODIFIED_BY", modified_by);
+            
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+            
+            debugString += "\t[SQL] " + cals.toString();
+            
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+            
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            
+            if (mysqlResult != 1) {
+                res.setStatus(mysqlResult);
+            } else {                
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);                
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while updating metadata WorkflowActivity", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+        
     }
 }

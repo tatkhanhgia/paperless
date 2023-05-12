@@ -5,6 +5,7 @@
 package vn.mobileid.id.paperless.kernelADMIN;
 
 import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.email.SendMail;
@@ -27,17 +28,25 @@ import vn.mobileid.id.utils.Utils;
 public class CreateAccount {
 
     public static InternalResponse checkDataAccount(Account account, boolean isJWTTokenExisted) {
-        if (account.getEnterprise_name() == null || account.getEnterprise_name().isEmpty()) {
+        if (!isJWTTokenExisted && (account.getEnterprise_name() == null || account.getEnterprise_name().isEmpty())) {
+            LogHandler.error(CreateAccount.class, "Missing Enterprise name in payload!!");
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                             PaperlessConstant.SUBCODE_MISSING_ENTERPRISE_DATA, "en", null));
         }
         if (!isJWTTokenExisted) {
+//            LogHandler.error(CreateAccount.class, "Missing email data in JWT!!");
             if (account.getUser_email() == null || account.getUser_email().isEmpty()) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                         PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                                 PaperlessConstant.SUBCODE_MISSING_USER_EMAIL, "en", null));
             }
+        }
+        if (account.getUser_password() == null || account.getUser_password().isEmpty()) {
+            LogHandler.error(CreateAccount.class, "Missing Password!!");
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            PaperlessConstant.SUBCODE_MISSING_USER_NAME_OR_PASSWORD, "en", null));
         }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
@@ -58,8 +67,8 @@ public class CreateAccount {
             int business_type,
             String org_web,
             String transactionID
-    ) {
-        try {
+    ) throws Exception {
+        
             //Get info enterprise (get ID owner)
             InternalResponse res = GetEnterpriseInfo.getEnterprise(
                     enteprise_name, enterprise_id, transactionID);
@@ -102,82 +111,74 @@ public class CreateAccount {
 
             EmailTemplate template;
 
-            if (password == null || password.isEmpty()) {
-                //Get password
-                res = GetAuthenticatePassword.getAuthenticatePassword(
-                        email,
-                        2,
-                        PaperlessConstant.EMAIL_SEND_PASSWORD,
-                        transactionID);
-
-                if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return res;
+//            if (password == null || password.isEmpty()) {
+//                //Get password
+//                res = GetAuthenticatePassword.getAuthenticatePassword(
+//                        email,
+//                        2,
+//                        PaperlessConstant.EMAIL_SEND_PASSWORD,
+//                        transactionID);
+//
+//                if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+//                    return res;
+//                }
+//                template = (EmailTemplate) res.getData();
+//                //Send mail
+//                SendMail send = new SendMail(
+//                        email,
+//                        template.getSubject(),
+//                        template.getBody(),
+//                        null,
+//                        null,
+//                        null
+//                );
+//                send.appendAuthorizationCode(template.getPassword());
+//                send.appendNameUser(name);
+//                if (doc_num != null) {
+//                    send.appendDocNumber(doc_num);
+//                }
+//                send.start();
+//            } else {
+            DatabaseResponse db = new DatabaseImpl().getEmailTemplate(
+                    2,
+                    PaperlessConstant.EMAIL_SEND_PASSWORD,
+                    transactionID);
+            if (db.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = null;
+                if (LogHandler.isShowErrorLog()) {
+                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            res.getStatus(),
+                            "en",
+                            null);
+                    LogHandler.error(CreateAccount.class,
+                            "TransactionID:" + transactionID
+                            + "\nCannot get Email Template - Detail:" + message);
                 }
-                template = (EmailTemplate) res.getData();
-                //Send mail
-                SendMail send = new SendMail(
-                        email,
-                        template.getSubject(),
-                        template.getBody(),
-                        null,
-                        null,
-                        null
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        message
                 );
-                send.setPassword(template.getPassword());
-                send.setNameUser(name);
-                if (doc_num != null) {
-                    send.setDocNumber(doc_num);
-                }
-                send.start();
-            } else {
-                DatabaseResponse db = new DatabaseImpl().getEmailTemplate(
-                        2,
-                        PaperlessConstant.EMAIL_SEND_PASSWORD,
-                        transactionID);
-                if (db.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                    String message = null;
-                    if (LogHandler.isShowErrorLog()) {
-                        message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                                res.getStatus(),
-                                "en",
-                                null);
-                        LogHandler.error(CreateAccount.class,
-                                "TransactionID:" + transactionID
-                                + "\nCannot get Email Template - Detail:" + message);
-                    }
-                    return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                            message
-                    );
-                }
-                template = (EmailTemplate) db.getObject();
-                
-                //Send mail
-                SendMail send = new SendMail(
-                        email,
-                        template.getSubject(),
-                        template.getBody(),
-                        null,
-                        null,
-                        null
-                );
-                send.setPassword(password);
-                send.setNameUser(name);
-                if (doc_num != null) {
-                    send.setDocNumber(doc_num);
-                }
-                send.start();
             }
+            template = (EmailTemplate) db.getObject();
+            String authorizeCode = Utils.generateOneTimePassword(6);
+            //Send mail
+            SendMail send = new SendMail(
+                    email,
+                    template.getSubject(),
+                    template.getBody(),
+                    null,
+                    null,
+                    null
+            );
+            send.appendAuthorizationCode(authorizeCode);
+            send.appendNameUser(name);
+            if (doc_num != null) {
+                send.appendDocNumber(doc_num);
+            }
+            send.start();
+            Resources.getQueueAuthorizeCode().put(email,authorizeCode);
+//            }
 
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, new String(""));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(CreateAccount.class,
-                        "TransactionID:" + transactionID
-                        + "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(ex));
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
-        }
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, new String(""));        
     }
 
     public static class CreateUser {

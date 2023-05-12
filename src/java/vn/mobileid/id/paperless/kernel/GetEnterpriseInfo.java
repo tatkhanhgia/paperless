@@ -4,6 +4,7 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
+import java.util.List;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -18,55 +19,78 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  * @author GiaTK
  */
 public class GetEnterpriseInfo {
+
     public static InternalResponse getEnterprise(
             String enterprise_name,
             int enterprise_id,
-            String transactionID){
-        try {
-            Database DB = new DatabaseImpl();                         
-            InternalResponse response = null;
+            String transactionID) throws Exception {
 
-            DatabaseResponse callDB = DB.getEnterpriseInfo(
-                    enterprise_id <=0 ? 0 : enterprise_id,
-                    enterprise_name);
-            
-            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
+        Database DB = new DatabaseImpl();
+        InternalResponse response = null;
+
+        DatabaseResponse callDB = DB.getEnterpriseInfo(
+                enterprise_id <= 0 ? 0 : enterprise_id,
+                enterprise_name);
+
+        try {
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
-                if(LogHandler.isShowErrorLog()){
+                if (LogHandler.isShowErrorLog()) {
                     message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
+                            callDB.getStatus(),
+                            "en",
+                             null);
                     LogHandler.error(GetUser.class,
-                            "TransactionID:"+transactionID+
-                            "\nCannot get Enterprise - Detail:"+message);
+                            "TransactionID:" + transactionID
+                            + "\nCannot get Enterprise - Detail:" + message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            
+
             Enterprise ent = (Enterprise) callDB.getObject();
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     ent);
 
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-//                e.printStackTrace();
-                LogHandler.error(GetUser.class,
-                        "TransactionID:"+transactionID+
-                        "\nUNKNOWN EXCEPTION. Details: " + e);
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+            throw new Exception("Cannot get enterpriseInfo!", e);
+//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
-    
-    public static void main(String[] args){
+
+    public  static InternalResponse getEnterpriseInfo(
+            String email,
+            String transactionID) throws Exception {
+        Database db = new DatabaseImpl();
+
+        //Login
+        DatabaseResponse res = db.getEnterpriseInfoOfUser(email, transactionID);
+        try {
+            if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                        res.getStatus(),
+                        "en",
+                        null);
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                        message);
+            }
+
+            List<Enterprise> list = (List<Enterprise>) res.getObject();
+
+            //Temp
+            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, list.get(0));
+        } catch (Exception e) {
+            throw new Exception("Cannot get enterprise info", e);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
         InternalResponse res = getEnterprise("Mobile-ID Company", 0, "tran");
         Enterprise ent = (Enterprise) res.getData();
-        System.out.println("Ent:"+ent.getName());
-        System.out.println("Ent:"+ent.getId());
+        System.out.println("Ent:" + ent.getName());
+        System.out.println("Ent:" + ent.getId());
     }
 
 }

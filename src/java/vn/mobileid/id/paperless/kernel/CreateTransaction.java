@@ -46,7 +46,7 @@ public class CreateTransaction {
             User user,
             String createdby,
             String transactionID
-    ) {
+    ) throws Exception {
         return processingCreateTransaction(logID,
                 ObjectID,
                 ObjectType,
@@ -79,35 +79,36 @@ public class CreateTransaction {
             String HMAC,
             User user,
             String created_by,
-            String transactionID) {
+            String transactionID) throws Exception {
+
+        Database DB = new DatabaseImpl();
+
+        //Create new Transaction
+        DatabaseResponse callDB = DB.createTransaction(
+                user.getEmail(), //email
+                logID, //logID
+                ObjectID, //Object ID
+                ObjectType, //Object Type
+                IPAddress, //IPAddress
+                initFile, //initFile
+                pY, //pY
+                pX, //pX
+                pC, //pC
+                pS, //pS
+                pages, //pages
+                description, //des   
+                HMAC, //hmac
+                created_by,
+                transactionID);
+
         try {
-            Database DB = new DatabaseImpl();
-
-            //Create new Transaction
-            DatabaseResponse callDB = DB.createTransaction(
-                    user.getEmail(), //email
-                    logID, //logID
-                    ObjectID, //Object ID
-                    ObjectType, //Object Type
-                    IPAddress, //IPAddress
-                    initFile, //initFile
-                    pY, //pY
-                    pX, //pX
-                    pC, //pC
-                    pS, //pS
-                    pages, //pages
-                    description, //des   
-                    HMAC, //hmac
-                    created_by,
-                    transactionID);
-
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 if (LogHandler.isShowErrorLog()) {
                     message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
-                             null);
+                            null);
                     LogHandler.error(CreateTransaction.class, "TransactionID:" + transactionID + "\nCannot create Transaction - Detail:" + message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
@@ -116,13 +117,11 @@ public class CreateTransaction {
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                     callDB.getIDResponse());
-        } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(CreateTransaction.class,"TransactionID:"+transactionID+"\nCannot create Transaction - Detail:" + e);
-            }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    e.getMessage()
-            );
+        } catch (Exception e) {            
+                throw new Exception("Cannot create Transaction!" , e);            
+//            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                    e.getMessage()
+//            );
         }
     }
 

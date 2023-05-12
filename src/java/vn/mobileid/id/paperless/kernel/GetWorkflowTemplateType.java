@@ -4,8 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
@@ -23,8 +21,6 @@ import vn.mobileid.id.utils.Utils;
  */
 public class GetWorkflowTemplateType {
 
-//    final private static Logger LOG = LogManager.getLogger(GetWorkflowTemplateType.class);
-
     /**
      * Get the workflow template type of the workflow input
      *
@@ -33,14 +29,15 @@ public class GetWorkflowTemplateType {
      */
     public static InternalResponse getWorkflowTemplateTypeFromDB(
             int id,
-            String transactionID) {
-        try {
+            String transactionID) throws Exception {
+        
             Database DB = new DatabaseImpl();
 
             DatabaseResponse callDB = DB.getTemplateType(
                     id,
                     transactionID);
 
+            try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
@@ -61,11 +58,8 @@ public class GetWorkflowTemplateType {
                     templateType);
 
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(GetWorkflowTemplateType.class,transactionID,"UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }            
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+            throw new Exception("Cannot get workflow template type!", e);           
+//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
@@ -78,7 +72,7 @@ public class GetWorkflowTemplateType {
     public static InternalResponse getWorkflowTemplateType(
             int id,
             String transactionID
-    ) {
+    ) throws Exception {
         if (Resources.getListWorkflowTemplateType().isEmpty()) {
             Resources.reloadListWorkflowTemplateType();
         }

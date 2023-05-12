@@ -65,8 +65,8 @@ public class UpdateWorkflowTemplate {
             int enterprise_id,
             Item_JSNObject detail,
             String hmac,
-            String transactionID) {
-        try {
+            String transactionID) throws Exception {
+        
             InternalResponse response = null;
             Database DB = new DatabaseImpl();
 
@@ -94,18 +94,10 @@ public class UpdateWorkflowTemplate {
 
             return new InternalResponse(
                     PaperlessConstant.CODE_SUCCESS,
-                    "");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(UpdateWorkflowTemplate.class, transactionID, "UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
-        }
+                    "");      
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         WorkflowTemplate template = new WorkflowTemplate();
         String json = "{\"items\":[{\"field\":\"FullName\",\"mandatory_enable\":false,\"type\":1,\"value\":\"NGUYỄN PHƯỚC VINH\"},{\"field\":\"BirthDate\",\"mandatory_enable\":false,\"type\":1,\"value\":\"31/12/2022\"},{\"field\":\"Nationality\",\"mandatory_enable\":false,\"type\":1,\"value\":\"VietNam\"},{\"field\":\"PersonalNumber\",\"mandatory_enable\":false,\"type\":1,\"value\":\"079200011188\"},{\"field\":\"IssuanceDate\",\"mandatory_enable\":false,\"type\":1,\"value\":\"31/12/2022\"},{\"field\":\"PlaceOfResidence\",\"mandatory_enable\":false,\"type\":1,\"value\":\"Quan11\"},{\"field\":\"Nationality\",\"mandatory_enable\":false,\"type\":1,\"value\":\"VietNam\"}]}";
         template.setMeta_data_template(json);

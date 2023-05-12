@@ -4,8 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -23,30 +21,31 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 public class GetUser {
 
     public static InternalResponse getUser(
-            String email,
-            int id,
+            String email, //Truyền email get dữ liệu
+            int id, //truyền id get dữ liệu
             int enterprise_id,
             String transactionID,
             boolean returnTypeUser //True trả về dạng User - ngược lại Account
-    ) {
+    ) throws Exception {
+
+        Database DB = new DatabaseImpl();
+        InternalResponse response = null;
+
+        DatabaseResponse callDB = DB.getUser(
+                email,
+                id <= 0 ? 0 : id,
+                enterprise_id,
+                transactionID,
+                returnTypeUser);
+
         try {
-            Database DB = new DatabaseImpl();
-            InternalResponse response = null;
-
-            DatabaseResponse callDB = DB.getUser(
-                    email,
-                    id <= 0 ? 0 : id,
-                    enterprise_id,
-                    transactionID,
-                    returnTypeUser);
-
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 if (LogHandler.isShowErrorLog()) {
                     message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
-                             null);
+                            null);
                     LogHandler.error(GetUser.class,
                             "TransactionID:" + transactionID
                             + "\nCannot get User - Detail:" + message);
@@ -57,9 +56,11 @@ public class GetUser {
             }
             if (returnTypeUser) {
                 User user = (User) callDB.getObject();
-                return new InternalResponse(
+                InternalResponse res = new InternalResponse(
                         PaperlessConstant.HTTP_CODE_SUCCESS,
                         user);
+                res.setUser(user);
+                return res;
             } else {
                 Account account = (Account) callDB.getObject();
                 return new InternalResponse(
@@ -68,18 +69,54 @@ public class GetUser {
             }
 
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                e.printStackTrace();
-                LogHandler.error(GetUser.class,
-                        "TransactionID:" + transactionID
-                        + "\nUNKNOWN EXCEPTION. Details: " + e);
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+            throw new Exception("Cannot get User!", e);
+//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
-    public static void main(String[] args) {
+    public static InternalResponse getStatusUser(
+            String email,
+            String transactionID
+    ) throws Exception {
+
+        Database DB = new DatabaseImpl();
+        InternalResponse response = null;
+
+        DatabaseResponse callDB = DB.getStatusUser(
+                email,
+                transactionID);
+
+        try {
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = null;
+                if (LogHandler.isShowErrorLog()) {
+                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                            callDB.getStatus(),
+                            "en",
+                            null);
+                    LogHandler.error(GetUser.class,
+                            "TransactionID:" + transactionID
+                            + "\nCannot get Status User - Detail:" + message);
+                }
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        message
+                );
+            }
+
+            Account account = (Account) callDB.getObject();
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
+                    account);
+
+        } catch (Exception e) {
+            throw new Exception("Cannot get Status of User!", e);
+//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
         InternalResponse res = getUser(null, 3, 3, "transactionID", true);
         System.out.println("Email:" + ((User) res.getData()).getEmail());
     }
+
 }

@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import java.util.Date;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 
 /**
  *
@@ -18,10 +18,12 @@ import jdk.nashorn.internal.ir.annotations.Ignore;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonRootName("Assets")
 public class Asset {
     private int id;
     private String name;
     private int type;
+    private String type_name;
     private long size;
     private String file_uuid;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
@@ -199,7 +201,13 @@ public class Asset {
     public void setBase64(String base64) {
         this.base64 = base64;
     }
-    
-    
-    
+
+    @JsonProperty("type_name")
+    public String getType_name() {
+        return type_name;
+    }
+
+    public void setType_name(String type_name) {
+        this.type_name = type_name;
+    }            
 }

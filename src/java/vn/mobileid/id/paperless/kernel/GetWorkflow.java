@@ -5,8 +5,6 @@
 package vn.mobileid.id.paperless.kernel;
 
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -22,48 +20,44 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class GetWorkflow {
-//    final private static Logger LOG = LogManager.getLogger(GetWorkflow.class);
-    
-    public static InternalResponse getWorkflow(int id,
-            String transactionID){
+
+    public static InternalResponse getWorkflow(
+            int id,
+            String transactionID) throws Exception {
+
+        Database DB = new DatabaseImpl();
+        InternalResponse response = null;
+
+        DatabaseResponse callDB = DB.getWorkflow(id, transactionID);
+
         try {
-            Database DB = new DatabaseImpl();                         
-            InternalResponse response = null;
-                    
-            DatabaseResponse callDB = DB.getWorkflow(id, transactionID);
-            
-            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
-                if(LogHandler.isShowErrorLog()){
+                if (LogHandler.isShowErrorLog()) {
                     message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
+                            callDB.getStatus(),
+                            "en",
+                            null);
                     LogHandler.error(GetWorkflow.class,
-                            "TransactionID:"+transactionID+
-                            "\nCannot get Workflow - Detail:"+message);
+                            "TransactionID:" + transactionID
+                            + "\nCannot get Workflow - Detail:" + message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            
-            Workflow workflow = (Workflow) callDB.getObject();            
+
+            Workflow workflow = (Workflow) callDB.getObject();
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     workflow);
-            
+
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(GetWorkflow.class,
-                        "TransactionID:"+transactionID+
-                        "\nUNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }            
-            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
-        }  
+            throw new Exception("Cannot get Workflow!", e);
+//            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
+        }
     }
-    
+
     public static InternalResponse getListWorkflow(
             String email,
             int enterprise_id,
@@ -74,64 +68,63 @@ public class GetWorkflow {
             int offset,
             int rowcount,
             String transactionID
-    ){
+    ) throws Exception {
+
+        Database DB = new DatabaseImpl();
+        InternalResponse response = null;
+
+        DatabaseResponse callDB = DB.getListWorkflow(
+                email,
+                enterprise_id,
+                status,
+                type,
+                use_metadata,
+                metadata,
+                offset,
+                rowcount,
+                transactionID);
+
         try {
-            Database DB = new DatabaseImpl();                
-            InternalResponse response = null;
-                    
-            DatabaseResponse callDB = DB.getListWorkflow(
-                    email,
-                    enterprise_id,
-                    status,
-                    type,
-                    use_metadata,
-                    metadata,
-                    offset,
-                    rowcount,
-                    transactionID);
-            
-            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
                 message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                if(LogHandler.isShowErrorLog()){                    
-                    LogHandler.error(GetWorkflow.class,"TransactionID:"+transactionID+"\nCannot get list Workflow - Detail:"+message);
+                        callDB.getStatus(),
+                        "en",
+                        null);
+                if (LogHandler.isShowErrorLog()) {
+                    LogHandler.error(GetWorkflow.class, "TransactionID:" + transactionID + "\nCannot get list Workflow - Detail:" + message);
                 }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            
+
             List<Workflow> object = (List<Workflow>) callDB.getObject();
-            
+
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     object);
-            
+
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(GetWorkflow.class,transactionID,"UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
-            }            
-            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
-        }  
+            throw new Exception("Cannot get list of workflow!", e);
+//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        }
     }
-    
-    public static void main(String[] args){
-//          List<Workflow> lis = ( List<Workflow>)GetWorkflow.getListWorkflow(
-//                 "giatk@mobile-id.vn",
-//                 3,
-//                 "1,2",
-//                 "12",                 
-//                 false,
-//                 "",
-//                 0,
-//                 0).getData();
-//          for(Workflow a : lis){
-//              System.out.println(a.getWorkflow_id());
-//          }
+
+    public static void main(String[] args) throws Exception {
+        List<Workflow> lis = (List<Workflow>) GetWorkflow.getListWorkflow(
+                "khanhpx@mobile-id.vn",
+                3,
+                "1,2",
+                "1,2,3,4,5,6,7,8",
+                false,
+                "",
+                0,
+                10,
+                "transactionID").getData();
+        for (Workflow a : lis) {
+            System.out.println(a.getWorkflow_id());
+        }
 
 //        Workflow a = (Workflow)GetWorkflow.getWorkflow(30).getData();
 //        System.out.println("ID:"+a.getWorkflow_id());

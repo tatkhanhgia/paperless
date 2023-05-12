@@ -25,7 +25,7 @@ public interface Database {
             String email,
             int enterprise_id,
             String transaction_id
-    );
+    ) throws Exception;
 
     public DatabaseResponse createWorkflowTemplate(
             int workflow_id,
@@ -33,13 +33,13 @@ public interface Database {
             String HMAC,
             String created_by,
             String transaction_id
-    );
+    ) throws Exception;
 
     public ResponseCode getResponse(
             String name,
-            String transaction_id);
+            String transaction_id) throws Exception;
 
-    public List<ResponseCode> getResponseCodes();
+    public List<ResponseCode> getResponseCodes() throws Exception;
 
     public List<Integer> getVerificationFunctionIDGrantForRP(int relyingPartyId);
 
@@ -56,21 +56,21 @@ public interface Database {
             String HMAC,
             String create_by,
             String transaction_id
-    );
+    ) throws Exception;
 
     public DatabaseResponse createFileManagement(
             String UUID,
             String name,
             int pages,
             int size,
-            int width,
-            int height,
+            float width,
+            float height,
             byte[] fileData,
             String HMAC,
             String created_by,
             String DBMS,
             String transaction_id
-    );
+    ) throws Exception;
 
 //    public DatabaseResponse addEnterpriseUser(
 //            String email_owner,
@@ -96,7 +96,7 @@ public interface Database {
             String hmac,
             String created_by,
             String transaction_id
-    );
+    ) throws Exception;
 
     public DatabaseResponse createWorkflowActivity(
             int enterprise_id,
@@ -114,29 +114,29 @@ public interface Database {
             String HMAC,
             String created_by,
             String transactionID
-    );
+    ) throws Exception;
 
     public DatabaseResponse getDataRP(
             int enterprise_id,
             String transaction_id
-    );
+    ) throws Exception;
 
     public DatabaseResponse createQR(
             String metaData,
             String hmac,
             String created_by,
             String transaction_id
-    );
+    ) throws Exception;
 
     public DatabaseResponse getFileManagement(
             int fileID,
             String transaction_id
-    );
+    ) throws Exception;
 
     public DatabaseResponse getAsset(
             int assetID,
             String transaction_id
-    );   
+    ) throws Exception;   
 
     public DatabaseResponse uploadAsset(
             String email,
@@ -151,11 +151,29 @@ public interface Database {
             String hmac,
             String createdBy,
             String transaction_id
-    );
+    ) throws Exception;
     
-    public List<WorkflowActivity> getListWorkflowActivity();
+    public List<WorkflowActivity> getListWorkflowActivity() throws Exception;
+    
+    public DatabaseResponse getListWorkflowActivityWithCondition(
+            String email,
+            int aid,
+            String email_search,
+            Date date,
+            String g_type,
+            String status,
+            boolean is_test,
+            boolean is_product,
+            boolean is_custom_range,
+            Date fromdate,
+            Date todate,
+            String languagename,
+            int offset,
+            int rowcount,
+            String transactionID
+    ) throws Exception;
 
-    public DatabaseResponse getWorkflowDetail(int id,String transaction_id);
+    public DatabaseResponse getWorkflowDetail(int id,String transaction_id) throws Exception;
 
     public DatabaseResponse createWorkflowDetail(
             int id,
@@ -163,11 +181,11 @@ public interface Database {
             String HMAC,
             String created_by,
             String transaction_id
-    );
+    ) throws Exception;
     
-    public DatabaseResponse getTemplateType(int id, String transaction_id);
+    public DatabaseResponse getTemplateType(int id, String transaction_id) throws Exception;
 
-    public HashMap<Integer, String> initTemplateTypeForProcessClass();
+    public HashMap<Integer, String> initTemplateTypeForProcessClass() throws Exception;
 
     public DatabaseResponse updateFileManagement(
             int id,
@@ -175,8 +193,9 @@ public interface Database {
             String DBMS,
             String name,
             int pages,
-            int width,
-            int height,
+            int size,
+            float width,
+            float height,
             int status,
             String hmac,
             String created_by,            
@@ -184,13 +203,13 @@ public interface Database {
             byte[] data,
             boolean isSigned,
             String transaction_id
-    );
+    ) throws Exception;
     
-    public DatabaseResponse getWorkflow(int id,String transaction_id);
+    public DatabaseResponse getWorkflow(int id,String transaction_id) throws Exception;
     
-    public DatabaseResponse getHashMapWorkflowTemplateType();
+    public DatabaseResponse getHashMapWorkflowTemplateType() throws Exception;
     
-    public DatabaseResponse getAssetType();
+    public DatabaseResponse getAssetType() throws Exception;
     
     public DatabaseResponse getListWorkflow(
             String email,
@@ -202,9 +221,9 @@ public interface Database {
             int offset,
             int rowcount  ,
             String transaction_id
-    );
+    ) throws Exception;
     
-    public DatabaseResponse getWorkflowTemplate(int id,String transaction_id);
+    public DatabaseResponse getWorkflowTemplate(int id,String transaction_id) throws Exception;
     
     public DatabaseResponse updateWorkflowDetail_Option(
             int id,
@@ -214,19 +233,24 @@ public interface Database {
             String hmac,
             String created_by,
             String transaction_id
-    );
+    ) throws Exception;
     
     public DatabaseResponse login(
             String email,
             String pass,
             String transaction_id
-    );
+    ) throws Exception;
     
-    public DatabaseResponse getWorkflowActivity(int id, String transaction_id);
+    public DatabaseResponse getWorkflowActivity(
+            int id,
+            String transaction_id)
+            throws Exception;
 
-    public DatabaseResponse getEnterpriseInfoOfUser(String email, String transaction_id);
+    public DatabaseResponse getEnterpriseInfoOfUser(
+            String email,
+            String transaction_id) throws Exception;
 
-    public DatabaseResponse getListWorkflowTemplateType();
+    public DatabaseResponse getListWorkflowTemplateType() throws Exception;
     
     public DatabaseResponse writeRefreshToken(
             String email,
@@ -236,23 +260,23 @@ public interface Database {
             Date issue_on,
             Date expires_on,
             String hmac,
-            String created_by,String transaction_id);
+            String created_by,String transaction_id) throws Exception;
     
     public DatabaseResponse removeRefreshToken(            
             String refreshtoken,
             String transaction_id
-    );
+    ) throws Exception;
     
     public DatabaseResponse checkAccessToken(
             String email,
             String accesstoken,
             String transaction_id
-    );
+    ) throws Exception;
     
     public DatabaseResponse getRefreshToken(
             String refreshtoken,
             String transaction_id
-    );
+    ) throws Exception;
     
     public DatabaseResponse updateRefreshToken(
             String email,
@@ -264,7 +288,7 @@ public interface Database {
             String hmac,
             String created_by,
             String transaction_id
-    );
+    ) throws Exception;
     
     public DatabaseResponse getUser(
             String email,
@@ -272,13 +296,13 @@ public interface Database {
             int enterprise_id,
             String transaction_id,
             boolean returnTypeUser
-    );
+    ) throws Exception;
     
     public DatabaseResponse getKEYAPI(
             int enterprise_id,
             String clientID,
             String transaction_id
-    );
+    ) throws Exception;
     
     public DatabaseResponse createUser(
             String email,
@@ -293,31 +317,31 @@ public interface Database {
             String org_web,
             String hmac,
             String transactionID
-    );
+    ) throws Exception;
     
     public DatabaseResponse getEmailTemplate(
             int language,
             String email_noti,
             String transaction_id
-    );
+    ) throws Exception;
     
     public DatabaseResponse getEnterpriseInfo(
             int enterprise_id,
             String enterprise_name
-    );
+    ) throws Exception;
     
     public DatabaseResponse getAuthenticatePassword(
             String email,
             int languege_id,
             String email_type,
             String transactionID
-    );
+    ) throws Exception;
     
     public DatabaseResponse verifyEmail(
             String email,
             String password,
             String transactionID
-    );
+    ) throws Exception;
     
     public DatabaseResponse deactiveWorkflow(            
             int workflow_id,
@@ -325,7 +349,7 @@ public interface Database {
             int enterprise_id,
             String modified_by,
             String transactionID
-    );
+    ) throws Exception;
     
     public DatabaseResponse reactiveWorkflow(            
             int workflow_id,
@@ -333,7 +357,7 @@ public interface Database {
             int enterprise_id,
             String modified_by,
             String transactionID
-    );
+    ) throws Exception;
     
     public DatabaseResponse updateWorkflowTemplate(
             int workflow_id,
@@ -343,6 +367,60 @@ public interface Database {
             String hmac,
             String last_modified_by,
             String transactionID
-    );
+    ) throws Exception;
+    
+    public DatabaseResponse getListAsset(
+            int ent_id,
+            String email,
+            String file_name,
+            String type,
+            int offset,
+            int rowcount,
+            String transactionID
+    ) throws Exception;
+        
+    public DatabaseResponse getCertificate(
+            String service_name,
+            String remark,
+            String url,
+            String transactionID
+    ) throws Exception;
+    
+    public DatabaseResponse getStatusUser(
+            String email,
+            String transactionID
+    ) throws Exception;
+    
+    public DatabaseResponse updateUserPassword(
+            String email,
+            String password,
+            String transactionID
+    ) throws Exception;
+    
+    public DatabaseResponse updateUserPassword(
+            String email,
+            String old_password,
+            String new_password,
+            String transactionID
+    ) throws Exception;
+    
+    public DatabaseResponse updateEnterpriseInfo(
+            int enterprise_id,
+            String dataRP,
+            byte[] fileP12,
+            String transactionID
+    ) throws Exception;
+    
+    public DatabaseResponse getQRSize(
+            String qr_size_name,
+            String transactionID
+    ) throws Exception;
+    
+    public DatabaseResponse updateRequestDataOfWorkflowActivity(
+            int id,
+            String meta_data,
+            String modified_by,
+            String transactionID
+    ) throws Exception;
 }
 

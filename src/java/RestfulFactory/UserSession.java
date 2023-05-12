@@ -34,7 +34,7 @@ import restful.sdk.API.Types.UserType;
 import restful.sdk.API.Utils;
 
 /**
- *
+ *https://qrypto.mobile-id.vn
  * @author GiaTK
  */
 public class UserSession implements IUserSession {

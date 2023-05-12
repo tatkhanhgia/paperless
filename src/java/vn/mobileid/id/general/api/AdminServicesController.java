@@ -10,6 +10,7 @@ import java.util.Base64;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -31,10 +32,11 @@ public class AdminServicesController extends HttpServlet {
     @POST
     @Path("/v1/admin/accounts")
     public Response createAccount(@Context final HttpServletRequest request, String payload) {
+        String transactionID="";
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            String transactionID = debugRequestLOG("createAccount", request, payload, 0);
+            
+            transactionID = debugRequestLOG("createAccount", request, payload, 0);
             
             if (request.getContentType() == null) {
                 return Response.status(400).entity("Missing Content-Type").build();
@@ -55,10 +57,11 @@ public class AdminServicesController extends HttpServlet {
                         .build();
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                e.printStackTrace();
-                LogHandler.error(this.getClass(), "Error " + e);
-            }
+            LogHandler.error(
+                        this.getClass(),
+                        transactionID,
+                        "Error while create Account",
+                        e);
             return Response.status(500).entity("Internal Server Error").build();
         }
     }
@@ -66,10 +69,11 @@ public class AdminServicesController extends HttpServlet {
     @POST
     @Path("/v1/authenticate/sso")
     public Response loginSSO(@Context final HttpServletRequest request, String payload) {
+        String transactionID="";
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            String transactionID = debugRequestLOG("loginSSO", request, payload, 0);            
+            
+            transactionID = debugRequestLOG("loginSSO", request, payload, 0);            
             if (request.getContentType() == null) {
                 return Response.status(400).entity("Missing Content-Type").build();
             }
@@ -89,10 +93,11 @@ public class AdminServicesController extends HttpServlet {
                         .build();
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                e.printStackTrace();
-                LogHandler.error(this.getClass(), "Error " + e);
-            }
+            LogHandler.error(
+                        this.getClass(),
+                        transactionID,
+                        "Error while loging SSO",
+                        e);
             return Response.status(500).entity("Internal Server Error").build();
         }
     }
@@ -100,10 +105,11 @@ public class AdminServicesController extends HttpServlet {
     @POST
     @Path("/v1/authenticate/verify")
     public Response verifyUser(@Context final HttpServletRequest request, String payload) {
+        String transactionID="";
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            String transactionID = debugRequestLOG("VerifyUser", request, payload, 0);            
+            
+            transactionID = debugRequestLOG("VerifyUser", request, payload, 0);            
             if (request.getContentType() == null) {
                 return Response.status(400).entity("Missing Content-Type").build();
             }
@@ -123,10 +129,11 @@ public class AdminServicesController extends HttpServlet {
                         .build();
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                e.printStackTrace();
-                LogHandler.error(this.getClass(), "Error " + e);
-            }
+            LogHandler.error(
+                        this.getClass(),
+                        transactionID,
+                        "Error while verifying user",
+                        e);
             return Response.status(500).entity("Internal Server Error").build();
         }
     }
@@ -134,10 +141,10 @@ public class AdminServicesController extends HttpServlet {
     @POST
     @Path("/v1/admin/accounts/{var:.*}")
     public Response getAccount(@Context final HttpServletRequest request) {
+        String transactionID="";
         try {
             InternalResponse response;
-            //LOG FOR TESTING
-            String transactionID = debugRequestLOG("getAccount", request, null, 0);            
+            transactionID = debugRequestLOG("getAccount", request, null, 0);            
             if (request.getContentType() == null) {
                 return Response.status(400).entity("Missing Content-Type").build();
             }
@@ -157,38 +164,126 @@ public class AdminServicesController extends HttpServlet {
                         .build();
             }
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                e.printStackTrace();
-                LogHandler.error(this.getClass(), "Error " + e);
-            }
+            LogHandler.error(
+                        this.getClass(),
+                        transactionID,
+                        "Error while getting accounts",
+                        e);
             return Response.status(500).entity("Internal Server Error").build();
         }
     }
     
-    public static String debugRequestLOG(String function, @Context final HttpServletRequest request, String payload, int id) {
-        String data = "\n------------------\n" + function + " request:\n" + "\tMETHOD:" + request.getMethod()
-                + "\n\tContentType:" + request.getContentType();
-        String user = "";
-        if (request.getHeader("Authorization") != null) {
-            user = getUser(request.getHeader("Authorization"));
-            data += "\n\tUser:" + user;
+    @POST
+    @Path("/v1/admin/activation/resend")
+    public Response resendActivation(@Context final HttpServletRequest request, String payload) {
+        String transactionID="";
+        try {
+            InternalResponse response;
+            
+            transactionID = debugRequestLOG("resendActivation", request, payload, 0);
+            
+            if (request.getContentType() == null) {
+                return Response.status(400).entity("Missing Content-Type").build();
+            }
+            response = PaperlessAdminService.resendActivation(request, payload, transactionID);
+            debugResponseLOG("resendActivation", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(200)
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                        this.getClass(),
+                        transactionID,
+                        "Error while resending activation",
+                        e);
+            return Response.status(500).entity("Internal Server Error").build();
         }
-        if (user.isEmpty()) {
-            user = "@username";
-        }
-        String transaction = Utils.generateTransactionId(user);
-        data += "\n\tTransactionID:" + transaction;
-        if (request.getHeader("x-send-mail") != null) {
-            data += "\n\tSendMail:" + request.getHeader("x-send-mail");
-        }
-        data += "\n\tBody (or ID):" + conclusionString(payload, id);
-
-        LogHandler.request(ServicesController.class, data);
-        return transaction;
     }
-
-    public static void debugResponseLOG(String function, InternalResponse response) {
-        LogHandler.request(AdminServicesController.class, "\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
+    
+    @POST
+    @Path("/v1/account/password/reset")
+    public Response forgotPassword(@Context final HttpServletRequest request, String payload) {
+        String transactionID="";
+        try {
+            InternalResponse response;
+            
+            transactionID = debugRequestLOG("forgotPassword", request, payload, 0);
+            
+            if (request.getContentType() == null) {
+                return Response.status(400).type(MediaType.APPLICATION_JSON).entity("Missing Content-Type").build();
+            }
+            
+            response = PaperlessAdminService.forgotPassword(request, payload, transactionID);
+            debugResponseLOG("forgotPassword", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(200)
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                        this.getClass(),
+                        transactionID,
+                        "Error while forgotting password",
+                        e);
+            return Response.status(500).entity("Internal Server Error").build();
+        }
+    }
+    
+    @PUT
+    @Path("/v1/account/password/new")
+    public Response setNewPassword(@Context final HttpServletRequest request, String payload) {
+        String transactionID="";
+        try {
+            InternalResponse response;
+            
+            transactionID = debugRequestLOG("setNewPassword", request, payload, 0);
+            
+            if (request.getContentType() == null) {
+                return Response.status(400).type(MediaType.APPLICATION_JSON).entity("Missing Content-Type").build();
+            }
+            
+            response = PaperlessAdminService.setNewPassword(request, payload, transactionID);
+            debugResponseLOG("setNewPassword", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(200)
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                        this.getClass(),
+                        transactionID,
+                        "Error while setting new password",
+                        e);
+            return Response.status(500).entity("Internal Server Error").build();
+        }
     }
 
     //========================INTERNAL METHOD==========================
@@ -208,24 +303,45 @@ public class AdminServicesController extends HttpServlet {
                 payload = new String(Base64.getUrlDecoder().decode(payload), "UTF-8");
                 chunks = payload.split(":");
                 return chunks[0];
-            } catch (Exception ex) {
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(ServicesController.class, "Error while decode token!" + ex);
-                }
+            } catch (Exception ex) {                
                 return "";
             }
         }       
 
         try {
             payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
-        } catch (Exception ex) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(ServicesController.class, "Error while decode token!" + ex);
-            }
+        } catch (Exception ex) {            
             return "";
         }
         int begin = payload.indexOf("email");
         int end = payload.indexOf("azp");
         return payload.substring(begin + 8, end - 3);
+    }
+
+    private static String debugRequestLOG(String function, @Context final HttpServletRequest request, String payload, int id) {
+        String data = "\n--------------------------\n" + function + " request:\n" + "\tMETHOD:" + request.getMethod()
+                + "\n\tContentType:" + request.getContentType();
+        String user = "";
+        if (request.getHeader("Authorization") != null) {
+            data += "\n\tAuthorization:"+request.getHeader("Authorization");
+            user = getUser(request.getHeader("Authorization"));
+            data += "\n\tUser:" + user;
+        }
+        if (user.isEmpty()) {
+            user = "@username";
+        }
+        String transaction = Utils.generateTransactionId(user);
+        data += "\n\tTransactionID:" + transaction;
+        if (request.getHeader("x-send-mail") != null) {
+            data += "\n\tSendMail:" + request.getHeader("x-send-mail");
+        }
+        data += "\n\tBody (or ID):" + conclusionString(payload, id);
+
+        LogHandler.request(ServicesController.class, data);
+        return transaction;
+    }
+
+    private static void debugResponseLOG(String function, InternalResponse response) {
+        LogHandler.request(AdminServicesController.class, "\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
     }
 }

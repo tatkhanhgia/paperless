@@ -4,8 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -27,7 +25,7 @@ public class CreateQR {
             String hmac,
             String created_by,
             String transactionID
-    ) {
+    ) throws Exception {
         Database DB = new DatabaseImpl();
         DatabaseResponse callDB = DB.createQR(
                 metaData,

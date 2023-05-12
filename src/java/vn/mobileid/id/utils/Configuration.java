@@ -24,6 +24,7 @@ public class Configuration {
 
     private Properties prop = new Properties();
     private Properties keycloakprop = new Properties();
+    private Properties qryptoProp = new Properties();
     private Properties appInfo = new Properties();
     private Properties propSMTP = new Properties();
 
@@ -63,6 +64,7 @@ public class Configuration {
     private boolean showWarnLog;
     private boolean showErrorLog;
     private boolean showFatalLog;
+    private boolean showRequestLog;
 
     private String serverTimeType;
     
@@ -81,8 +83,7 @@ public class Configuration {
     private String password;
     private String sendFromAddr;
     private String sendFromName;
-    
-    
+         
     
     public static Configuration getInstance() {
         if (instance == null) {
@@ -96,9 +97,10 @@ public class Configuration {
         try {
 //            getEnvConfig();
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            //Load Qrypto Services Properties-----------------------------------
+            //Load Paperless Services Properties-----------------------------------
 //            if (Utils.isNullOrEmpty(System.getenv("DTIS_DB_URL"))) {            
-                InputStream appProperties = loader.getResourceAsStream("resources/config/app.properties");
+                InputStream appProperties = loader.getResourceAsStream(
+                        "resources/config/app.properties");
                 if (appProperties != null) {
                     prop.load(appProperties);
                     if (prop.keySet() == null) {
@@ -203,6 +205,32 @@ public class Configuration {
                 }
             }
             
+            //Load QryptoService=============================================
+            InputStream qryptoStream = loader.getResourceAsStream("resources/config/qrypto.properties");
+            if (qryptoProp != null) {
+                qryptoProp.load(qryptoStream);
+                if (qryptoProp.keySet() == null) {
+                    String propertiesFile = Utils.getPropertiesFile("resources/config/qrypto.properties");
+                    if (propertiesFile != null) {
+                        LOG.info("Read the configuation file from " + propertiesFile);
+                        InputStream in = new FileInputStream(propertiesFile);
+                        qryptoProp.load(in);
+                        in.close();
+                    } else {
+                        LOG.error("Cannot find any configuation file. This is a big problem");
+                    }
+                }
+                qryptoStream.close();
+            } else {
+                String propertiesFile = Utils.getPropertiesFile("resources/config/qrypto.properties");
+                if (propertiesFile != null) {
+                    LOG.info("Read the configuation file from " + propertiesFile);
+                    qryptoProp.load(new FileInputStream(propertiesFile));
+                } else {
+                    LOG.error("Cannot find any configuation file. This is a big problem");
+                }
+            }
+            
             
             dbUrl = prop.getProperty("paperless.db.url") == null ? System.getenv("DTIS_DB_URL") : prop.getProperty("paperless.db.url");
             dbUsername = prop.getProperty("paperless.db.username") == null ? System.getenv("DTIS_DB_USERNAME") : prop.getProperty("paperless.db.username");
@@ -238,7 +266,8 @@ public class Configuration {
             showWarnLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_WARN") == null ? prop.getProperty("paperless.log4j.warn", "true") : System.getenv("DTIS_LOG4J_WARN"));
             showErrorLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_ERROR") == null ? prop.getProperty("paperless.log4j.error", "true") : System.getenv("DTIS_LOG4J_ERROR"));
             showFatalLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_FATAL") == null ? prop.getProperty("paperless.log4j.fatal", "true") : System.getenv("DTIS_LOG4J_FATAL"));
-
+            showRequestLog = Boolean.parseBoolean(System.getenv("DTIS_LOG4J_FATAL") == null ? prop.getProperty("paperless.log4j.request", "true") : System.getenv("DTIS_LOG4J_FATAL"));
+            
             serverTimeType = prop.getProperty("server.time.type") == null ? System.getenv("SERVER_TIME_TYPE") : prop.getProperty("server.time.type");
             
             keycloakURL = keycloakprop.getProperty("dtis.keycloak.url") == null ? System.getenv("DTIS_KEYCLOAK_URL") : keycloakprop.getProperty("dtis.keycloak.url");
@@ -258,8 +287,8 @@ public class Configuration {
             
             if (serverTimeType == null) {
                 serverTimeType = "";
-            }
-
+            }           
+            
         } catch (Exception e) {
             e.printStackTrace();
             LOG.error("Error while loading app.properties. Details. " + Utils.printStackTrace(e));
@@ -409,7 +438,15 @@ public class Configuration {
         return keycloakClient_secret;
     }
 
-    public void setKeycloakClient_secret(String keycloakClient_secret) {
-        this.keycloakClient_secret = keycloakClient_secret;
+    public String getQryptoHost(){
+        return this.qryptoProp.getProperty("qrypto.host");
     }
+    
+    public String getQryptoAuthentication(){
+        return this.qryptoProp.getProperty("qrypto.authorization");
+    }
+
+    public boolean isShowRequestLog() {
+        return this.showRequestLog ;
+    }        
 }

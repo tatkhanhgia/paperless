@@ -4,11 +4,7 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -40,12 +36,11 @@ public class UpdateFileManagement {
             String last_modified_by,
             byte[] data,
             boolean isSigned,
-            String transactionID) {
-        try {
+            String transactionID) throws Exception {        
             Database DB = new DatabaseImpl();                      
             InternalResponse res = GetFileManagement.getFileManagement(
                     id,
-                    transactionID);
+                    transactionID);            
             if(res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
                 return res;
             }
@@ -67,6 +62,7 @@ public class UpdateFileManagement {
                     fileOriginal.getDBMS(),
                     fileOriginal.getName(),
                     fileOriginal.getPages(),
+                    fileOriginal.getSize(),
                     fileOriginal.getWidth(),
                     fileOriginal.getHeight(),
                     fileOriginal.getStatus(),
@@ -89,18 +85,9 @@ public class UpdateFileManagement {
                         message
                 );
             }
-
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
-                    "");
-
-        } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-//                e.printStackTrace();
-                LogHandler.error(UpdateFileManagement.class,transactionID,"UNKNOWN EXCEPTION. Details: " + e);
-            }
-            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
-        }
+                    "");       
     }
 
     public static void main(String[] arhs) throws IOException {

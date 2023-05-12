@@ -95,6 +95,7 @@ public class ServerSession implements IServerSession {
 
     @Override
     public void login() throws Throwable {
+//        LogHandler.info(ServerSession.class, "Login!");
 //        System.out.println("____________auth/login____________");
         String authHeader;
 
@@ -113,15 +114,7 @@ public class ServerSession implements IServerSession {
 
         loginRequest.setLang(this.lang);
 
-        //Test
-//        System.out.println("BaseURL:"+property.getBaseUrl());
-//        System.out.println("RP:"+property.getRelyingParty());
-//        System.out.println("User:"+property.getRelyingPartyUser());
-//        System.out.println("Pass:"+property.getRelyingPartyPassword());
-//        System.out.println("PassKey:"+property.getRelyingPartyKeyStorePassword());
-//        System.out.println("Token:"+authHeader);
         String jsonReq = Utils.gsTmp.toJson(loginRequest);
-//        System.out.println("Payload:"+jsonReq);
 
         HttpResponse response = HTTPUtils.sendPost(property.getBaseUrl() + "auth/login", jsonReq, authHeader);
 
@@ -194,7 +187,7 @@ public class ServerSession implements IServerSession {
                 throw new Exception(response.getMsg());
             } catch (Exception ex) {
                 ex.printStackTrace();
-                LogHandler.error(ServerSession.class, "Error - Detail:"+ex);
+                LogHandler.error(ServerSession.class, "Error - Detail:", ex);
             }
         }
 //        System.out.println("credentials/list response.getMsg() = "+ response.getMsg());
@@ -851,9 +844,7 @@ public class ServerSession implements IServerSession {
                     LogHandler.info(ServerSession.class,
                             "Err code: " + signCloudResp.getError() +
                             "\nErr Desscription: " + signCloudResp.getErrorDescription());
-                } 
-            System.out.println("ErrorCode:"+signCloudResp.getError());
-            System.out.println("HttpCode:"+response.getHttpCode());
+                }             
             if (signCloudResp.getError() == 0 && response.isStatus()) {
                 return true;
             }

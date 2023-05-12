@@ -16,6 +16,7 @@ public class WorkflowTemplate {
     private String meta_data_template;
     private Item_JSNObject meta_data;
     private String type_name;
+    private int type_id;
     private int status;
     private String hmac;
     private String created_by;
@@ -106,6 +107,14 @@ public class WorkflowTemplate {
 
     public void setMeta_data(Item_JSNObject meta_data) {
         this.meta_data = meta_data;
+    }
+
+    public int getType_id() {
+        return type_id;
+    }
+
+    public void setType_id(int type_id) {
+        this.type_id = type_id;
     }
     
     

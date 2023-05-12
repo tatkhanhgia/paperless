@@ -10,7 +10,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Date;
 import jdk.nashorn.internal.ir.annotations.Ignore;
+import vn.mobileid.id.paperless.serializer.CustomWorkflowActivitySerializer;
 
 /**
  *
@@ -18,8 +21,11 @@ import jdk.nashorn.internal.ir.annotations.Ignore;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonSerialize(using = CustomWorkflowActivitySerializer.class)
 public class WorkflowActivity {
 
+    private int id;
+    private String status;    
     private String enterprise_name;
     private int enterprise_id;
     private int workflow_id;
@@ -28,16 +34,18 @@ public class WorkflowActivity {
     private String user_email;
     private String transaction;
     private String remark;
-    private boolean use_test_token;
-    private boolean update_enable;
+    public  boolean use_test_token;
+    public  boolean update_enable;
     private String created_by;
-    private boolean is_production;
-    private int id;
+    private Date created_at;
+    private String modified_by;
+    private Date modified_at;
+    private boolean is_production;    
     private FileManagement file;
     private String CSV_id; //pending        
-    private int Generation_type;
-    private String requestData;
-    private String status;    
+    private int generation_type;
+    private String requestData;        
+    
 
     public WorkflowActivity() {
         enterprise_name = null;
@@ -55,7 +63,7 @@ public class WorkflowActivity {
         id = 0;
         file = null;
         CSV_id = null; //pending        
-        Generation_type = 0;
+        generation_type = 0;
         requestData = null;
     }
 
@@ -199,11 +207,11 @@ public class WorkflowActivity {
 
     @JsonProperty("generation_type")
     public int getGeneration_type() {
-        return Generation_type;
+        return generation_type;
     }
 
     public void setGeneration_type(int Generation_type) {
-        this.Generation_type = Generation_type;
+        this.generation_type = Generation_type;
     }
     
     public String getRequestData() {
@@ -222,6 +230,32 @@ public class WorkflowActivity {
     public void setStatus(String status) {
         this.status = status;
     }       
+
+    public Date getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(Date created_at) {
+        this.created_at = created_at;
+    }
+
+    public String getModified_by() {
+        return modified_by;
+    }
+
+    public void setModified_by(String modified_by) {
+        this.modified_by = modified_by;
+    }
+
+    public Date getModified_at() {
+        return modified_at;
+    }
+
+    public void setModified_at(Date modified_at) {
+        this.modified_at = modified_at;
+    }
+    
+    
     
     public static void main(String[] args) throws JsonProcessingException {
         WorkflowActivity ac = new WorkflowActivity();

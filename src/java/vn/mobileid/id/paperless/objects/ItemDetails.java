@@ -7,10 +7,6 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRootName;
-import java.sql.Array;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -23,9 +19,29 @@ public class ItemDetails {
     private boolean mandatory_enable;
     private int type;
     private Object value;
+    private String file_field;
+    private String file_format;
 
     public ItemDetails() {
     }
+
+    @JsonProperty("file_format")
+    public String getFile_format() {
+        return file_format;
+    }
+
+    public void setFile_format(String file_format) {
+        this.file_format = file_format;
+    }   
+    
+    @JsonProperty("file_field")
+    public String getFile_field() {
+        return file_field;
+    }
+
+    public void setFile_field(String file_field) {
+        this.file_field = file_field;
+    }        
     
     @JsonProperty("mandatory_enable")
     public boolean isMandatory_enable() {
