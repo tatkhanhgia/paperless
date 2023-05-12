@@ -108,7 +108,7 @@ public class QryptoService {
         field1.setName("Name");
         field1.setType(QRSchema.fieldType.t2);
         field1.setKvalue("kvalue");
-        
+        String a = "";
         listField.add(field1);
         listData.add(data);
         
