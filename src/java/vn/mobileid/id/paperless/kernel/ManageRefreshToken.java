@@ -5,8 +5,6 @@
 package vn.mobileid.id.paperless.kernel;
 
 import java.util.Date;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -21,6 +19,21 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  */
 public class ManageRefreshToken {
 
+    /**
+     * Write a refresh token into DB
+     *
+     * @param email - Email of user
+     * @param session - String Session
+     * @param client_credentials_enabled
+     * @param clientID
+     * @param issue_on
+     * @param expires_on
+     * @param hmac
+     * @param created_by
+     * @param transactionID
+     * @return No Object => Check status
+     * @throws Exception
+     */
     public static InternalResponse write(
             String email,
             String session,
@@ -46,22 +59,30 @@ public class ManageRefreshToken {
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             String message = null;
-            if (LogHandler.isShowErrorLog()) {
-                message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                        res.getStatus(),
-                        "en",
-                        null);
-                LogHandler.error(ManageRefreshToken.class, transactionID, "Cannot write RefreshToken - Detail:" + message);
-            }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+            message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
+                    res.getStatus(),
+                    "en",
+                    null);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     message
             );
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
                 ""
         );
     }
 
+    /**
+     * Remove the refreshtoken
+     *
+     * @param sessionID - Session
+     * @param transactionID
+     * @return no object => check status
+     * @throws Exception
+     */
     public static InternalResponse remove(
             String sessionID,
             String transactionID
@@ -71,15 +92,29 @@ public class ManageRefreshToken {
                 sessionID,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
                     res.getStatus(),
                     "en",
                     null);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED, message);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    message);
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 
+    /**
+     * Check exist of the RefreshToken
+     *
+     * @param email - Email of User
+     * @param session - Session
+     * @param transactionID
+     * @return no object => check status
+     * @throws Exception
+     */
     public static InternalResponse check(
             String email,
             String session,
@@ -91,15 +126,28 @@ public class ManageRefreshToken {
                 session,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
                     res.getStatus(),
                     "en",
                     null);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED, message);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    message);
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 
+    /**
+     * Get data refresh token of that refreshtoken
+     *
+     * @param session
+     * @param transactionID
+     * @return
+     * @throws Exception
+     */
     public static InternalResponse get(
             String session,
             String transactionID
@@ -109,16 +157,36 @@ public class ManageRefreshToken {
                 session,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
                     res.getStatus(),
                     "en",
                     null);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED, message);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    message);
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, res.getObject());
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                res.getObject());
 
     }
 
+    /**
+     * Update new refreshtoken
+     *
+     * @param email
+     * @param session
+     * @param client_credentials_enabled
+     * @param issue_on
+     * @param expires_on
+     * @param status
+     * @param hmac
+     * @param created_by
+     * @param transactionID
+     * @return
+     * @throws Exception
+     */
     public static InternalResponse update(
             String email,
             String session,
@@ -143,18 +211,20 @@ public class ManageRefreshToken {
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             String message = null;
-            if (LogHandler.isShowErrorLog()) {
-                message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                        res.getStatus(),
-                        "en",
-                        null);
-                LogHandler.error(ManageRefreshToken.class, transactionID, "Cannot update RefreshToken - Detail:" + message);
-            }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+            message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
+                    res.getStatus(),
+                    "en",
+                    null);
+//                LogHandler.error(ManageRefreshToken.class, transactionID, "Cannot update RefreshToken - Detail:" + message);
+//            }
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     message
             );
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
                 ""
         );
 

@@ -14,7 +14,6 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
-import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -22,47 +21,48 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateWorkflowDetail_option {
 
+    /**
+     * Create a new Workflow Detail
+     *
+     * @param id - ID of workflow
+     * @param detail - The data Detail of that Workflow
+     * @param hmac
+     * @param created_by
+     * @param transactionID
+     * @return no Object => check status
+     * @throws Exception
+     */
     public static InternalResponse createWorkflowDetail(
             int id,
             WorkflowDetail_Option detail,
             String hmac,
             String created_by,
             String transactionID) throws Exception {
-        
-            InternalResponse response = null;
-            Database DB = new DatabaseImpl();
 
-            DatabaseResponse callDB = DB.createWorkflowDetail(id,
-                    detail.getHashMap(),
-                    hmac,
-                    created_by,
-                    transactionID);
+        Database DB = new DatabaseImpl();
 
-            try {
-            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = null;
-                message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                            callDB.getStatus(),
-                            "en",
-                            null);
-                if (LogHandler.isShowErrorLog()) {                    
-                    LogHandler.error(CreateWorkflowDetail_option.class,
-                            "TransactionID:"+transactionID+
-                            "\nCannot create Workflow Detail - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        message
-                );
-            }                        
+        DatabaseResponse callDB = DB.createWorkflowDetail(id,
+                detail.getHashMap(),
+                hmac,
+                created_by,
+                transactionID);
 
+        if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            String message = null;
+            message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
+                    callDB.getStatus(),
+                    "en",
+                    null);
             return new InternalResponse(
-                    PaperlessConstant.CODE_SUCCESS,
-                    "");
-
-        } catch (Exception e) {            
-            throw new Exception("Cannot Create workflow detail!", e);
-//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    message
+            );
         }
+        
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 
     public static void main(String[] args) throws JsonProcessingException {
@@ -87,10 +87,10 @@ public class CreateWorkflowDetail_option {
 //        detail.setQR_placement(true);
 //        detail.setShow_domain(true);
 //        detail.setText_below_QR("https://www.mobile-id.vn");
-        
+
         String hmac = "HMAC";
         String created_by = "GIATK";
-        
+
         System.out.println(new ObjectMapper().writeValueAsString(detail));
 //        InternalResponse response = CreateWorkflowDetail_option.createWorkflowDetail(
 //                id,

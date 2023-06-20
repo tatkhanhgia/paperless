@@ -18,6 +18,15 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  */
 public class ManageStatusWorkflow {
 
+    /**
+     * Deactive the workflow
+     * @param workflow_id
+     * @param email
+     * @param enterprise_id
+     * @param transactionID
+     * @return no object => check status
+     * @throws Exception 
+     */
     public static InternalResponse deactiveWorkflow(
             int workflow_id,
             String email,
@@ -32,16 +41,29 @@ public class ManageStatusWorkflow {
                 email,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
                             res.getStatus(),
                             "en",
                             null)
             );
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 
+    /**
+     * Reactive the workflow
+     * @param workflow_id
+     * @param email
+     * @param enterprise_id
+     * @param transactionID
+     * @return no object => check status
+     * @throws Exception 
+     */
     public static InternalResponse reactiveWorkflow(
             int workflow_id,
             String email,
@@ -56,14 +78,17 @@ public class ManageStatusWorkflow {
                 email,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
                             res.getStatus(),
                             "en",
                             null)
             );
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");
-
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 }

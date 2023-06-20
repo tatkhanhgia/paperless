@@ -21,20 +21,23 @@ public class PDFAnalyzer {
     
     public static FileManagement analysisPDF(byte[] pdf){
         try {
-            PdfReader reader = new PdfReader(new ByteArrayInputStream(pdf));
+            PdfReader reader = new PdfReader(new ByteArrayInputStream(pdf));            
             PdfDocument pdfDoc = new PdfDocument(reader);
+            
             int page = pdfDoc.getNumberOfPages();
-            float width = pdfDoc.getDefaultPageSize().getWidth();
-            float height = pdfDoc.getDefaultPageSize().getHeight();
+            float width = pdfDoc.getFirstPage().getPageSize().getWidth();
+            float height = pdfDoc.getFirstPage().getPageSize().getWidth();
             FileManagement temp = new FileManagement();
             temp.setPages(page);
             temp.setWidth(width);
             temp.setHeight(height);
+            temp.setSize(reader.getFileLength());
+            System.out.println("Page:"+page);
+            System.out.println("WIDTH:"+width);
+            System.out.println("heitgh:"+height);
+            System.out.println("size:"+reader.getFileLength());
             return temp;
         } catch (IOException ex) {
-//            if(LogHandler.isShowErrorLog()){
-//                
-//            }
             return null;
         }
     }

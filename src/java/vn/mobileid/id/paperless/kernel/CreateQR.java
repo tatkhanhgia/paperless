@@ -18,8 +18,15 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  */
 public class CreateQR {
 
-//    final private static Logger LOG = LogManager.getLogger(CreateUserActivityLog.class);
-
+    /**
+     * Processing create a new QR
+     * @param metaData -  Meta data of the QR
+     * @param hmac -
+     * @param created_by - createBy
+     * @param transactionID
+     * @return String / ID of that QR
+     * @throws Exception 
+     */
     public static InternalResponse processingCreateQR(
             String metaData,
             String hmac,
@@ -35,25 +42,18 @@ public class CreateQR {
 
         if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             String message = null;
-            if (LogHandler.isShowErrorLog()) {
-                message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                        callDB.getStatus(),
-                        "en",
-                         null);
-                LogHandler.error(CreateQR.class,"TransactionID:"+transactionID+"\nCannot create QR - Detail:" + message);
-            }
+            message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                    callDB.getStatus(),
+                    "en",
+                    null);
+//                LogHandler.error(CreateQR.class,"TransactionID:"+transactionID+"\nCannot create QR - Detail:" + message);            
             return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     message
             );
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
                 String.valueOf(callDB.getIDResponse()));
     }
-    
-    public static void main(String[] args){
-//        CreateQR.processingCreateQR(
-//                "meta data",
-//                "HMAC",
-//                "GIATK");
-    }
+   
 }

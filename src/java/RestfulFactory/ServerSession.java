@@ -811,7 +811,7 @@ public class ServerSession implements IServerSession {
     public boolean preLogin(String username) throws Throwable {
         preLoginRequest request = new preLoginRequest();
         request.setUser(username);
-        request.setType(UserType.USERNAME);
+        request.setType(UserType.PERSONAL_ID);
         //Console.WriteLine(loginRequest);
 
         String jsonReq = Utils.gsTmp.toJson(request);

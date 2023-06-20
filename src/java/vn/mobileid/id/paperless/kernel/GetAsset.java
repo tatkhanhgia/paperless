@@ -14,7 +14,6 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
-import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -22,28 +21,30 @@ import vn.mobileid.id.utils.Utils;
  */
 public class GetAsset {
 
+    /**
+     * Get Asset
+     * @param id - ID of Asset
+     * @param transactionID
+     * @return Asset
+     * @throws Exception 
+     */
     public static InternalResponse getAsset(
             int id,
-            String transactionID) throws Exception {
-        
-            Database DB = new DatabaseImpl();
-            //Data                        
-            InternalResponse response = null;
+            String transactionID)
+            throws Exception {
+        Database DB = new DatabaseImpl();       
 
-            DatabaseResponse callDB = DB.getAsset(id, transactionID);
+        DatabaseResponse callDB = DB.getAsset(id, transactionID);
 
-            try {
+        try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                         null);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(GetAsset.class,
-                            "TransactionID:" + transactionID
-                            + "\nCannot get Asset - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -56,33 +57,34 @@ public class GetAsset {
 
         } catch (Exception e) {
             throw new Exception("Cannot get Asset!", e);
-//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
-    public static InternalResponse getAssetTemplate(
+    /**
+     * Get a Template of the Asset
+     * @param id - Id of the Asset
+     * @param transactionID
+     * @return String - Metadata of that Asset
+     * @throws Exception 
+     */
+    public static InternalResponse getTemplateOfAsset(
             int id,
-            String transactionID) throws Exception {
-        
-            Database DB = new DatabaseImpl();
-            //Data                        
-            InternalResponse response = null;
+            String transactionID)
+            throws Exception {
+        Database DB = new DatabaseImpl();       
 
-            DatabaseResponse callDB = DB.getAsset(id, transactionID);
+        DatabaseResponse callDB = DB.getAsset(id, transactionID);
 
-            try {
+        try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
-                if (LogHandler.isShowErrorLog()) {
-                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                            callDB.getStatus(),
-                            "en",
-                            null);
-                    LogHandler.error(GetAsset.class,
-                            "TransactionID:" + transactionID
-                            + "\nCannot get Asset - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                        null);
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -90,48 +92,52 @@ public class GetAsset {
             Asset asset = (Asset) callDB.getObject();
 
             return new InternalResponse(
-                    PaperlessConstant.CODE_SUCCESS,
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     asset.getMetadata());
-
         } catch (Exception e) {
             throw new Exception("Cannot get Asset Template!", e);
-//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
+    /**
+     * Get a list of Asset
+     * @param ent_id - Enterprise id
+     * @param email - Email of User
+     * @param file_name - Get with condition file name
+     * @param type - Get with condition type of Asset
+     * @param transactionID
+     * @return List of Asset
+     * @throws Exception 
+     */
     public static InternalResponse getListAsset(
             int ent_id,
             String email,
             String file_name,
             String type,
+            int offset,
+            int rowcount,
             String transactionID
-    ) throws Exception{
-        
-            Database DB = new DatabaseImpl();
-            //Data                        
-            InternalResponse response = null;
+    ) throws Exception {
+        Database DB = new DatabaseImpl();        
 
-            DatabaseResponse callDB = DB.getListAsset(
-                    ent_id,
-                    email,
-                    file_name,
-                    type,
-                    0,
-                    PaperlessConstant.DEFAULT_ROW_COUNT,
-                    transactionID);
+        DatabaseResponse callDB = DB.getListAsset(
+                ent_id,
+                email,
+                file_name,
+                type,
+                offset,
+                rowcount,
+                transactionID);
 
-            try {
+        try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                         null);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(GetAsset.class,
-                            "TransactionID:" + transactionID
-                            + "\nCannot get Asset - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -144,21 +150,19 @@ public class GetAsset {
 
         } catch (Exception e) {
             throw new Exception("Cannot get List of Asset!", e);
-//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
     public static void main(String[] args) throws IOException, Exception {
-//        Asset resposne = GetAsset.getAssetTemplate(7);        
+//        Asset resposne = GetAsset.getTemplateOfAsset(7);        
 //        Files.write(new File("D:\\NetBean\\QryptoServices\\file\\asset.xslt").toPath(), resposne.getBinaryData(), StandardOpenOption.CREATE);
-        
-        List<Asset> listAsset =( List<Asset>) GetAsset.getListAsset(
-                3,
-                "khanhpx@mobile-id.vn",
-                null,
-                null,
-                "transactionID").getData();
-        
+
+//        List<Asset> listAsset = (List<Asset>) GetAsset.getListAsset(
+//                3,
+//                "khanhpx@mobile-id.vn",
+//                null,
+//                null,
+//                "transactionID").getData();
 //        listAsset.forEach((value)->{
 //            System.out.println(value.getCreated_at());
 //        });

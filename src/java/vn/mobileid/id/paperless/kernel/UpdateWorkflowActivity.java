@@ -18,6 +18,15 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  */
 public class UpdateWorkflowActivity {
 
+    /**
+     * Update Requestdata of WorkflowActivity
+     * @param id
+     * @param metadata
+     * @param modified_by
+     * @param transactionID
+     * @return
+     * @throws Exception 
+     */
     public static InternalResponse updateMetadata(
             int id,
             String metadata,
@@ -31,16 +40,61 @@ public class UpdateWorkflowActivity {
                 modified_by,
                 transactionID);
         if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
                     response.getStatus(),
                     "en",
                     null);
-            LogHandler.error(UpdateWorkflowDetail_option.class, transactionID, "Cannot update Request data of Workflow Activity - Detail:" + message);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//            LogHandler.error(UpdateWorkflowDetail_option.class, transactionID, "Cannot update Request data of Workflow Activity - Detail:" + message);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     message
             );
         }
 
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
+    }
+
+    /**
+     * Update status of the workflow activity
+     * @param id
+     * @param status
+     * @param isProcess
+     * @param modified_by
+     * @param transactionID
+     * @return
+     * @throws Exception 
+     */
+    public static InternalResponse updateStatus(
+            int id,
+            String status,
+            boolean isProcess,
+            String modified_by,
+            String transactionID
+    ) throws Exception{
+        Database callDB = new DatabaseImpl();
+        DatabaseResponse DBres = callDB.updateStatusWorkflowActivity(
+                id,
+                status,
+                isProcess,
+                modified_by,
+                transactionID);
+        if(DBres.getStatus() != PaperlessConstant.CODE_SUCCESS){
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
+                    DBres.getStatus(),
+                    "en",
+                    null);
+//            LogHandler.error(UpdateWorkflowDetail_option.class, transactionID, "Cannot update status of Workflow Activity - Detail:" + message);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    message
+            );
+        }
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 }

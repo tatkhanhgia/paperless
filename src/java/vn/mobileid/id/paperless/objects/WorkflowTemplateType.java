@@ -39,9 +39,8 @@ public class WorkflowTemplateType {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
     private Date modified_at;
     private String metadata_template;
-    private String metadata_detail;
-
-    private String raw;
+    private String metadata_detail;   
+    private String remark;
 
     public WorkflowTemplateType(int id, String name, int status, int workflowType, int ordinary, String code, HashMap<String, Integer> enableObjectMap, String HMAC, String created_by, Date created_at, String modified_by, Date modified_at) {
         this.id = id;
@@ -171,10 +170,6 @@ public class WorkflowTemplateType {
         this.modified_at = modified_at;
     }
 
-    public void setRaw(String raw) {
-        this.raw = raw;
-    }
-
     public void appendData(String a, Integer b) {
         if (enableObjectMap == null) {
             enableObjectMap = new HashMap<>();
@@ -211,6 +206,12 @@ public class WorkflowTemplateType {
     public void setMetadata_detail(String metadata_detail) {
         this.metadata_detail = metadata_detail;
     }
-    
-    
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }        
 }

@@ -21,48 +21,45 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 public class GetWorkflowTemplate {
-    
+
     /**
      * Using to get all data in Workflow template with ID workflow input
+     *
      * @param id
      * @param transactionID
-     * @return 
+     * @return WorkflowTemplate
      */
-    public  static InternalResponse getWorkflowTemplate(
+    public static InternalResponse getWorkflowTemplate(
             int id,
-            String transactionID) throws Exception{
-        
-            Database DB = new DatabaseImpl();
-            //Data                        
-            InternalResponse response = null;
-                    
-            DatabaseResponse callDB = DB.getWorkflowTemplate(
-                    id,
-                    transactionID);                       
-            
-            try {
-            if(callDB.getStatus() != PaperlessConstant.CODE_SUCCESS ){              
-                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                                callDB.getStatus(),
-                                "en"
-                                , null);
-                if(LogHandler.isShowErrorLog()){                    
-                    LogHandler.error(GetWorkflowTemplate.class,transactionID,"Cannot get Workflow Template - Detail:"+message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+            String transactionID) throws Exception {
+
+        Database DB = new DatabaseImpl();
+
+        DatabaseResponse callDB = DB.getWorkflowTemplate(
+                id,
+                transactionID);
+
+        try {
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                         null);
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            
+
             WorkflowTemplate template = (WorkflowTemplate) callDB.getObject();
-            
+
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     template);
-            
+
         } catch (Exception e) {
-            throw new Exception("Cannot get workflow template",e);          
-//            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
+            throw new Exception("Cannot get workflow template", e);
         }
     }
 }

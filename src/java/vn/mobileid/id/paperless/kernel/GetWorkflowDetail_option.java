@@ -4,7 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
@@ -12,7 +11,6 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
-import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -30,22 +28,21 @@ public class GetWorkflowDetail_option {
             int id,
             String transactionID) throws Exception {
 
-        Database DB = new DatabaseImpl();
-        //Data                        
-        InternalResponse response = null;
+        Database DB = new DatabaseImpl();        
 
-        DatabaseResponse callDB = DB.getWorkflowDetail(id, transactionID);
+        DatabaseResponse callDB = DB.getWorkflowDetail(
+                id,
+                transactionID);
 
         try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                          null);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(GetWorkflowDetail_option.class, transactionID, "Cannot get Workflow Detail - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -58,7 +55,6 @@ public class GetWorkflowDetail_option {
 
         } catch (Exception e) {
             throw new Exception("Cannot get workflow detail/options!", e);
-//            return new InternalResponse(500,PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 

@@ -65,11 +65,11 @@ public class QryptoService {
         if (!QryptoService.listQryptoSession.containsKey(i)) {
             this.sessionFactory = SessionFactory.getInstance(prop);
             this.session = this.sessionFactory.getSession();
-            QryptoService.listQryptoSession.put(i, session);
+            QryptoService.listQryptoSession.put(i, session);            
+            this.session.login();
         } else {
-            this.session = QryptoService.listQryptoSession.get(i);
-        }
-        this.session.login();
+            this.session = QryptoService.listQryptoSession.get(i);            
+        }                
     }
 
     public IssueQryptoWithFileAttachResponse generateQR(
@@ -79,11 +79,12 @@ public class QryptoService {
     ) {
         try {
             IssueQryptoWithFileAttachResponse response = this.session.issueQryptoWithFileAttach(QR, configuration);
-            ClaimRequest datas = ProcessClaimRequest.generateClaimRequest(response);
-            ClaimResponse tan =  this.session.dgci_wallet_claim(datas);
-            response.setTan(tan.getTan());
+//            ClaimRequest datas = ProcessClaimRequest.generateClaimRequest(response);
+//            ClaimResponse tan =  this.session.dgci_wallet_claim(datas);
+//            response.setTan(tan.getTan());
             return response;
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return null;
     }

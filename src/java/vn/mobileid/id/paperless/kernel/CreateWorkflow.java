@@ -13,6 +13,7 @@ import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.Workflow;
@@ -26,18 +27,25 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateWorkflow {
 
-//    final private static Logger LOG = LogManager.getLogger(CreateWorkflow.class);
+    /**
+     * Check Data in workflow is valid to create a Workflow
+     *
+     * @param workflow - Workflow
+     * @return no Object => Check Status
+     */
     public static InternalResponse checkDataWorkflow(Workflow workflow) {
         if (workflow == null) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             "en",
                             null));
         }
         if (Utils.isNullOrEmpty(workflow.getLabel())) {
             return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
                             PaperlessConstant.SUBCODE_MISSING_WORKFLOW_LABEL,
                             "en",
                             null));
@@ -50,20 +58,28 @@ public class CreateWorkflow {
 //                            null));
 //        }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_SUCCESS,
+                PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_SUCCESS,
                         PaperlessConstant.SUBCODE_SUCCESS,
                         "en",
                         null));
     }
 
+    /**
+     * Create a new Workflow
+     *
+     * @param workflow - Workflow
+     * @param user - User
+     * @param transactionID
+     * @return String / ID of that Workflow
+     * @throws Exception
+     */
     public static InternalResponse processingCreateWorkflow(
             Workflow workflow,
             User user,
             String transactionID
     ) throws Exception {
-
         Database DB = new DatabaseImpl();
-
         DatabaseResponse createWorkflow = DB.createWorkflow(
                 workflow.getWorkflowTemplate_type(),
                 workflow.getLabel(),
@@ -74,58 +90,87 @@ public class CreateWorkflow {
         );
 
         if (createWorkflow.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
                             createWorkflow.getStatus(),
                             "en",
                             null)
             );
         }
 
-        //Create Workflow Detail - This is default Data
-////            WorkflowDetail_Option detail = new WorkflowDetail_Option();
-////            detail.setQr_background("WHITE");
-////            detail.setQr_size(4);
-////            detail.setQr_type(1);
-////            detail.setUrl_code(false);
-////            String temp = "a:1;b:2;c:3";
-////            detail.setMetadata(temp);
-//////          detail.setPage(1);fication(false);
-//////          detail.setStamp_in(1);
-//////          detail.setPage_size("A4");
-//////          detail.setAsset_Background(0);
-////            detail.setAsset_Template(7);
-//////          detail.setAsset_Append(0);
-////            detail.setDisable_CSV_task_notification_email(false);
-////            detail.setCSV_email(false);
-////            detail.setOmit_if_empty(false);
-////            detail.setEmail_notification(false);
-////            String hmac = "HMAC";
-//
-//            InternalResponse response = CreateWorkflowDetail_option.createWorkflowDetail(
-//                    createWorkflow.getIDResponse_int(),
-//                    detail,
-//                    hmac,
-//                    user.getEmail());
-        //Get Default data detail - template of template Type 
-        try {
-            InternalResponse res = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(
-                    workflow.getWorkflowTemplate_type(),
-                    transactionID);
-            WorkflowTemplateType template = (WorkflowTemplateType) res.getData();
-            Item_JSNObject object = new ObjectMapper().readValue(template.getMetadata_template(), Item_JSNObject.class);
-            CheckWorkflowTemplate.processingCreateWorkflowTemplate(createWorkflow.getIDResponse_int(), object, user.getEmail(), transactionID);
-
-            WorkflowDetail_Option object2 = new ObjectMapper().readValue(template.getMetadata_detail(), WorkflowDetail_Option.class);
-            CreateWorkflowDetail_option.createWorkflowDetail(createWorkflow.getIDResponse_int(), object2, "HMAC", user.getEmail(), transactionID);
-
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
-                    "{\"workflow_id\":" + createWorkflow.getIDResponse_int() + "}"
-            );
-        } catch (Exception e) {                                        
-            throw new Exception("Cannot create Workflow!", e);
-//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
+        //Get Default data detail - template of template Type         
+        InternalResponse res = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(
+                workflow.getWorkflowTemplate_type(),
+                transactionID);
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return res;
         }
+
+        WorkflowTemplateType template = (WorkflowTemplateType) res.getData();
+        Item_JSNObject object = new ObjectMapper().readValue(template.getMetadata_template(), Item_JSNObject.class);
+        res = CheckWorkflowTemplate.processingCreateWorkflowTemplate(
+                createWorkflow.getIDResponse_int(),
+                object,
+                user.getEmail(),
+                "HMAC",
+                transactionID);
+
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return res;
+        }
+
+        WorkflowDetail_Option object2 = new ObjectMapper().readValue(template.getMetadata_detail(), WorkflowDetail_Option.class);
+        res = CreateWorkflowDetail_option.createWorkflowDetail(
+                createWorkflow.getIDResponse_int(),
+                object2,
+                "HMAC",
+                user.getEmail(),
+                transactionID);
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return res;
+        }
+
+        //Update UsedBy in Asset
+        if (object2.getAsset_Append() > 0) {
+            InternalResponse temp = GetAsset.getAsset(object2.getAsset_Append(), transactionID);
+            if(temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+                return temp;
+            }
+            Asset asset = (Asset)temp.getData();
+            String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();
+            used_by += createWorkflow.getIDResponse_int() + ",";
+            asset.setUsed_by(used_by);
+            UpdateAsset.updateAsset(asset, user, transactionID);
+        }
+        if (object2.getAsset_Background() > 0) {
+            InternalResponse temp = GetAsset.getAsset(object2.getAsset_Background(), transactionID);
+            if(temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+                return temp;
+            }
+            Asset asset = (Asset)temp.getData();
+            String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();
+            used_by += createWorkflow.getIDResponse_int() + ",";
+            asset.setUsed_by(used_by);
+            UpdateAsset.updateAsset(asset, user, transactionID);
+        }
+        if (object2.getAsset_Template() > 0) {
+            InternalResponse temp = GetAsset.getAsset(object2.getAsset_Template(), transactionID);
+            if(temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+                return temp;
+            }
+            Asset asset = (Asset)temp.getData();
+            String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();
+            used_by += createWorkflow.getIDResponse_int() + ",";
+            asset.setUsed_by(used_by);
+            UpdateAsset.updateAsset(asset, user, transactionID);
+        }
+
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "{\"workflow_id\":" + createWorkflow.getIDResponse_int() + "}"
+        );
     }
 
     public static void main(String[] args) throws JsonProcessingException {

@@ -19,27 +19,32 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  */
 public class GetFileManagement {
 
-    public static InternalResponse getFileManagement(int id,
-            String transactionID) throws Exception {
+    /**
+     * Get data of FileManagement
+     * @param id - ID of FileManagement
+     * @param transactionID
+     * @return FileManagement
+     * @throws Exception 
+     */
+    public static InternalResponse getFileManagement(
+            int id,
+            String transactionID) 
+        throws Exception {
+        Database DB = new DatabaseImpl();                                
 
-        Database DB = new DatabaseImpl();
-        //Data                        
-        InternalResponse response = null;
-
-        DatabaseResponse callDB = DB.getFileManagement(id, transactionID);
+        DatabaseResponse callDB = DB.getFileManagement(
+                id,
+                transactionID);
 
         try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
                         callDB.getStatus(),
                         "en",
                         null);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(GetFileManagement.class,
-                            "TransactionID:" + transactionID
-                            + "\nCannot get File Management - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -52,7 +57,6 @@ public class GetFileManagement {
 
         } catch (Exception e) {
             throw new Exception("Cannot get file management!", e);
-//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 

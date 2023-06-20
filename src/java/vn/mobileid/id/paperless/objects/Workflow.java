@@ -27,10 +27,10 @@ public class Workflow {
     private String workflow_type_name;
     private String note;
     private String created_by;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss a XXX")
     private Date created_at;
     private String last_modified_by;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss a XXX")
     private Date last_modified_at;
     private String metadata;
     private int initiator_id;

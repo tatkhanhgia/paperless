@@ -24,19 +24,19 @@ import vn.mobileid.exsig.XmlProfile;
  */
 public class SignFileFactory {
 
-    public IPdfSignFile createPdfSignFile_SyncFlow(SignType signType, Algorithm alg, PdfForm form) throws APIException {
-        PdfProfile profile;
+    public IPdfSignFile createPdfSignFile_SyncFlow(SignType signType, Algorithm alg, PdfForm form) throws APIException {        
         switch (signType) {
             case CMS:
-                profile = new PdfProfileCMS(alg);
-                break;
+                PdfProfileCMS profile = new PdfProfileCMS(alg);
+                return new PdfSignFile(profile, getHashAlgorithmOID(alg));                
+               
             case PAdES:
-                profile = new PdfProfile(form, alg);
-                break;
+                PdfProfile profile2 = new PdfProfile(form, alg);
+                return new PdfSignFile(profile2, getHashAlgorithmOID(alg));                
             default:
                 throw new APIException("Not support SignType [" + signType + "]");
         }
-        return new PdfSignFile(profile, getHashAlgorithmOID(alg));
+        
     }
     
     public IPdfSignFile createPdfSignFile_forUser(SignType signType, Algorithm alg, PdfForm form) throws APIException {

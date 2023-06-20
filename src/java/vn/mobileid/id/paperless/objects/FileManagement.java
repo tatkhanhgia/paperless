@@ -29,15 +29,16 @@ public class FileManagement extends Object{
     private String UUID;
     private String DBMS;
     private int pages;
-    private int size;
+    private long size;
     private float width;
     private float height;
     private int status;    //Disable - enable
     private String hmac;
-    private Date created_ad;
+    private Date created_at;
     private String lastmodified_by;
     private Date lastmodified_at;
     private boolean isSigned;
+    private FileType file_type;
            
 
     public FileManagement(byte[] data, String name, String ID, String created_by) {
@@ -114,11 +115,11 @@ public class FileManagement extends Object{
         this.pages = pages;
     }
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
-    public void setSize(int size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
@@ -143,11 +144,11 @@ public class FileManagement extends Object{
     }
 
     public Date getCreated_ad() {
-        return created_ad;
+        return created_at;
     }
 
     public void setCreated_ad(Date created_ad) {
-        this.created_ad = created_ad;
+        this.created_at = created_ad;
     }
 
     public String getLastmodified_by() {
@@ -185,12 +186,46 @@ public class FileManagement extends Object{
     public void setHeight(float height) {
         this.height = height;
     }            
-                
+
+    public Date getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(Date created_at) {
+        this.created_at = created_at;
+    }
+
+    public FileType getFile_type() {
+        return file_type;
+    }
+
+    public void setFile_type(FileType file_type) {
+        this.file_type = file_type;
+    }
+    
+    
+    
     public static void main(String[] args) throws JsonProcessingException{
         FileManagement a = new FileManagement();
         a.setName("hello");
         a.setWidth(100);
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(a));
+    }
+    
+    public enum FileType{
+        PDF("PDF"),
+        WORD("DOCX"),
+        XSLT("XSLT");
+        
+        private String name;
+
+        private FileType(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }                
     }
 }

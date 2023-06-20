@@ -29,6 +29,8 @@ public class CustomFileManagementSerializer extends JsonSerializer<FileManagemen
             JsonGenerator jg,
             SerializerProvider sp) throws IOException {
         jg.writeStartObject();
+        jg.writeFieldName("document_detail");
+        jg.writeStartObject();
         Field[] fields = FileManagement.class.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
@@ -42,19 +44,27 @@ public class CustomFileManagementSerializer extends JsonSerializer<FileManagemen
                 if (field.get(t) instanceof String) {
                     jg.writeStringField(field.getName(), (String) field.get(t));
                 }
-                if (field.get(t) instanceof Integer) {
+                if (field.get(t) instanceof Integer ) {
                     jg.writeNumberField(field.getName(), field.getInt(t));
+                }
+                if (field.get(t) instanceof Long ) {
+                    jg.writeNumberField(field.getName(), field.getLong(t));
+                }
+                if (field.get(t) instanceof Float ) {
+                    jg.writeNumberField(field.getName(), field.getFloat(t));
                 }
                 if (field.get(t) instanceof Date){
                     DateFormat date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa X");
                     jg.writeStringField(field.getName(), date.format(((Date)field.get(t)).getTime()));
                 }
+                
             } catch (IllegalArgumentException ex) {
                 Logger.getLogger(CustomFileManagementSerializer.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IllegalAccessException ex) {
                 Logger.getLogger(CustomFileManagementSerializer.class.getName()).log(Level.SEVERE, null, ex);
             }          
         }
+        jg.writeEndObject();
         jg.writeEndObject();
     }
 }

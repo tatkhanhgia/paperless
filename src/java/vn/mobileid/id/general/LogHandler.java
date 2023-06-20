@@ -10,6 +10,11 @@ import org.apache.logging.log4j.Level;
 import vn.mobileid.id.utils.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import vn.mobileid.id.general.database.Database;
+import vn.mobileid.id.general.database.DatabaseImpl;
+import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.LogAPI;
 
 /**
  *
@@ -123,29 +128,58 @@ public class LogHandler {
         if (isShowErrorLog()) {
             ex.printStackTrace();
             Logger LOG = LogManager.getLogger(object);
-            message += ex.toString();
+            message += "\n" + ex.toString();
             Throwable a = ExceptionUtils.getRootCause(ex);
+            message += "\n\t" + a.getCause().getMessage();
             for (StackTraceElement stackTraceElement : a.getStackTrace()) {
                 message = message + System.lineSeparator() + "\t" + stackTraceElement.toString();
             }
             LOG.error(message);
         }
     }
-
+    
     /**
      * Using for log the error into file
      *
      * @param object
+     * @param transaction
      * @param message
+     * @param ex
      */
     public static void error(
             Class object,
-            String message) {
-        if (isShowErrorLog()) {            
+            String transaction,
+            String message,
+            Throwable ex) {
+        if (isShowErrorLog()) {
+            ex.printStackTrace();
             Logger LOG = LogManager.getLogger(object);
-            LOG.error(message);
+            String messageFinal = "TransactionID:"+transaction +"\n";
+            messageFinal += message +"\n";
+            messageFinal += ex.toString();           
+            Throwable a = ExceptionUtils.getRootCause(ex);            
+            messageFinal += "\n\t" + a.getCause().getMessage();
+            for (StackTraceElement stackTraceElement : a.getStackTrace()) {
+                messageFinal = messageFinal + System.lineSeparator() + "\t" + stackTraceElement.toString();
+            }
+            LOG.error(messageFinal);
         }
     }
+
+//    /**
+//     * Using for log the error into file
+//     *
+//     * @param object
+//     * @param message
+//     */
+//    public static void error(
+//            Class object,
+//            String message) {
+//        if (isShowErrorLog()) {            
+//            Logger LOG = LogManager.getLogger(object);
+//            LOG.error(message);
+//        }
+//    }
 
     /**
      * Using for log the error into file
@@ -229,6 +263,39 @@ public class LogHandler {
             messageTemp += "\n\tError:" + message;
             Logger LOG = LogManager.getLogger(object);
             LOG.fatal(message);
+        }
+    }
+    
+    public static void logIntoDB(
+            LogAPI log,
+            String transaction_id
+    ){
+        try{
+            Database callDB = new DatabaseImpl();
+            DatabaseResponse res = callDB.logIntoDB(
+                    log.getEmail(),
+                    log.getEnterprise_id(),
+                    log.getWorkflow_activity_id(),
+                    log.getApp_name(),
+                    log.getApi_key(),
+                    log.getVersion(),
+                    log.getService_name(),
+                    log.getUrl(),
+                    log.getHttp_verb(),
+                    log.getStatus_code(),
+                    log.getRequest(),
+                    log.getResponse(),
+                    log.getHmac(),
+                    log.getCreated_by(),
+                    transaction_id);
+            if(res.getStatus() != PaperlessConstant.CODE_SUCCESS){
+                LogHandler.fatal(
+                        LogHandler.class,
+                        "Cannot append Log API!!!",
+                        transaction_id);
+            }
+        } catch (Exception ex){
+            
         }
     }
 }

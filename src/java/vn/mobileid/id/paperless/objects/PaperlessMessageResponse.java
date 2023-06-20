@@ -60,9 +60,6 @@ public class PaperlessMessageResponse {
                 responseMessageJSNObject.setCode_description(responseCode.getCode_description());
                 return objectMapper.writeValueAsString(responseMessageJSNObject);
             } else {
-//                Database db = new DatabaseImpl();
-//                responseCode = db.getResponse(String.valueOf(code));
-//                if (responseCode == null) {
                     if (LogHandler.isShowErrorLog()) {
                         LOG.error("Response code " + code + " is not defined in database.");
                     }

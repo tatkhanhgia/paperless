@@ -8,6 +8,8 @@ package SignFile;
 import java.util.List;
 import restful.sdk.API.IServerSession;
 import vn.mobileid.exsig.PdfProfile;
+import vn.mobileid.exsig.PdfProfileCMS;
+import vn.mobileid.exsig.Profile;
 
 /**
  *
@@ -15,6 +17,8 @@ import vn.mobileid.exsig.PdfProfile;
  */
 public interface IPdfSignFile extends ISignFile {
     
+        PdfProfileCMS getProfileCMS();
+        
         PdfProfile getProfile();
 
         @Deprecated

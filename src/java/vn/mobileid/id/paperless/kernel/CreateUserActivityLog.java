@@ -20,7 +20,11 @@ import vn.mobileid.id.paperless.objects.WorkflowActivity;
  */
 public class CreateUserActivityLog {
 
-//    final private static Logger LOG = LogManager.getLogger(CreateUserActivityLog.class);
+    /**
+     * Check Data in workflow activity is valid to create a UserActivityLog
+     * @param workflow - WorkflowActivity
+     * @return boolean
+     */
     public static boolean checkData(WorkflowActivity workflow) {
         if (workflow == null) {
             return false;
@@ -34,6 +38,14 @@ public class CreateUserActivityLog {
         return true;
     }
 
+    /**
+     * Create a new UserActivityLog
+     * @param workflow - WorkflowActivity
+     * @param user - User
+     * @param transactionID
+     * @return String / ID of that UserActivityLog
+     * @throws Exception 
+     */
     public static InternalResponse processingCreateUserActivityLog(
             WorkflowActivity workflow,
             User user,
@@ -63,14 +75,13 @@ public class CreateUserActivityLog {
                         callDB.getStatus(),
                         "en",
                         null);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(CreateUserActivityLog.class, "TransactionID:" + transactionID + "\nCannot create User_Activity_log - Detail:" + message);
-                }
+//                LogHandler.error(CreateUserActivityLog.class, "TransactionID:" + transactionID + "\nCannot create User_Activity_log - Detail:" + message);
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
                     String.valueOf(callDB.getIDResponse()));
         } catch (Exception e) {
             throw new Exception(

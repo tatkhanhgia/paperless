@@ -19,6 +19,7 @@ public class Enterprise extends Object{
     private String clientSecret;
     private String email_notification;
     private byte[] fileP12_data;
+    private String signing_info_properties;
     
     public Enterprise() {
     }   
@@ -103,6 +104,14 @@ public class Enterprise extends Object{
 
     public void setFileP12_data(byte[] fileP12_data) {
         this.fileP12_data = fileP12_data;
+    }
+
+    public String getSigning_info_properties() {
+        return signing_info_properties;
+    }
+
+    public void setSigning_info_properties(String signing_info_properties) {
+        this.signing_info_properties = signing_info_properties;
     }
     
     

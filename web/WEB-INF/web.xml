@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
-<!--    <listener>
+    <!--    <listener>
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
     </listener>-->
     <!--REST-->
@@ -32,16 +32,25 @@
         <servlet-class>vn.mobileid.id.general.api.AdminServicesController</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>assetServlet</servlet-name>
+        <servlet-class>vn.mobileid.id.general.api.AssetServiceController</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
     <servlet-mapping>
         <servlet-name>adminServlet</servlet-name>
         <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>assetServlet</servlet-name>
+        <url-pattern>/v1/asset/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>jersey</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
     <!--END REST-->
-<!--    <error-page>
+    <!--    <error-page>
         <error-code>400</error-code>
         <location>/WEB-INF/error/HTTP400.html</location>
     </error-page>

@@ -13,7 +13,6 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
-import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -39,13 +38,14 @@ public class GetWorkflowTemplateType {
 
             try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
                             callDB.getStatus(),
                             "en",
                              null);
-                if (LogHandler.isShowErrorLog()) {                    
-                    LogHandler.error(GetWorkflowTemplateType.class,transactionID,"Cannot get Workflow Template Type  - Detail:" + message);
-                }
+//                if (LogHandler.isShowErrorLog()) {                    
+//                    LogHandler.error(GetWorkflowTemplateType.class,transactionID,"Cannot get Workflow Template Type  - Detail:" + message);
+//                }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
@@ -78,7 +78,9 @@ public class GetWorkflowTemplateType {
         }
         WorkflowTemplateType temp = Resources.getListWorkflowTemplateType().get(String.valueOf(id));
         if (temp != null) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, temp);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
+                    temp);
         }
 
         //Read from DB

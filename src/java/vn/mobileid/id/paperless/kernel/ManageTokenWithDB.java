@@ -64,16 +64,26 @@ import vn.mobileid.id.utils.Utils;
  */
 public class ManageTokenWithDB {
 
-//    final private static Logger LOG = LogManager.getLogger(ManageTokenWithDB.class);
     private static long now;
 
+    /**
+     * Processing Login
+     *
+     * @param request
+     * @param payload
+     * @param transactionID
+     * @return User
+     * @throws Exception
+     */
     public static InternalResponse processLogin(
             final HttpServletRequest request,
             String payload,
             String transactionID) throws Exception {
         if (Utils.isNullOrEmpty(payload)) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
@@ -84,24 +94,42 @@ public class ManageTokenWithDB {
         try {
             object = mapper.readValue(payload, KeycloakReq.class);
         } catch (JsonProcessingException ex) {
-            LogHandler.error(ManageTokenWithDB.class, transactionID, "Cannot parse payload!", ex);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Cannot parse payload!",
+                    ex);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
         //Login 
+        if (object.getGrant_type() == null || object.getGrant_type().isEmpty()) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            PaperlessConstant.SUBCODE_MISSING_GRANT_TYPE,
+                            "en",
+                            null));
+        }
         if (object.getGrant_type().contains("password")) {
             if (!checkPayload(payload)) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                                 PaperlessConstant.SUBCODE_MISSING_USER_NAME_OR_PASSWORD,
                                 "en",
                                 null));
             }
-            return login(object.getUsername(),
+            return login(
+                    object.getUsername(),
                     object.getPassword(),
                     object.isRememberMeEnable(),
                     transactionID);
@@ -111,16 +139,33 @@ public class ManageTokenWithDB {
                     object.getRefreshToken(),
                     transactionID);
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_500, "NOT SUPPORT YET");
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                        PaperlessConstant.SUBCODE_UNSUPPORTED_GRANT_TYPE,
+                        "en",
+                        null));
     }
 
+    /**
+     * Processing Login with type URLEncode
+     *
+     * @param request
+     * @param map
+     * @param transactionID
+     * @return User
+     * @throws Exception
+     */
     public static InternalResponse processLoginURLEncode(
             final HttpServletRequest request,
             HashMap<String, String> map,
             String transactionID) throws Exception {
         if (!map.containsKey("username") || !map.containsKey("password")) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_MISSING_USER_NAME_OR_PASSWORD,
                             "en",
                             null));
@@ -137,16 +182,16 @@ public class ManageTokenWithDB {
     public static InternalResponse processVerify(
             final HttpServletRequest request,
             String transactionID,
-            boolean adminEnable) throws Exception {
+            boolean adminEnable)
+            throws Exception {
         //Get Access Token
         String token = request.getHeader("Authorization");
-//        if (LogHandler.isShowDebugLog()) {
-//            LogHandler.debug(ManageTokenWithDB.class,transactionID,"Checking Header!!\n"+"Token:"+token);            
-//        }
 
-        if (token == null || token.contains("null")) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+        if (token == null || token.contains("null") || token.isEmpty()) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_MISSING_ACCESS_TOKEN, "en", null)
             );
         }
@@ -154,16 +199,19 @@ public class ManageTokenWithDB {
         //Verify
         return adminEnable
                 ? verifyAdminMode(token, transactionID)
-                : verify(token, transactionID);
+                : verify(token, transactionID, false);
     }
 
     public static InternalResponse processRevoke(
             final HttpServletRequest request,
             String payload,
-            String transactionID) throws Exception {
+            String transactionID)
+            throws Exception {
         if (Utils.isNullOrEmpty(payload)) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
                             null));
@@ -174,9 +222,15 @@ public class ManageTokenWithDB {
         try {
             object = mapper.readValue(payload, KeycloakReq.class);
         } catch (JsonProcessingException ex) {
-            LogHandler.error(ManageTokenWithDB.class, transactionID, "Cannot parse payload!", ex);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Cannot parse payload!",
+                    ex);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             PaperlessMessageResponse.getLangFromJson(payload),
                             null));
@@ -184,19 +238,31 @@ public class ManageTokenWithDB {
 
         //Checking        
         if (object.getRefreshToken() == null || object.getRefreshToken().isEmpty()) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_MISSING_REFRESH_TOKEN,
                             PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
-        return revoke(object.getRefreshToken(),
+        //Verify refreshToken is valid
+        InternalResponse res = verify(
+                object.getRefreshToken(),
+                transactionID,
+                true);
+
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return res;
+        }
+
+        return revoke(
+                object.getRefreshToken(),
                 transactionID);
     }
 
     public static InternalResponse processLoginSSO(
-            final HttpServletRequest request,
             String payload,
             String transactionID
     ) throws Exception {
@@ -205,9 +271,15 @@ public class ManageTokenWithDB {
         try {
             jwtdata = mapper.readValue(payload, JWT_Request.class);
         } catch (JsonProcessingException ex) {
-            LogHandler.error(ManageTokenWithDB.class, transactionID, "Cannot parse payload!", ex);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Cannot parse payload!",
+                    ex);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
                             PaperlessMessageResponse.getLangFromJson(payload),
                             null));
@@ -222,18 +294,19 @@ public class ManageTokenWithDB {
             String email,
             String pass,
             boolean remember_me,
-            String transactionID) throws
-            Exception {
+            String transactionID) throws Exception {
         Database db = new DatabaseImpl();
         //Login
         DatabaseResponse res = db.login(email, pass, transactionID);
 
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
                     res.getStatus(),
                     "en",
                     null);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     message);
         }
 
@@ -265,7 +338,7 @@ public class ManageTokenWithDB {
             response.setExpires_in((int) PaperlessConstant.expired_in);
             response.setToken_type(PaperlessConstant.TOKEN_TYPE_BEARER);
 
-            //Write refreshtoken into DB           
+            //Write refreshtoken into DB                       
             InternalResponse internalResponse = ManageRefreshToken.write(
                     info.getEmail(),
                     sessionID,
@@ -279,7 +352,9 @@ public class ManageTokenWithDB {
             if (internalResponse.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return internalResponse;
             }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, response);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
+                    new ObjectMapper().writeValueAsString(response));
         } catch (Exception e) {
             throw new Exception("Cannot create token!", e);
         }
@@ -287,7 +362,8 @@ public class ManageTokenWithDB {
 
     private static InternalResponse verify(
             String token,
-            String transactionID) throws Exception {
+            String transactionID,
+            boolean isRefreshToken) throws Exception {
         token = token.replaceAll("Bearer ", "");
 
         //Decode JWT
@@ -299,11 +375,11 @@ public class ManageTokenWithDB {
         String alg = null;
 
         try {
-            LogHandler.debug(ManageTokenWithDB.class,
-                    "\n\tBefore decode token"
-                    + "\n\tHeader:" + chunks[0]
-                    + "\n\tPayload:" + chunks[1]
-                    + "\n\tSignature:" + chunks[2]);
+//            LogHandler.debug(ManageTokenWithDB.class,
+//                    "\n\tBefore decode token"
+//                    + "\n\tHeader:" + chunks[0]
+//                    + "\n\tPayload:" + chunks[1]
+//                    + "\n\tSignature:" + chunks[2]);
             header = new String(Base64.getUrlDecoder().decode(chunks[0]), "UTF-8");
             payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
 
@@ -312,27 +388,39 @@ public class ManageTokenWithDB {
             int typ = header.indexOf("typ");
             alg = header.substring(pos + 6, typ - 3);
         } catch (Exception e) {
-            LogHandler.error(ManageTokenWithDB.class, transactionID, "Error while decode token!", e);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Error while decode token!",
+                    e);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_TOKEN,
                             "en",
                             null));
         }
-        LogHandler.debug(ManageTokenWithDB.class,
-                "\n\tAfter decode token"
-                + "\n\tHeader:" + header
-                + "\n\tPayload:" + payload
-                + "\n\tSignature:" + signature);
+//        LogHandler.debug(ManageTokenWithDB.class,
+//                "\n\tAfter decode token"
+//                + "\n\tHeader:" + header
+//                + "\n\tPayload:" + payload
+//                + "\n\tSignature:" + signature);
 
         //Convert to Object
         User data = null;
         try {
             data = new ObjectMapper().readValue(payload, User.class);
         } catch (Exception e) {
-            LogHandler.error(ManageTokenWithDB.class, transactionID, "Error while parsing Data!", e);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Error while parsing Data!",
+                    e);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_TOKEN,
                             "en",
                             null));
@@ -342,27 +430,36 @@ public class ManageTokenWithDB {
         if (verifyTokenByCode(chunks[0] + "." + chunks[1], signature, getPublicKey())) {
             Date date = new Date();
             if (data.getExp() < date.getTime()) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                                 PaperlessConstant.SUBCODE_TOKEN_EXPIRED, "en", null));
             }
             //Check accessToken in DB
-            InternalResponse res = checkAccessToken(
-                    data.getEmail(),
-                    data.getSid(),
-                    transactionID);
-            if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return res;
+            if (!isRefreshToken) {
+                InternalResponse res = checkAccessToken(
+                        data.getEmail(),
+                        data.getSid(),
+                        transactionID);
+                if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return res;
+                }
             }
             InternalResponse response = new InternalResponse();
             response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
             response.setUser(data);
             return response;
+
         }
 
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
-                        PaperlessConstant.SUBCODE_INVALID_TOKEN, "en", null));
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                        PaperlessConstant.SUBCODE_INVALID_TOKEN,
+                        "en",
+                        null));
 
     }
 
@@ -375,9 +472,15 @@ public class ManageTokenWithDB {
         try {
             token = new String(Base64.getUrlDecoder().decode(token), "UTF-8");
         } catch (Exception ex) {
-            LogHandler.error(ManageTokenWithDB.class, transactionID, "Error while decode token!", ex);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Error while decode token!",
+                    ex);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_TOKEN,
                             "en",
                             null));
@@ -387,30 +490,38 @@ public class ManageTokenWithDB {
         String clientID = chunks[0];
         String clientSecret = chunks[1];
 
-        LogHandler.debug(ManageTokenWithDB.class, transactionID,
-                "\tAdmin Token"
-                + "\n\tClientID:" + chunks[0]
-                + "\n\tClientSecret:" + chunks[1]);
-
+//        LogHandler.debug(ManageTokenWithDB.class, transactionID,
+//                "\tAdmin Token"
+//                + "\n\tClientID:" + chunks[0]
+//                + "\n\tClientSecret:" + chunks[1]);
         //Verify Token        
-        Enterprise ent = (Enterprise) GetKEYAPI.getKEYAPI(0, clientID, transactionID).getData();
+        Enterprise ent = (Enterprise) GetKEYAPI.getKEYAPI(
+                0,
+                clientID,
+                transactionID).getData();
         if (!clientID.equals(ent.getClientID())) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_CLIENT_ID, "en", null));
         }
         if (!clientSecret.equals(ent.getClientSecret())) {
-//                System.out.println("ClientSe:"+clientSecret);
-//                System.out.println("ClientSeDB:"+ent.getClientSecret());
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_CLIENT_SECRET, "en", null));
         }
         if (ent == null) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    PaperlessConstant.INTERNAL_EXP_MESS);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            PaperlessConstant.SUBCODE_INVALID_CLIENT_ID, "en", null));
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
                 ent);
     }
 
@@ -436,17 +547,29 @@ public class ManageTokenWithDB {
             try {
                 data = new ObjectMapper().readValue(payload, User.class);
             } catch (Exception e) {
-                LogHandler.error(ManageTokenWithDB.class, transactionID, "Error while parsing Data!", e);
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                LogHandler.error(
+                        ManageTokenWithDB.class,
+                        transactionID,
+                        "Error while parsing Data!",
+                        e);
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                                 PaperlessConstant.SUBCODE_INVALID_TOKEN,
                                 "en",
                                 null));
             }
         } catch (Exception e) {
-            LogHandler.error(ManageTokenWithDB.class, transactionID, "Error while decode token!", e);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Error while decode token!",
+                    e);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_TOKEN,
                             "en",
                             null));
@@ -465,22 +588,33 @@ public class ManageTokenWithDB {
             String temp = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
             user = new ObjectMapper().readValue(temp, User.class);
         } catch (Exception ex) {
-            LogHandler.error(ManageTokenWithDB.class, transactionID, "Cannot decode/parse Token!", ex);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
-                            PaperlessConstant.SUBCODE_INVALID_TOKEN, "en", null));
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Cannot decode/parse Token!",
+                    ex);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            PaperlessConstant.SUBCODE_INVALID_TOKEN,
+                            "en",
+                            null));
         }
         Date date = new Date();
         if (user.getExp() < date.getTime()) {
             revoke(token, transactionID);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
-                            PaperlessConstant.SUBCODE_TOKEN_EXPIRED, "en", null));
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            PaperlessConstant.SUBCODE_TOKEN_EXPIRED,
+                            "en",
+                            null));
         }
 
         Database db = new DatabaseImpl();
 
-        //Login
         InternalResponse res = ManageRefreshToken.get(
                 user.getSid(),
                 transactionID);
@@ -515,10 +649,10 @@ public class ManageTokenWithDB {
 
         KeycloakRes response = new KeycloakRes();
         response.setAccess_token(accessToken);
-        response.setRefresh_token(refreshtoken);
         response.setExpires_in((int) PaperlessConstant.expired_in);
         response.setToken_type(PaperlessConstant.TOKEN_TYPE_BEARER);
         response.setRefresh_expires_in((int) PaperlessConstant.refresh_token_expired_in);
+        response.setRefresh_token(refreshtoken);
 
         //Write refreshtoken into DB           
         InternalResponse internalResponse = ManageRefreshToken.write(
@@ -534,7 +668,9 @@ public class ManageTokenWithDB {
         if (internalResponse.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return internalResponse;
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, response);
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                new ObjectMapper().writeValueAsString(response));
     }
 
     private static InternalResponse loginSSO(
@@ -550,29 +686,38 @@ public class ManageTokenWithDB {
         jwtdata = (JWT_Authenticate) ress.getData();
 
         //Get enterprise data from JWT
-        DatabaseResponse res = db.getEnterpriseInfoOfUser(jwtdata.getEmail(), transactionID);
+        DatabaseResponse res = db.getEnterpriseInfoOfUser(
+                jwtdata.getEmail(),
+                transactionID);
+
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
                     res.getStatus(),
                     "en",
                     null);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     message);
         }
+
         List<Enterprise> list_enterprise = (List<Enterprise>) res.getObject();
 
         //Create AccessToken
         res = db.getUser(
-                jwtdata.getEmail(), 0,
+                jwtdata.getEmail(),
+                0,
                 list_enterprise.get(0).getId(),
                 transactionID,
                 true);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
                     res.getStatus(),
                     "en",
                     null);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     message);
         }
 
@@ -638,7 +783,11 @@ public class ManageTokenWithDB {
         try {
             return new ObjectMapper().writeValueAsString(user);
         } catch (JsonProcessingException ex) {
-            LogHandler.error(ManageTokenWithDB.class, "Cannot create payload!", ex);
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    "transaction",
+                    "Cannot create payload!",
+                    ex);
             return null;
         }
     }
@@ -686,7 +835,9 @@ public class ManageTokenWithDB {
      * @throws GeneralSecurityException
      * @throws Exception
      */
-    private static String[] createAccess_RefreshToken(User user, Enterprise enterprise) throws IOException, GeneralSecurityException, Exception {
+    private static String[] createAccess_RefreshToken(
+            User user,
+            Enterprise enterprise) throws IOException, GeneralSecurityException, Exception {
         String header = createHeader();
         User temp = createBasicUserData(user, enterprise);
         String payload = createPayload(temp);
@@ -739,7 +890,11 @@ public class ManageTokenWithDB {
 
             return Base64.getUrlEncoder().withoutPadding().encodeToString(signedBytes);
         } catch (NoSuchAlgorithmException | InvalidKeyException ex) {
-            LogHandler.error(ManageTokenWithDB.class, "Cannot Create Signature for JWT!");
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    "transaction",
+                    "Cannot Create Signature for JWT!",
+                    ex);
             return null;
         }
     }
@@ -767,7 +922,9 @@ public class ManageTokenWithDB {
         return kf.generatePublic(spec);
     }
 
-    private static InternalResponse verifyTokenByOAUTH(String token, PublicKey publicKey) {
+    private static InternalResponse verifyTokenByOAUTH(
+            String token,
+            PublicKey publicKey) {
         try {
             Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) publicKey);
             JWTVerifier verifier = JWT.require(algorithm)
@@ -785,19 +942,22 @@ public class ManageTokenWithDB {
 //            sig.update(signedData.getBytes());
 //            return sig.verify(signature);
         } catch (TokenExpiredException e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(ManageTokenWithDB.class, "Expired token!");
-            }
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    "transaction",
+                    "Expired token!",
+                    e);
             return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
                     PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_TOKEN_EXPIRED,
                             "en",
                             null));
         } catch (JWTVerificationException e) {
-            if (LogHandler.isShowErrorLog()) {
-                e.printStackTrace();
-                LogHandler.error(ManageTokenWithDB.class, "Token is invalid! - Details:" + e);
-            }
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    "transaction",
+                    "Token is invalid!",
+                    e);
             return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
                     PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_TOKEN,

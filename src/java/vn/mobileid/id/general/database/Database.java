@@ -69,6 +69,9 @@ public interface Database {
             String HMAC,
             String created_by,
             String DBMS,
+            String file_type,
+            String signing_properties,
+            String hash_values,
             String transaction_id
     ) throws Exception;
 
@@ -193,7 +196,7 @@ public interface Database {
             String DBMS,
             String name,
             int pages,
-            int size,
+            long size,
             float width,
             float height,
             int status,
@@ -202,6 +205,9 @@ public interface Database {
             String last_modified_by,                    
             byte[] data,
             boolean isSigned,
+            String file_type,
+            String signing_properties,
+            String hash_values,
             String transaction_id
     ) throws Exception;
     
@@ -422,5 +428,79 @@ public interface Database {
             String modified_by,
             String transactionID
     ) throws Exception;
+    
+    public DatabaseResponse updateStatusWorkflowActivity(
+            int id,
+            String status,
+            boolean process_enable,
+            String last_modified_by,
+            String transactionID
+    ) throws Exception;
+    
+    public DatabaseResponse getTotalWorkflowWithCondition(
+            String email,
+            int enterprise_id,
+            String status,
+            String type,
+            boolean use_metadata,
+            String metadata,            
+            String transaction_id
+    ) throws Exception;
+    
+    public DatabaseResponse logIntoDB(
+            String email,
+            int enterprise_id,
+            int workflow_activity,
+            String app_name,
+            String api_key,
+            String version,
+            String service_name,
+            String url,
+            String http_verb,
+            int status_code,
+            String request,
+            String response,
+            String hmac,
+            String created_by,
+            String transaction_id
+    ) throws Exception;
+    
+   public DatabaseResponse getPolicyAttribute(
+           int id
+   ) throws Exception;
+   
+   public DatabaseResponse updateQR(
+           int id,
+           String meta_data,
+           String image,
+           String modified_by,
+           String transaction_id
+   ) throws Exception;
+   
+   public DatabaseResponse updateAsset(
+           int id,
+           String email,
+           String file_name,
+           int asset_type,
+           long size,
+           String uuid,
+           String dms,
+           String meta_data,
+           byte[] binary_data,
+           String hmac,
+           String modified_by,
+           String used_by,
+           String transaction_id
+   ) throws Exception;
+   
+   public DatabaseResponse deleteAsset(
+           int id,
+           String transaction_id
+   ) throws Exception;
+   
+   public DatabaseResponse getTransaction(
+           String id,
+           String transaction_id
+   ) throws Exception;
 }
 

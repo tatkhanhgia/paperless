@@ -29,7 +29,8 @@ public class Account {
     private String service_agreement;
     private String authorization_code;   
     private int status_id;
-    private String status_name;        
+    private String status_name;     
+    private boolean verified;
 
     public Account() {
     }
@@ -168,6 +169,13 @@ public class Account {
     public void setStatus_name(String status_name) {
         this.status_name = status_name;
     }
-    
-    
+
+    @JsonProperty("verified")
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }        
 }

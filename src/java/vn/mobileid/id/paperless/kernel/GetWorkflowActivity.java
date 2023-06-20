@@ -5,7 +5,6 @@
 package vn.mobileid.id.paperless.kernel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,7 +20,6 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
-import vn.mobileid.id.paperless.serializer.CustomListWoAcSerializer;
 
 /**
  *
@@ -29,12 +27,16 @@ import vn.mobileid.id.paperless.serializer.CustomListWoAcSerializer;
  */
 public class GetWorkflowActivity {
 
+    /**
+     * Get data of workflow activity from RAM
+     * @param id - id of workflow activity
+     * @param transactionID
+     * @return WorkflowActivity
+     * @throws Exception 
+     */
     public static InternalResponse getWorkflowActivity(
             int id,
             String transactionID) throws Exception {
-//        if(Resources.getListWorkflowActivity().isEmpty()){
-//                Resources.reloadListWorkflowActivity();
-//        }
         InternalResponse res = null;
         WorkflowActivity check = Resources.getListWorkflowActivity().get(String.valueOf(id));
         if (check == null) {
@@ -57,9 +59,18 @@ public class GetWorkflowActivity {
             return res;
         }
         
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, check);
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                check);
     }
 
+    /**
+     * Get data of workflow activity from DB
+     * @param id - id of workflow activity
+     * @param transactionID
+     * @return WorkflowActivity
+     * @throws Exception 
+     */
     public static InternalResponse getWorkflowActivityFromDB(
             int id,
             String transactionID) throws Exception {
@@ -75,21 +86,20 @@ public class GetWorkflowActivity {
                     PaperlessConstant.HTTP_CODE_FORBIDDEN,
                      message);
         }
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, (WorkflowActivity) res.getObject());
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                (WorkflowActivity) res.getObject());
     }
+   
 
-    //Plan 2: get from DB
-    public static InternalResponse getWorkflowActivityDetails(
-            int id,
-            String transactionID) throws Exception {        
-        InternalResponse response = getWorkflowActivity(id, transactionID);
-        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-            response = getWorkflowActivityFromDB(id, transactionID);           
-        }
-        return response;
-    }
-
-    //Plan1 get from RAM
+    /**
+     * Get a list of workflow activity
+     * @param aid - Enterprise id
+     * @param email - Email of User
+     * @param transactionID
+     * @return List of Workflow Activity
+     * @throws Exception 
+     */
     public static List<WorkflowActivity> getListWorkflowActivity(
             int aid,
             String email,
@@ -102,7 +112,6 @@ public class GetWorkflowActivity {
             Resources.reloadListWorkflowActivity();
             hashMapWoAc = Resources.getListWorkflowActivity();
         }
-//        User user = GetUser.getUser(email, 0, aid, transactionID, true).getUser();
         for (WorkflowActivity woAc : hashMapWoAc.values()) {
             if (woAc.getEnterprise_id() == aid && woAc.getUser_email().equals(email)) {
                 listWoAc.add(woAc);
@@ -148,17 +157,18 @@ public class GetWorkflowActivity {
                 rowcount,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = null;
-            if (LogHandler.isShowErrorLog()) {
-                message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = null;            
+                message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
                         res.getStatus(),
                         "en",
                         null);
-                LogHandler.error(GetWorkflowActivity.class,
-                        "TransactionID:" + transactionID
-                        + "\nCannot get List Workflow Activitys - Detail:" + message);
-            }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+//                LogHandler.error(GetWorkflowActivity.class,
+//                        "TransactionID:" + transactionID
+//                        + "\nCannot get List Workflow Activitys - Detail:" + message);
+//            }
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     message
             );
         }

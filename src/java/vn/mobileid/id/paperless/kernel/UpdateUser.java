@@ -17,69 +17,88 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  * @author GiaTK
  */
 public class UpdateUser {
+
+    /**
+     * Update password of User
+     *
+     * @param email
+     * @param password
+     * @param transactionID
+     * @return
+     * @throws Exception
+     */
     public static InternalResponse updateUserPassword(
             String email, //Truyền email get dữ liệu
             String password,
             String transactionID
-    ) throws Exception {        
-            Database DB = new DatabaseImpl();
-            InternalResponse response = null;
+    ) throws Exception {
+        Database DB = new DatabaseImpl();
 
-            DatabaseResponse callDB = DB.updateUserPassword(
-                    email,
-                    password,
-                    transactionID);
+        DatabaseResponse callDB = DB.updateUserPassword(
+                email,
+                password,
+                transactionID);
 
-            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = null;
-                if (LogHandler.isShowErrorLog()) {
-                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                            callDB.getStatus(),
-                            "en",
-                            null);
-                    LogHandler.error(GetUser.class,
-                            "TransactionID:" + transactionID
-                            + "\nCannot update User Password - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        message
-                );
-            }
-                        
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");                   
+        if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            String message = null;
+            message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
+                    callDB.getStatus(),
+                    "en",
+                    null);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    message
+            );
+        }
+
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 
-     public static InternalResponse updateUserPassword(
+    /**
+     * Update Password of User
+     * @param email
+     * @param old_password
+     * @param new_password
+     * @param transactionID
+     * @return
+     * @throws Exception 
+     */
+    public static InternalResponse updateUserPassword(
             String email, //Truyền email get dữ liệu
             String old_password,
             String new_password,
             String transactionID
-    ) throws Exception {        
-            Database DB = new DatabaseImpl();
-            InternalResponse response = null;
+    ) throws Exception {
+        Database DB = new DatabaseImpl();        
 
-            DatabaseResponse callDB = DB.updateUserPassword(
-                    email,
-                    old_password,
-                    new_password,
-                    transactionID);
+        DatabaseResponse callDB = DB.updateUserPassword(
+                email,
+                old_password,
+                new_password,
+                transactionID);
 
-            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = null;
-                if (LogHandler.isShowErrorLog()) {
-                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                            callDB.getStatus(),
-                            "en",
-                            null);
-                    LogHandler.error(GetUser.class,
-                            "TransactionID:" + transactionID
-                            + "\nCannot update User Password - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        message
-                );
-            }
-                        
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");                    
+        if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            String message = null;            
+                message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                        null);
+//                LogHandler.error(GetUser.class,
+//                        "TransactionID:" + transactionID
+//                        + "\nCannot update User Password - Detail:" + message);
+//            }
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    message
+            );
+        }
+
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 }

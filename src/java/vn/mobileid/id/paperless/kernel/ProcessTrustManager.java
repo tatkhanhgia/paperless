@@ -21,7 +21,6 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.PaperlessAdminService;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.utils.Crypto;
@@ -32,6 +31,16 @@ import vn.mobileid.id.utils.Crypto;
  */
 public class ProcessTrustManager {
 
+    /**
+     * Get Certificate of TrustManager
+     *
+     * @param service_name
+     * @param remark
+     * @param url
+     * @param transactionID
+     * @return
+     * @throws Exception
+     */
     public static InternalResponse getCertificate(
             String service_name,
             String remark,
@@ -47,28 +56,44 @@ public class ProcessTrustManager {
                 transactionID);
         try {
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_FAIL,
                                 res.getStatus(),
                                 "en",
                                 null)
                 );
             }
             List<X509Certificate> list = Crypto.getCertificate((String) res.getObject());
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, list);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
+                    list);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                String message = "";
-                for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
-                    message = message + System.lineSeparator() + stackTraceElement.toString();
-                }
-                LogHandler.error(ProcessTrustManager.class, transactionID, "Cannot Get Trust Manager - Details:" + message);
-            }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_500, PaperlessConstant.INTERNAL_EXP_MESS);
+            LogHandler.error(
+                    ProcessTrustManager.class,
+                    transactionID,
+                    "Cannot Get Trust Manager - Details:",
+                    ex);
+
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_500,
+                    PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
+    /**
+     * Verify infomation of TrustManager
+     *
+     * @param jwt
+     * @param transactionID
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws SignatureException
+     * @throws UnsupportedEncodingException
+     * @throws Exception
+     */
     public static InternalResponse verifyTrustManager(
             String jwt,
             String transactionID
@@ -87,11 +112,15 @@ public class ProcessTrustManager {
         try {
             data = new ObjectMapper().readValue(payload, User.class);
         } catch (Exception e) {
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(ManageTokenWithDB.class, transactionID, "Error while parsing Data!" + e);
-            }
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+            LogHandler.error(
+                    ManageTokenWithDB.class,
+                    transactionID,
+                    "Error while parsing Data!",
+                    e);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_TOKEN,
                             "en",
                             null));
@@ -106,10 +135,9 @@ public class ProcessTrustManager {
             return res;
         }
         List<X509Certificate> listCert = (List<X509Certificate>) res.getData();
-        if (listCert.isEmpty()) {
-            LogHandler.error(PaperlessAdminService.class, transactionID, "This Trust Manager don't containt Certificate to verify JWT!!");
+        if (listCert.isEmpty()) {            
             res.setStatus(PaperlessConstant.HTTP_CODE_FORBIDDEN);
-            res.setMessage(PaperlessConstant.INTERNAL_EXP_MESS);
+            res.setMessage("{This Trust Manager don't containt Certificate to verify JWT!!}");
             return res;
         }
         for (int i = 0; i < listCert.size(); i++) {
@@ -125,10 +153,11 @@ public class ProcessTrustManager {
             }
         }
         res.setStatus(PaperlessConstant.HTTP_CODE_BAD_REQUEST);
-        res.setMessage("Cannot verify this JWT of trust manager!!");
+        res.setMessage("{Cannot verify this JWT of trust manager!!}");
         return res;
     }
-
+   
+    
     public static void main(String[] args) throws Exception {
         InternalResponse res = ProcessTrustManager.getCertificate(
                 null,

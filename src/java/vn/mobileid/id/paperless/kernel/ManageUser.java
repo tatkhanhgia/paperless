@@ -19,6 +19,15 @@ import vn.mobileid.id.utils.Utils;
  */
 public class ManageUser {
 
+    /**
+     * Forgot password of user
+     *
+     * @param email
+     * @param language
+     * @param transactionID
+     * @return
+     * @throws Exception
+     */
     public static InternalResponse forgotPassword(
             String email,
             int language,
@@ -57,30 +66,51 @@ public class ManageUser {
         mail.start();
 
         //Append queue
+        if(Resources.getQueueForgotPassword().containsValue(email)){
+            for(String otp: Resources.getQueueForgotPassword().keySet()){
+                if(Resources.getQueueForgotPassword().get(otp).equals(email)){
+                    Resources.getQueueForgotPassword().remove(otp);
+                }
+            }
+        }
         Resources.getQueueForgotPassword().put(OTP, email);
 
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                "");
     }
 
+    /**
+     * Set new password to user
+     *
+     * @param otp
+     * @param password
+     * @param transactionID
+     * @return
+     * @throws Exception
+     */
     public static InternalResponse setNewPassword(
             String otp,
             String password,
             String transactionID
     ) throws Exception {
         if (!Resources.getQueueForgotPassword().containsKey(otp)) {
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
                     PaperlessConstant.SUBCODE_RESET_PASSWORD_ACCOUNT_AGAIN,
                     "en",
                     null);
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN, message);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    message);
         }
         String email = Resources.getQueueForgotPassword().get(otp);
         InternalResponse response = UpdateUser.updateUserPassword(
                 email,
                 password,
                 transactionID);
-        
-        if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
         Resources.getQueueForgotPassword().remove(otp);

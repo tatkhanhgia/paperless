@@ -51,7 +51,12 @@ public class UserPdfSignFile extends UserRSSP_RestfulSign implements IPdfSignFil
 
     @Override
     public PdfProfile getPdfProfile() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return (PdfProfile) super._profile;
+    }
+
+    @Override
+    public PdfProfileCMS getProfileCMS() {
+        return (PdfProfileCMS) super._profile;
     }
 
 }

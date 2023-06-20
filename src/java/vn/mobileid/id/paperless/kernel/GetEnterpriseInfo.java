@@ -20,13 +20,20 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  */
 public class GetEnterpriseInfo {
 
+    /**
+     * Get data of Enterprise (Choose 1 or 2)
+     * @param enterprise_name - Enterprise name
+     * @param enterprise_id - ENterprise id
+     * @param transactionID
+     * @return Enterprise
+     * @throws Exception 
+     */
     public static InternalResponse getEnterprise(
             String enterprise_name,
             int enterprise_id,
-            String transactionID) throws Exception {
-
-        Database DB = new DatabaseImpl();
-        InternalResponse response = null;
+            String transactionID)
+            throws Exception {
+        Database DB = new DatabaseImpl();        
 
         DatabaseResponse callDB = DB.getEnterpriseInfo(
                 enterprise_id <= 0 ? 0 : enterprise_id,
@@ -35,16 +42,13 @@ public class GetEnterpriseInfo {
         try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
-                if (LogHandler.isShowErrorLog()) {
-                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                            callDB.getStatus(),
-                            "en",
-                             null);
-                    LogHandler.error(GetUser.class,
-                            "TransactionID:" + transactionID
-                            + "\nCannot get Enterprise - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                        null);
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
@@ -56,31 +60,41 @@ public class GetEnterpriseInfo {
 
         } catch (Exception e) {
             throw new Exception("Cannot get enterpriseInfo!", e);
-//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
         }
     }
 
-    public  static InternalResponse getEnterpriseInfo(
+    /**
+     * Get data of the Enterprise which belong to the User.
+     * @param email - Email of User
+     * @param transactionID
+     * @return List of Enterprise
+     * @throws Exception 
+     */
+    public static InternalResponse getEnterpriseInfo(
             String email,
             String transactionID) throws Exception {
         Database db = new DatabaseImpl();
-
-        //Login
-        DatabaseResponse res = db.getEnterpriseInfoOfUser(email, transactionID);
+        
+        DatabaseResponse res = db.getEnterpriseInfoOfUser(
+                email,
+                transactionID);
         try {
             if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-                String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
                         res.getStatus(),
                         "en",
                         null);
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message);
             }
 
             List<Enterprise> list = (List<Enterprise>) res.getObject();
-
-            //Temp
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, list.get(0));
+            
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
+                    list.get(0));
         } catch (Exception e) {
             throw new Exception("Cannot get enterprise info", e);
         }

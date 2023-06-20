@@ -33,7 +33,10 @@ public class SendMail extends Thread {
     private byte[] file;
     private String fileName;
 
-    public SendMail(){};
+    public SendMail() {
+    }
+
+    ;
     
     /**
      * Contructor for custom
@@ -54,13 +57,14 @@ public class SendMail extends Thread {
         this.sendTo = sendTo;
         this.Subject = Subject;
         this.Content = Content;
-        this.EntityName = EntityName == null? "Paperless Service": EntityName;
+        this.EntityName = EntityName == null ? "Paperless Service" : EntityName;
         this.file = file;
         this.fileName = fileName;
     }
 
-    /**Constructor for Elabor
-     * 
+    /**
+     * Constructor for Elabor
+     *
      * @param sendTo : email destination
      * @param name: name of user email
      * @param CCCD: cccd
@@ -83,14 +87,15 @@ public class SendMail extends Thread {
         this.EntityName = "eLaborContract";
     }
 
-    /**Contructor for create email and send to user. 
-     * 
+    /**
+     * Contructor for create email and send to user.
+     *
      * @param sendTo
      * @param enterprise_id
      * @param name
      * @param CCCD
      * @param file
-     * @param filename 
+     * @param filename
      */
     public SendMail(
             String sendTo,
@@ -119,26 +124,30 @@ public class SendMail extends Thread {
     public void appendAuthorizationCode(String authorizeCode) {
         this.Content = this.Content.replace(AnnotationJWT.AuthorizeCode.getNameAnnot(), authorizeCode);
     }
-    
-    public void appendNameUser(String name){
+
+    public void appendNameUser(String name) {
         this.Subject = this.Subject.replace(AnnotationJWT.Name.getNameAnnot(), name);
         this.Content = this.Content.replace(AnnotationJWT.Name.getNameAnnot(), name);
     }
-    
-    public void appendDocNumber(String docNumber){
+
+    public void appendDocNumber(String docNumber) {
         this.Subject = this.Subject.replace(AnnotationJWT.DocNumber.getNameAnnot(), docNumber);
         this.Content = this.Content.replace(AnnotationJWT.DocNumber.getNameAnnot(), docNumber);
     }
-    
-    public void appendEmailUser(String email){
+
+    public void appendEmailUser(String email) {
         this.Subject = this.Subject.replace(AnnotationJWT.Email.getNameAnnot(), email);
         this.Content = this.Content.replace(AnnotationJWT.Email.getNameAnnot(), email);
     }
-    
-    public void appendLink(String link){
+
+    public void appendLink(String link) {
         this.Subject = this.Subject.replace(AnnotationJWT.Link.getNameAnnot(), link);
         this.Content = this.Content.replace(AnnotationJWT.Link.getNameAnnot(), link);
-    }        
+    }
+
+    public void appendTypeProcess(String type) {
+        this.Subject = this.Subject.replace(AnnotationJWT.Type.getNameAnnot(), type);
+    }
 
     public String getSendTo() {
         return sendTo;
@@ -187,9 +196,7 @@ public class SendMail extends Thread {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
-    
-    
-    
+
     public void send() {
         try {
             Subject = Subject.replace(AnnotationJWT.DocNumber.getNameAnnot(), "");
@@ -239,16 +246,17 @@ public class SendMail extends Thread {
             EmailTemplate email_template = (EmailTemplate) res.getObject();
             return email_template;
         } catch (Exception ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(SendMail.class, "Error while get Email Template");
-            }
+            LogHandler.error(
+                    SendMail.class,
+                    "transaction",
+                    "Error while get Email Template",
+                    ex);
         }
         return null;
     }
 
     @Override
-    public void run(){
+    public void run() {
         send();
     }
 }

@@ -4,6 +4,8 @@
  */
 package vn.mobileid.id.paperless;
 
+import vn.mobileid.id.utils.PolicyConfiguration;
+
 /**
  *
  * @author GiaTK
@@ -15,9 +17,14 @@ public class PaperlessConstant {
     final public static int NUMBER_OF_ACCESS_TOKEN = 63;
     final public static int NUMBER_OF_ITEMS_TYPE = 5;
     final public static int NUMBER_OF_FILE_DATA = 5;
-    final public static String INTERNAL_EXP_MESS = "[\"Internal server exception\"]";
+    final public static String INTERNAL_EXP_MESS = "{[\"Internal server exception\"]}";
     final public static String DEFAULT_MESS = "Message is not defined";
-    final public static int DEFAULT_ROW_COUNT = 100;
+    final public static int DEFAULT_ROW_COUNT = PolicyConfiguration
+            .getInstant()
+            .getSystemConfig()
+            .getAttributes().get(0)
+            .getDefault_row_count();
+//    final public static int DEFAULT_ROW_COUNT = 100;
     
     final public static String TOKEN_TYPE_BEARER = "Bearer";
     final public static String TOKEN_TYPE_BASIC = "Basic";
@@ -30,13 +37,43 @@ public class PaperlessConstant {
     final public static String EMAIL_FORGOT_PASSWORD = "email_forgot_password";
     
     //AccessToken Data
-    final public static String alg = "SHA256withRSA";
-    final public static String typ = "JWT";
-    final public static long expired_in = 3600;
-    final public static long refresh_token_expired_in = 36000;
+//    final public static String alg = "SHA256withRSA";
+    final public static String alg = PolicyConfiguration
+            .getInstant()
+            .getSystemConfig()
+            .getAttributes().get(0)
+            .getTokenConfig()
+            .getAlg();
+//    final public static String typ = "JWT";
+    final public static String typ = PolicyConfiguration
+            .getInstant()
+            .getSystemConfig()
+            .getAttributes().get(0)
+            .getTokenConfig()
+            .getTyp();
+//    final public static long expired_in = 3600;
+    final public static long expired_in = PolicyConfiguration
+            .getInstant()
+            .getSystemConfig()
+            .getAttributes().get(0)
+            .getTokenConfig()
+            .getAccess_token_expired_in();
+//    final public static long refresh_token_expired_in = 86400;
+    final public static long refresh_token_expired_in = PolicyConfiguration
+            .getInstant()
+            .getSystemConfig()
+            .getAttributes().get(0)
+            .getTokenConfig()
+            .getRefresh_token_expired_in();
 
     //Default data
-    final public static long password_expired_at = 4800;
+//    final public static long password_expired_at = 2592000;
+    final public static long password_expired_at = PolicyConfiguration
+            .getInstant()
+            .getSystemConfig()
+            .getAttributes().get(0)
+            .getTokenConfig()
+            .getPassword_user_expired_at();
     final public static int BUSINESSTYPE_PERSONAL = 1;
     final public static int BUSINESSTYPE_BUSINESS = 2;
 
@@ -97,6 +134,7 @@ public class PaperlessConstant {
     final public static int SUBCODE_RESET_PASSWORD_ACCOUNT_AGAIN = 7;
     final public static int SUBCODE_MISSING_X_SECURITY_CODE = 8;
     final public static int SUBCODE_MISSING_OLD_OR_NEW_PASSWORD = 9;
+    final public static int SUBCODE_CANNOT_GET_ASSET_TEMPLATE_TYPE = 10;
 
     //SUBCODE INVALID KEYCLOAK - 5000
     final public static int SUBCODE_INVALID_USER_CREDENTIALS = 2;
@@ -115,6 +153,7 @@ public class PaperlessConstant {
     final public static int SUBCODE_INVALID_CLIENT_ID = 16;
     final public static int SUBCODE_MISSING_USER_EMAIL = 17;
     final public static int SUBCODE_MISSING_AUTHORIZATION_CODE = 18;
+    final public static int SUBCODE_USER_ALREADY_VERIFIED = 19;
 
     //SUBCODE INVALID WORKFLOW - 5001
     final public static int SUBCODE_MISSING_WORKFLOW_LABEL = 2;
@@ -137,6 +176,7 @@ public class PaperlessConstant {
     final public static int SUBCODE_MISSING_VALUE_OF_FILE_DATA = 11;
     final public static int SUBCODE_MISSING_FILE_FIELD_IN_FILE_DATA = 12;
     final public static int SUBCODE_MISSING_FILE_FIELD_IN_ITEMS = 13;
+    final public static int SUBCODE_FILE_DATA_IS_TOO_MUCH_VALUES = 14;
 
     //SUBCPDE INVALID WORKFLOW TEMPLATE - 5003
 //    final public static int SUBCODE_WORKFLOW_TEMPLATE_ALREADY_EXISTED = 2;

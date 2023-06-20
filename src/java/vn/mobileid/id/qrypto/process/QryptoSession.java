@@ -90,10 +90,10 @@ public class QryptoSession implements ISession {
                     + "\nDetails:" + qryptoResp.getDetails());
             throw new Exception(qryptoResp.getProblem() + " - " + qryptoResp.getDetails());
         } else {
-            this.bearerToken = "Bearer " + qryptoResp.getAccess_token();
+            this.bearerToken =  "Bearer "+qryptoResp.getAccess_token();
 
             if (qryptoResp.getRefresh_token() != null) {
-                this.refreshToken = "Bearer " + qryptoResp.getRefresh_token();
+                this.refreshToken =  "Bearer "+qryptoResp.getRefresh_token();
             }
         }
     }
@@ -155,11 +155,10 @@ public class QryptoSession implements ISession {
         if (bearerToken != null) {
             authHeader = bearerToken;
         } else {
-            try {
-                retryLogin++;
-                authHeader = prop.getAuthorization();
-            } catch (Throwable ex) {
-                Logger.getLogger(QryptoSession.class.getName()).log(Level.SEVERE, null, ex);
+            retryLogin++;
+            this.login();
+            if(retryLogin == 2){
+                throw new Exception("Cannot login again!");
             }
         }
 
@@ -200,11 +199,10 @@ public class QryptoSession implements ISession {
         if (bearerToken != null) {
             authHeader = bearerToken;
         } else {
-            try {
-                retryLogin++;
-                authHeader = prop.getAuthorization();
-            } catch (Throwable ex) {
-                Logger.getLogger(QryptoSession.class.getName()).log(Level.SEVERE, null, ex);
+            retryLogin++;
+            this.login();
+            if(retryLogin == 2){
+                throw new Exception("Cannot login again!");
             }
         }
 

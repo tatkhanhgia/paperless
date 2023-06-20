@@ -15,8 +15,10 @@ public enum AnnotationJWT {
     DocNumber("@DocNumber"),
     Password("@Password"),
     AuthorizeCode("@AuthorizeCode"),
-    Email("@Email"),
-    Link("@Link");
+    Email("@Email"),    
+    Link("@Link"),  //Link HTML of Service
+    Type("@Type"), //Type of Process 
+    Reason("@Reason");  //Reason of Signing Properties
     
     private String name;
 

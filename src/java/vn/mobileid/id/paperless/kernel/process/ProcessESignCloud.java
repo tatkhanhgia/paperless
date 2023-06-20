@@ -12,7 +12,6 @@ import java.util.Base64;
 import java.util.List;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
@@ -20,6 +19,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.SigningService;
+import vn.mobileid.id.paperless.kernel.GetAsset;
 import vn.mobileid.id.paperless.kernel.GetWorkflowDetail_option;
 import vn.mobileid.id.paperless.kernel.UpdateFileManagement;
 import vn.mobileid.id.paperless.kernel.UpdateWorkflowActivity;
@@ -29,10 +29,11 @@ import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.KYC;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
-import vn.mobileid.id.paperless.objects.SigningProperties;
+import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.utils.AnnotationJWT;
+import vn.mobileid.id.utils.PDFAnalyzer;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
 
 /**
@@ -41,7 +42,6 @@ import vn.mobileid.id.utils.XSLT_PDF_Processing;
  */
 public class ProcessESignCloud {
 
-//    final private static Logger LOG = LogManager.getLogger(ProcessESignCloud.class);
     public static InternalResponse assignEsignCloud(
             WorkflowActivity woAc,
             List<ItemDetails> fileItem,
@@ -59,16 +59,12 @@ public class ProcessESignCloud {
         }
 
         //Get Asset template file from DB        
-        DatabaseResponse template = DB.getAsset(
+        InternalResponse temp = GetAsset.getAsset(
                 ((WorkflowDetail_Option) response.getData()).getAsset_Template(),
                 transactionID);
-        if (template.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                            template.getStatus(),
-                            "en",
-                            null)
-            );
+
+        if (temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return temp;
         }
 
         //Assign data into KYC object
@@ -81,11 +77,11 @@ public class ProcessESignCloud {
         object.setPreviousYear(String.valueOf(LocalDate.now().minusYears(1).getYear()));
 
         //Read file XSLT - Assign KYC Object into Template XSLT
-        byte[] xsltC = ((Asset) template.getObject()).getBinaryData();
-        byte[] html = XSLT_PDF_Processing.appendData(object, xsltC);
-
-        //Convert from HTML to PDF
-        byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
+        byte[] xsltC = ((Asset) temp.getData()).getBinaryData();
+//        byte[] html = XSLT_PDF_Processing.appendData(object, xsltC);
+//
+//        //Convert from HTML to PDF
+//        byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
 
         // Check file name
         if (file_name == null || file_name.isEmpty()) {
@@ -93,7 +89,7 @@ public class ProcessESignCloud {
         }
 
         //Write into DB
-        UpdateFileManagement.updateFileManagement(
+        response = UpdateFileManagement.updateFileManagement(
                 Integer.parseInt(woAc.getFile().getID()),
                 null,
                 null,
@@ -102,29 +98,31 @@ public class ProcessESignCloud {
                 0,
                 0,
                 0,
+                0,
                 null,
                 null,
                 user.getEmail(),
-                pdf,
+                xsltC,
                 false,
+                null,
+                null,
+                null,
                 transactionID);
+        
+        if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+            return response;
+        }
 
         //Update Request Data of Workflow Activity
-//        WorkflowActivity get = Resources.getListWorkflowActivity().get(String.valueOf(woAc.getId()));
-//        get.getFile().setData(xsltC);
-//        get.getFile().setName(file_name);
-//        get.setRequestData(new ObjectMapper().writeValueAsString(object));
-//        Resources.getListWorkflowActivity().replace(String.valueOf(get.getId()), get);
-
-         response = UpdateWorkflowActivity.updateMetadata(
+        response = UpdateWorkflowActivity.updateMetadata(
                 woAc.getId(),
                 new ObjectMapper().writeValueAsString(object),
                 user.getName() == null ? user.getEmail() : user.getName(),
                 transactionID);
-        if(response.getStatus()!= PaperlessConstant.HTTP_CODE_SUCCESS){
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        
+
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 ""
         );
@@ -137,7 +135,7 @@ public class ProcessESignCloud {
             String object, // dữ liệu truyền lên từ client
             JWT_Authenticate jwt,
             List<FileDataDetails> image,
-            SigningProperties signing,
+            FrameSignatureProperties signing,
             String transactionID
     ) throws IOException, Exception {
         List<byte[]> result1;
@@ -181,19 +179,17 @@ public class ProcessESignCloud {
                         PaperlessConstant.SUBCODE_SIGNING_ERROR,
                         "en",
                         null);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(ProcessESignCloud.class, transactionID, "Cannot Signing");
-                }
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message);
             }
 
             result2 = SigningService.getInstant(3).signHashBussiness(result1.get(0));
         } catch (NullPointerException ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(ProcessESignCloud.class, transactionID, "Cannot get Certificare from RSSP - Detail:" + ex);
-            }
+            LogHandler.error(
+                    ProcessESignCloud.class,
+                    transactionID,
+                    "Cannot get Certificare from RSSP !",
+                    ex);
             return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_SIGNING_ERROR,
@@ -201,10 +197,11 @@ public class ProcessESignCloud {
                             null)
             );
         } catch (Exception ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(ProcessESignCloud.class, transactionID, "Error while Signing - Detail:" + ex);
-            }
+            LogHandler.error(
+                    ProcessESignCloud.class,
+                    transactionID,
+                    "Error while Signing !",
+                    ex);
             return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_SIGNING_ERROR,
@@ -217,20 +214,26 @@ public class ProcessESignCloud {
         name = AnnotationJWT.replaceWithJWT(name, jwt);
 
         //Write into DB
+        int ids = Integer.parseInt(file.getID());
+        file = PDFAnalyzer.analysisPDF(result2.get(0));
         InternalResponse res = UpdateFileManagement.updateFileManagement(
-                Integer.parseInt(file.getID()),
+                ids,
                 null,
                 null,
                 name,
-                0,
-                0,
-                0,
+                file.getPages(),
+                file.getSize(),
+                file.getWidth(),
+                file.getHeight(),
                 0,
                 null,
                 null,
                 user.getEmail(),
                 result2.get(0),
                 true,
+                null,
+                null,
+                null,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
@@ -240,17 +243,13 @@ public class ProcessESignCloud {
 //        get.getFile().setData(result2.get(0));
 //        get.getFile().setName(file.getName());
 //        get.setRequestData(new ObjectMapper().writeValueAsString(objects));
-//        Resources.getListWorkflowActivity().replace(String.valueOf(get.getId()), get);
-        
-        res = UpdateWorkflowActivity.updateMetadata(
-                id,
-                new ObjectMapper().writeValueAsString(object),
-                user.getName() == null ? user.getEmail() : user.getName(),
-                transactionID);
-        if(res.getStatus()!= PaperlessConstant.HTTP_CODE_SUCCESS){
-            return res;
-        }
-        
+//        Resources.getListWorkflowActivity().replace(String.valueOf(get.getId()), get);                
+//        res = UpdateWorkflowActivity.updateStatus(
+//                id,
+//                null,
+//                true,
+//                user.getName() == null ? user.getEmail() : user.getName(),
+//                transactionID);        
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 ""
         );
@@ -289,13 +288,17 @@ public class ProcessESignCloud {
                     oldValue.set(temp, value);
                     return oldValue;
                 } catch (IllegalArgumentException ex) {
-                    if (LogHandler.isShowErrorLog()) {
-                        LogHandler.error(ProcessESignCloud.class, "Cannot assign Data into KYC Object - Details:" + ex);
-                    }
+                    LogHandler.error(
+                            ProcessESignCloud.class,
+                            "transaction",
+                            "Cannot assign Data into KYC Object !",
+                            ex);
                 } catch (IllegalAccessException ex) {
-                    if (LogHandler.isShowErrorLog()) {
-                        LogHandler.error(ProcessESignCloud.class, "Cannot assign Data into KYC Object - Details:" + ex);
-                    }
+                    LogHandler.error(
+                            ProcessESignCloud.class,
+                            "transaction",
+                            "Cannot assign Data into KYC Object !",
+                            ex);
                 }
             }
         }
@@ -307,7 +310,7 @@ public class ProcessESignCloud {
             User user,
             String photo,
             byte[] content,
-            SigningProperties signing
+            FrameSignatureProperties signing
     ) throws NullPointerException, Exception {
         if (jwt.getDocument_number() != null) {
             if (!SigningService.getInstant(3).checkExist(jwt.getDocument_number(), "")) {

@@ -17,30 +17,42 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  * @author GiaTK
  */
 public class GetQRSize {
+
+    /**
+     * Get data (QRSize) of QR
+     * @param qr_size_name - Name of QRSize
+     * @param transactionID
+     * @return QRSize
+     * @throws Exception 
+     */
     public static InternalResponse getQRSize(
             String qr_size_name,
             String transactionID
-    ) throws Exception{
+    ) throws Exception {
         Database callDB = new DatabaseImpl();
         DatabaseResponse responseDB = callDB.getQRSize(
                 qr_size_name,
                 transactionID);
-        
-        if( responseDB.getStatus() != PaperlessConstant.CODE_SUCCESS){
-            String message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                        responseDB.getStatus(),
-                        "en",
-                        null);
-                if (LogHandler.isShowErrorLog()) {
-                    LogHandler.error(GetAsset.class,
-                            "TransactionID:" + transactionID
-                            + "\nCannot get QRSize - Detail:" + message);
-                }
-                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        message
-                );
+
+        if (responseDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
+                    responseDB.getStatus(),
+                    "en",
+                    null);
+//                if (LogHandler.isShowErrorLog()) {
+//                    LogHandler.error(GetAsset.class,
+//                            "TransactionID:" + transactionID
+//                            + "\nCannot get QRSize - Detail:" + message);
+//                }
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    message
+            );
         }
-        
-        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, responseDB.getObject());
+
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                responseDB.getObject());
     }
 }

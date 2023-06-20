@@ -22,19 +22,27 @@ import vn.mobileid.id.utils.XSLT_PDF_Processing;
  */
 public class GetDocument {
 
+    /**
+     * Get Document of the WorkflowActivity
+     * @param workflowActivityID - ID of ther Workflow Activity
+     * @param transactionID
+     * @return FileManagement
+     * @throws Exception 
+     */
     public static InternalResponse getDocument(
             int workflowActivityID,
             String transactionID) throws Exception {
-//        try {
-        Database DB = new DatabaseImpl();
+//        try {        
         InternalResponse response = null;
 
         response = GetWorkflowActivity.getWorkflowActivity(
                 workflowActivityID,
                 transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                             PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
                             "en",
                             null));
@@ -47,10 +55,12 @@ public class GetDocument {
             return response;
         }
         FileManagement file = (FileManagement) response.getData();
-
+        
         if (file.getData() == null) {
-            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                             PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
                             "en",
                             null)
@@ -60,7 +70,9 @@ public class GetDocument {
             if(woAc.getRequestData() == null ){
                 woAc = (WorkflowActivity)GetWorkflowActivity.getWorkflowActivityFromDB(woAc.getId(), transactionID).getData();
             }
-            KYC object = new ObjectMapper().readValue(woAc.getRequestData(), KYC.class);
+            KYC object = new ObjectMapper().readValue(
+                    woAc.getRequestData(),
+                    KYC.class);
             byte[] xsltC = file.getData();
             byte[] html = XSLT_PDF_Processing.appendData(object, xsltC);
 
@@ -71,13 +83,5 @@ public class GetDocument {
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 file);
-
-//        } catch (Exception e) {
-//            if (LogHandler.isShowErrorLog()) {
-////                e.printStackTrace();
-//                LogHandler.error(GetDocument.class,"UNKNOWN EXCEPTION. Details: " + e);
-//            }
-//            return new InternalResponse(500, PaperlessConstant.INTERNAL_EXP_MESS);
-//        }
     }
 }

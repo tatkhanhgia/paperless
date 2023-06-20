@@ -9,8 +9,8 @@ import RestfulFactory.Model.Identification;
 import RestfulFactory.SessionFactory;
 import SignFile.IPdfSignFile;
 import SignFile.SignFileFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itextpdf.text.pdf.BaseFont;
-import java.awt.FontFormatException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,14 +36,20 @@ import vn.mobileid.exsig.ImageGenerator;
 import vn.mobileid.exsig.ImageProfile;
 import vn.mobileid.exsig.PdfForm;
 import vn.mobileid.exsig.PdfProfile;
+import vn.mobileid.exsig.PdfProfileCMS;
+import vn.mobileid.exsig.Profile;
 import vn.mobileid.exsig.TextAlignment;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
+import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.general.policy.object.SignatureProperties;
+import vn.mobileid.id.paperless.kernel.GetEnterpriseInfo;
 import vn.mobileid.id.paperless.objects.Enterprise;
-import vn.mobileid.id.paperless.objects.SigningProperties;
+import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.utils.AnnotationJWT;
+import vn.mobileid.id.utils.PolicyConfiguration;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -59,7 +65,7 @@ public class SigningService {
     private ISessionFactory sessionFactory;
     private IServerSession session;
 
-    private static HashMap<String, IUserSession> listSession;
+    private static HashMap<String, IUserSession> listUserSession;
     private static SigningService signingService;
 
     public static SigningService getInstant(int i) throws Exception {
@@ -68,7 +74,7 @@ public class SigningService {
         }
         if (SigningService.signingService == null) {
             SigningService.signingService = new SigningService(i);
-            SigningService.listSession = new HashMap<>();
+            SigningService.listUserSession = new HashMap<>();
         }
         if (SigningService.signingService.enterprise_id_instant != i) {
             SigningService.signingService = new SigningService(i);
@@ -89,7 +95,10 @@ public class SigningService {
                     enterprise_id,
                     "transactionID").getObject();
         } catch (ClassCastException ex) {
-            LogHandler.error(SigningService.class, "Cannot cast data - Details:" + ex);
+            LogHandler.error(
+                    SigningService.class,
+                    "Cannot cast data !",
+                    ex);
             return;
         }
 
@@ -114,13 +123,20 @@ public class SigningService {
             this.session = sessionFactory.getServerSession();
 
         } catch (Throwable ex) {
-                LogHandler.error(SigningService.class, "Cannot init sessionFactory - Details:" + ex);
+            LogHandler.error(
+                    SigningService.class,
+                    "",
+                    "Cannot init sessionFactory !",
+                    ex);
         }
     }
 
     public List<byte[]> signHashBussiness(byte[] content) {
         try {
-            IPdfSignFile signFile = new SignFileFactory().createPdfSignFile_SyncFlow(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B);
+            IPdfSignFile signFile = new SignFileFactory().createPdfSignFile_SyncFlow(
+                    SignFileFactory.SignType.PAdES,
+                    Algorithm.SHA256,
+                    PdfForm.B);
 
             //Read file in server
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -144,60 +160,175 @@ public class SigningService {
             buffer.flush();
             byte[] font = buffer.toByteArray();
 
+            //Get Enterprise Signing Properties in DB     
+            String agreement = null;
+            String credential = null;
+            String password = null;
+            String boxCoordinate = null;
+            String keyword = null;
+            String page = null;
+            try {
+                Enterprise ent = (Enterprise) GetEnterpriseInfo.getEnterprise(
+                        null,
+                        enterprise_id_instant,
+                        "transactionUID").getData();
+                SignatureProperties signature = new ObjectMapper().readValue(
+                        ent.getSigning_info_properties(),
+                        SignatureProperties.class);
+                FrameSignatureProperties frame = new ObjectMapper().readValue(
+                        ent.getSigning_info_properties(),
+                        FrameSignatureProperties.class);
+                agreement = signature.getBusinessAgreementUUID();
+                credential = signature.getBusinessCredentialID();
+                password = signature.getBusinessPassword();
+                boxCoordinate = frame.getBoxCoordinate();
+                keyword = frame.getKeyword();
+                page = frame.getPage();
+            } catch (Exception ex) {
+                agreement = "OW06742145068696660080";
+                credential = "0d8535f8-e54a-43f0-acbf-d88c8ae02cbc";
+                password = "12345678";
+                boxCoordinate = "-20,-130,160,110";
+                keyword = "NGƯỜI SỬ DỤNG LAO ĐỘNG";
+                page = "LAST";
+            }            
 //            String imageBackground = "D:\\NetBean\\qrypto\\file\\file\\MobileID-Signature.png";
 //            String font_Sign = "D:\\NetBean\\qrypto\\file\\file\\verdana.ttf";
 //            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
             PdfProfile profile = signFile.getProfile();
 //            profile.setReason("Ký hợp đồng điện tử");
             profile.setTextContent("");
-            profile.setVisibleSignature("LAST", "-20,-130", "160,110", "NGƯỜI SỬ DỤNG LAO ĐỘNG");
+            profile.setVisibleSignature(
+                    page,
+                    boxCoordinate.substring(0, 8),
+                    boxCoordinate.substring(9, 16),
+                    keyword);
             profile.setCheckText(false);
             profile.setCheckMark(false);
 //            profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
-            profile.setFont(font, BaseFont.IDENTITY_H, true, 8, 0, TextAlignment.ALIGN_LEFT, Color.BLACK);
+            profile.setFont(
+                    font,
+                    BaseFont.IDENTITY_H,
+                    true,
+                    8,
+                    0,
+                    TextAlignment.ALIGN_LEFT,
+                    Color.BLACK);
 //            profile.setBorder(Color.RED);
             profile.setBackground(imageBackground);
 
             List<byte[]> src = new ArrayList<>();
             src.add(content);
 
-            //Signing
-            String agreementUUIDBussiness = "OW06742145068696660080";
-            String credentialIDBussiness = "0d8535f8-e54a-43f0-acbf-d88c8ae02cbc";
-            List<byte[]> results = signFile.sign(agreementUUIDBussiness, credentialIDBussiness, "12345678", src, this.session);
+            //Signing                        
+            List<byte[]> results = signFile.sign(
+                    agreement,
+                    credential,
+                    password,
+                    src,
+                    this.session);
 
             int i = 0;
             List<byte[]> temp = new ArrayList<>();
             for (byte[] result : results) {
                 temp.add(result);
-//                System.out.println("File name: " + "signed" + i + ".pdf");
-//                Files.write(Paths.get("file/signed" + i + ".pdf"), result, StandardOpenOption.CREATE);
-//                i++;
             }
             return temp;
         } catch (APIException ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class, "Error While Signing - Detail:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "",
+                    "Error While Signing !",
+                    ex);
             return null;
         } catch (Exception ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class, "Error While Signing - Detail:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "",
+                    "Error While Signing !",
+                    ex);
             return null;
         }
     }
 
+//    public List<byte[]> signHashBussiness(byte[] content) {
+//        try {
+//            IPdfSignFile signFile = new SignFileFactory().createPdfSignFile_SyncFlow(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B);
+//
+//            //Read file in server
+//            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+//            InputStream input = loader.getResourceAsStream("resources/MobileID-Signature.png");
+//            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+//            int nRead;
+//            byte[] data = new byte[4];
+//            while ((nRead = input.read(data, 0, data.length)) != -1) {
+//                buffer.write(data, 0, nRead);
+//            }
+//            buffer.flush();
+//            byte[] imageBackground = buffer.toByteArray();
+//
+//            loader = Thread.currentThread().getContextClassLoader();
+//            input = loader.getResourceAsStream("resources/MobileID-Signature.png");
+//            buffer = new ByteArrayOutputStream();
+//            data = new byte[4];
+//            while ((nRead = input.read(data, 0, data.length)) != -1) {
+//                buffer.write(data, 0, nRead);
+//            }
+//            buffer.flush();
+//            byte[] font = buffer.toByteArray();
+//
+////            String imageBackground = "D:\\NetBean\\qrypto\\file\\file\\MobileID-Signature.png";
+////            String font_Sign = "D:\\NetBean\\qrypto\\file\\file\\verdana.ttf";
+////            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
+//            PdfProfile profile = signFile.getProfile();
+////            profile.setReason("Ký hợp đồng điện tử");
+//            profile.setTextContent("");
+//            profile.setVisibleSignature("LAST", "-20,-130", "160,110", "NGƯỜI SỬ DỤNG LAO ĐỘNG");
+//            profile.setCheckText(false);
+//            profile.setCheckMark(false);
+////            profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
+//            profile.setFont(font, BaseFont.IDENTITY_H, true, 8, 0, TextAlignment.ALIGN_LEFT, Color.BLACK);
+////            profile.setBorder(Color.RED);
+//            profile.setBackground(imageBackground);
+//
+//            List<byte[]> src = new ArrayList<>();
+//            src.add(content);
+//
+//            //Signing
+//            String agreementUUIDBussiness = "OW06742145068696660080";
+//            String credentialIDBussiness = "0d8535f8-e54a-43f0-acbf-d88c8ae02cbc";
+//            List<byte[]> results = signFile.sign(agreementUUIDBussiness, credentialIDBussiness, "12345678", src, this.session);
+//
+//            int i = 0;
+//            List<byte[]> temp = new ArrayList<>();
+//            for (byte[] result : results) {
+//                temp.add(result);
+//            }
+//            return temp;
+//        } catch (APIException ex) {
+//            LogHandler.error(
+//                    SigningService.class,
+//                    "",
+//                    "Error While Signing !",
+//                    ex);
+//            return null;
+//        } catch (Exception ex) {
+//            LogHandler.error(
+//                    SigningService.class,
+//                    "",
+//                    "Error While Signing !",
+//                    ex);
+//            return null;
+//        }
+//    }
     public List<byte[]> signHashWitness(
             String fullNameWitness,
             String base64Evidence,
             byte[] content,
             JWT_Authenticate jwt,
-            SigningProperties signing,
+            FrameSignatureProperties signing,
             String transactionID
-    ) {
+    ) throws Exception {
         try {
             fullNameWitness = new String(fullNameWitness.getBytes(StandardCharsets.UTF_8));
             //Read file from server
@@ -214,8 +345,21 @@ public class SigningService {
             byte[] font = buffer.toByteArray();
 
             //Data
-            String agreementUUID = "9E6FA0D0-6319-4D57-A760-99BBBECB35D0";
-            String credentials = "fc081a30-8ed5-40c0-93b3-7b9cbd8d40f2";
+            String agreementUUID = PolicyConfiguration
+                    .getInstant()
+                    .getSignatureProperties()
+                    .getAttributes().get(0)
+                    .getWitnessAgreementUUID();
+            String credentials = PolicyConfiguration
+                    .getInstant()
+                    .getSignatureProperties()
+                    .getAttributes().get(0)
+                    .getWitnessCredentialID();
+            String password = PolicyConfiguration
+                    .getInstant()
+                    .getSignatureProperties()
+                    .getAttributes().get(0)
+                    .getPasswordUUID();
 
             String fullNameReplaceSpace = fullNameWitness.replaceAll(" ", "").toString();
 
@@ -228,63 +372,113 @@ public class SigningService {
             }
             byte[] imgData = ImageGenerator.combineImage(picture2, picture);
 
-            IPdfSignFile signFile = new SignFileFactory().createPdfSignFile_SyncFlow(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B);
+            IPdfSignFile signFile = new SignFileFactory().createPdfSignFile_SyncFlow(SignFileFactory.SignType.CMS, Algorithm.SHA256, PdfForm.B);
 
-            PdfProfile profile = signFile.getProfile();
+            PdfProfileCMS profile = signFile.getProfileCMS();
+            profile.setFontSizeMin(3);
 
-            String reason = "";
+            //Get SignatureProperties From DB
+            FrameSignatureProperties signatureProperties = PolicyConfiguration
+                    .getInstant()
+                    .getElaborContractTemplate()
+                    .getAttributes().get(0)
+                    .getSignatureProperties();
+
+            String reason = signatureProperties.getReason();
+            String textContent = signatureProperties.getTextContent();
+            String page = signatureProperties.getPage();
+            String boxCoordinate = signatureProperties.getBoxCoordinate();
+            String keyword = signatureProperties.getKeyword();
+            String format_date = PolicyConfiguration
+                    .getInstant()
+                    .getSignatureProperties()
+                    .getAttributes().get(0)
+                    .getSigningTimeFormat();
+
             //Append SiningProperties  
             if (signing == null) {
-                reason = "Witnessing " + fullNameWitness;
+                reason = AnnotationJWT.replaceWithJWT(reason, jwt);
                 profile.setReason(reason);
-                String textContent = "Ký bởi: " + fullNameWitness
-                        + "\nCCCD: " + jwt.getDocument_number();
-                textContent += "\nNgày ký: {date}";
-                textContent += "\nLý do: " + reason;
+                textContent = AnnotationJWT.replaceWithJWT(reason, jwt);
+                textContent = textContent.replaceAll(AnnotationJWT.Reason.getNameAnnot(), reason);
                 profile.setTextContent(textContent);
                 profile.setImage(imgData, ImageProfile.IMAGE_BOTTOM);
-                profile.setVisibleSignature("2", "-20,-130", "190,110", "NGƯỜI LAO ĐỘNG");
+                profile.setVisibleSignature(
+                        String.valueOf(page),
+                        boxCoordinate.substring(0, 8),
+                        boxCoordinate.substring(9, 16),
+                        keyword);
+                profile.setSigningTime(Calendar.getInstance(), format_date);
             } else {
                 if (signing.getReason() != null) {
                     reason = signing.getReason();
-                    reason = AnnotationJWT.replaceWithJWT(reason, jwt);
-                    profile.setReason(reason);
-                } else {
-                    reason = "Witnessing " + fullNameWitness;
-                    profile.setReason(reason);
+                }
+                reason = AnnotationJWT.replaceWithJWT(reason, jwt);
+                profile.setReason(reason);
+
+                if (signing.getTextContent() != null) {
+                    textContent = signing.getTextContent();
+                }
+                textContent = AnnotationJWT.replaceWithJWT(textContent, jwt);
+
+                if (signing.getDate() != null) {
+                    textContent = textContent.replace("{date}", signing.getDate());
                 }
 
-                String textContent = "Ký bởi: " + fullNameWitness
-                        + "\nCCCD: " + jwt.getDocument_number();
-                if (signing.getDate() != null) {
-                    textContent += "\nNgày ký: " + signing.getDate();
-                } else {
-                    textContent += "\nNgày ký: {date}";
-                }
                 if (signing.getLocation() != null) {
                     textContent += "\nNơi ký: " + signing.getLocation();
                     profile.setLocation(signing.getLocation());
                 }
 
-                textContent += "\nLý do: " + reason;
+                textContent = textContent.replaceAll(AnnotationJWT.Reason.getNameAnnot(), reason);
+
                 profile.setTextContent(textContent);
                 profile.setImage(imgData, ImageProfile.IMAGE_BOTTOM);
-                if (signing.getKeyword() != null) {
-                    profile.setVisibleSignature("2", "-20,-130", "190,110", signing.getKeyword());
-                } else {
-                    profile.setVisibleSignature("2", "-20,-130", "190,110", "NGƯỜI LAO ĐỘNG");
+                if (signing.getPage() != null) {
+                    page = signing.getPage();
                 }
+
+                if (signing.getKeyword() != null) {
+                    keyword = signing.getKeyword();
+                }
+
+                if (signing.getBoxCoordinate() != null) {
+                    boxCoordinate = signing.getBoxCoordinate();
+                }
+
+                profile.setVisibleSignature(
+                        page,
+                        boxCoordinate.substring(0, 8),
+                        boxCoordinate.substring(9, 16),
+                        keyword);
+                if (signing.getFormat_date() != null) {
+                    format_date = signing.getFormat_date();
+                }
+                profile.setSigningTime(Calendar.getInstance(), format_date);
             }
 
-            profile.setCheckText(false);
-            profile.setCheckMark(false);
-            profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
-//            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
+            profile.setCheckText(PolicyConfiguration
+                    .getInstant()
+                    .getSignatureProperties()
+                    .getAttributes().get(0)
+                    .isCheckText());
+            profile.setCheckMark(PolicyConfiguration
+                    .getInstant()
+                    .getSignatureProperties()
+                    .getAttributes().get(0)
+                    .isCheckMark());
+
+            float fontSize = PolicyConfiguration
+                    .getInstant()
+                    .getSignatureProperties()
+                    .getAttributes().get(0)
+                    .getFontSize();
+//            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));            
             profile.setFont(
                     font,
                     BaseFont.IDENTITY_H,
                     true,
-                    8,
+                    fontSize,
                     0,
                     TextAlignment.ALIGN_LEFT,
                     Color.BLACK);
@@ -293,108 +487,241 @@ public class SigningService {
             src.add(content);
 
             //====================================================
-            List<byte[]> results = signFile.sign(
-                    agreementUUID,
-                    credentials,
-                    "12345678",
-                    src, this.session);
+            List<byte[]> results = null;
+            try {
+                results = signFile.sign(
+                        agreementUUID,
+                        credentials,
+                        password,
+                        src,
+                        this.session);
+            } catch (Exception ex) {
+                throw new Exception(ex);
+            }
 
             return results;
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class, transactionID, "Error While Signing - Detail:" + e);
-            }
-            return null;
+            LogHandler.error(
+                    SigningService.class,
+                    transactionID,
+                    "Error While Signing - Detail:",
+                    e);
+            throw new Exception(e);
         }
     }
 
+//    public List<byte[]> signHashWitness(
+//                String fullNameWitness,
+//                String base64Evidence,
+//                byte[] content,
+//                JWT_Authenticate jwt,
+//                FrameSignatureProperties signing,
+//                String transactionID
+//        ) {
+//            try {
+//                fullNameWitness = new String(fullNameWitness.getBytes(StandardCharsets.UTF_8));
+//                //Read file from server
+//                ClassLoader loader = Thread.currentThread().getContextClassLoader();
+//                InputStream input = loader.getResourceAsStream("resources/verdana.ttf");
+//    
+//                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+//                int nRead;
+//                byte[] data = new byte[4];
+//                while ((nRead = input.read(data, 0, data.length)) != -1) {
+//                    buffer.write(data, 0, nRead);
+//                }
+//                buffer.flush();
+//                byte[] font = buffer.toByteArray();
+//    
+//                //Data
+//                String agreementUUID = "9E6FA0D0-6319-4D57-A760-99BBBECB35D0";
+//                String credentials = "fc081a30-8ed5-40c0-93b3-7b9cbd8d40f2";
+//    
+//                String fullNameReplaceSpace = fullNameWitness.replaceAll(" ", "").toString();
+//    
+//                byte[] picture = ImageGenerator.remoteSignWithPathFont_UsingClassLoader("", "resources/FunkySignature-Regular.ttf", "resources/FunkySignature-Regular.ttf", fullNameReplaceSpace, "");
+//                byte[] picture2 = null;
+//                try {
+//                    picture2 = Base64.getDecoder().decode(base64Evidence.replaceAll("\n", "").getBytes());
+//                } catch (IllegalArgumentException ex) {
+//    
+//                }
+//                byte[] imgData = ImageGenerator.combineImage(picture2, picture);
+//    
+//                IPdfSignFile signFile = new SignFileFactory().createPdfSignFile_SyncFlow(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B);
+//    
+//                PdfProfile profile = signFile.getProfile();
+//    
+//                String reason = "";
+//                //Append SiningProperties  
+//                if (signing == null) {
+//                    reason = "Witnessing " + fullNameWitness;
+//                    profile.setReason(reason);
+//                    String textContent = "Ký bởi: " + fullNameWitness
+//                            + "\nCCCD: " + jwt.getDocument_number();
+//                    textContent += "\nNgày ký: {date}";
+//                    textContent += "\nLý do: " + reason;
+//                    profile.setTextContent(textContent);
+//                    profile.setImage(imgData, ImageProfile.IMAGE_BOTTOM);
+//                    profile.setVisibleSignature("2", "-20,-135", "190,115", "NGƯỜI LAO ĐỘNG");
+//                } else {
+//                    if (signing.getReason() != null) {
+//                        reason = signing.getReason();
+//                        reason = AnnotationJWT.replaceWithJWT(reason, jwt);
+//                        profile.setReason(reason);
+//                    } else {
+//                        reason = "Witnessing " + fullNameWitness;
+//                        profile.setReason(reason);
+//                    }
+//    
+//                    String textContent = "Ký bởi: " + fullNameWitness
+//                            + "\nCCCD: " + jwt.getDocument_number();
+//                    if (signing.getDate() != null) {
+//                        textContent += "\nNgày ký: " + signing.getDate();
+//                    } else {
+//                        textContent += "\nNgày ký: {date}";
+//                    }
+//                    if (signing.getLocation() != null) {
+//                        textContent += "\nNơi ký: " + signing.getLocation();
+//                        profile.setLocation(signing.getLocation());
+//                    }
+//    
+//                    textContent += "\nLý do: " + reason;
+//                    profile.setTextContent(textContent);
+//                    profile.setImage(imgData, ImageProfile.IMAGE_BOTTOM);
+//                    if (signing.getKeyword() != null) {
+//                        profile.setVisibleSignature("2", "-20,-135", "190,115", signing.getKeyword());
+//                    } else {
+//                        profile.setVisibleSignature("2", "-20,-135", "190,115", "NGƯỜI LAO ĐỘNG");
+//                    }
+//                }
+//    
+//                profile.setCheckText(false);
+//                profile.setCheckMark(false);
+//                profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
+//    //            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
+//                profile.setFont(
+//                        font,
+//                        BaseFont.IDENTITY_H,
+//                        true,
+//                        8,
+//                        0,
+//                        TextAlignment.ALIGN_LEFT,
+//                        Color.BLACK);
+//    
+//                List<byte[]> src = new ArrayList<>();
+//                src.add(content);
+//    
+//                //====================================================
+//                List<byte[]> results = signFile.sign(
+//                        agreementUUID,
+//                        credentials,
+//                        "12345678",
+//                        src, this.session);
+//    
+//                return results;
+//            } catch (Exception e) {            
+//                LogHandler.error(
+//                        SigningService.class,
+//                        transactionID,
+//                        "Error While Signing - Detail:",
+//                        e);
+//                return null;
+//            }
+//        }
     public boolean initUser(String user, String pass) {
         try {
-            if (SigningService.listSession.containsKey(user)) {
+            if (SigningService.listUserSession.containsKey(user)) {
                 return true;
             }
             IUserSession users = this.sessionFactory.newUserSession(user, pass);
-            SigningService.listSession.put(user, users);
+            SigningService.listUserSession.put(user, users);
             return true;
         } catch (Throwable ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(SigningService.class, "User " + user + " cannot Login! - Details:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User " + user,
+                    "Cannot Login!",
+                    ex);
             return false;
         }
     }
 
     public IUserSession getUser(String user, String pass) {
-        if (SigningService.listSession.containsKey(user)) {
-            return SigningService.listSession.get(user);
+        if (SigningService.listUserSession.containsKey(user)) {
+            return SigningService.listUserSession.get(user);
         }
         if (initUser(user, pass)) {
-            return SigningService.listSession.get(user);
+            return SigningService.listUserSession.get(user);
         }
         return null;
     }
 
     public List<ICertificate> listUserCertificate(String user, String pass) throws Throwable {
         try {
-            if (SigningService.listSession.containsKey(user)) {
-                return SigningService.listSession.get(user).listCertificates();
+            if (SigningService.listUserSession.containsKey(user)) {
+                return SigningService.listUserSession.get(user).listCertificates();
             } else {
                 return null;
             }
         } catch (Exception ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(SigningService.class, "User " + user + " cannot list Certificate! - Details:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User " + user,
+                    "Cannot list Certificate!",
+                    ex);
         } catch (Throwable ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(SigningService.class, "User " + user + " cannot list Certificate! - Details:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User " + user,
+                    "Cannot list Certificate!",
+                    ex);
         }
         return null;
     }
 
     public ICertificate certificateInfo(String user, String pass, String credentialID) throws Throwable {
         try {
-            if (SigningService.listSession.containsKey(user)) {
-                return SigningService.listSession.get(user).certificateInfo(credentialID);
+            if (SigningService.listUserSession.containsKey(user)) {
+                return SigningService.listUserSession.get(user).certificateInfo(credentialID);
             } else {
                 return null;
             }
         } catch (Exception ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(SigningService.class, "User " + user + " cannot get CertificateInfo! - Details:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User " + user,
+                    "Cannot get CertificateInfo!",
+                    ex);
         } catch (Throwable ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(SigningService.class, "User " + user + " cannot get CertificateInf! - Details:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User " + user,
+                    "Cannot get CertificateInfo!",
+                    ex);
         }
         return null;
     }
 
     public String authorize(String user, String pass, String credentialID, String authorizeCode) {
         try {
-            if (SigningService.listSession.containsKey(user)) {
-                return SigningService.listSession.get(user).authorize(credentialID, 1, "", authorizeCode);
+            if (SigningService.listUserSession.containsKey(user)) {
+                return SigningService.listUserSession.get(user).authorize(credentialID, 1, "", authorizeCode);
             } else {
                 return null;
             }
         } catch (Exception ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(SigningService.class, "User " + user + " cannot authorize! - Details:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User " + user,
+                    "Cannot authorize!",
+                    ex);
         } catch (Throwable ex) {
-            if (LogHandler.isShowErrorLog()) {
-                ex.printStackTrace();
-                LogHandler.error(SigningService.class, "User " + user + " cannot authorize! - Details:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User " + user,
+                    "Cannot authorize!",
+                    ex);
         }
         return null;
     }
@@ -405,7 +732,7 @@ public class SigningService {
             String fullNameWitness,
             String image,
             byte[] content,
-            SigningProperties signing,
+            FrameSignatureProperties signing,
             JWT_Authenticate jwt
     ) {
         try {
@@ -433,7 +760,7 @@ public class SigningService {
 
             PdfProfile profile = signFile.getProfile();
 
-            String reason = "";            
+            String reason = "";
             //Append SiningProperties  
             if (signing == null) {
                 reason = "Signed by " + fullNameWitness;
@@ -444,7 +771,7 @@ public class SigningService {
                 textContent += "\nLý do: " + reason;
                 profile.setTextContent(textContent);
                 profile.setImage(imgData, ImageProfile.IMAGE_BOTTOM);
-                profile.setVisibleSignature("2", "-20,-130", "190,110", "NGƯỜI LAO ĐỘNG");
+                profile.setVisibleSignature("2", "-20,-135", "190,115", "NGƯỜI LAO ĐỘNG");
             } else {
                 if (signing.getReason() != null) {
                     reason = signing.getReason();
@@ -463,7 +790,7 @@ public class SigningService {
                     textContent += "\nNgày ký: {date}";
                 }
                 if (signing.getLocation() != null) {
-                    textContent += "\nNơi ký: " + signing.getLocation();                    
+                    textContent += "\nNơi ký: " + signing.getLocation();
                     profile.setLocation(signing.getLocation());
                 }
 
@@ -471,9 +798,9 @@ public class SigningService {
                 profile.setTextContent(textContent);
                 profile.setImage(imgData, ImageProfile.IMAGE_BOTTOM);
                 if (signing.getKeyword() != null) {
-                    profile.setVisibleSignature("2", "-20,-130", "190,110", signing.getKeyword());
+                    profile.setVisibleSignature("2", "-20,-135", "190,115", signing.getKeyword());
                 } else {
-                    profile.setVisibleSignature("2", "-20,-130", "190,110", "NGƯỜI LAO ĐỘNG");
+                    profile.setVisibleSignature("2", "-20,-135", "190,115", "NGƯỜI LAO ĐỘNG");
                 }
             }
 
@@ -489,7 +816,7 @@ public class SigningService {
             this.initUser(user, pass);
             List<ICertificate> listCert = this.listUserCertificate(user, pass);
             int number = -1;
-            for (int i = 0; i < listCert.size(); i++) {
+            for (int i = listCert.size() - 1; i >= 0; i--) {
                 ICertificate cert = certificateInfo(user, pass, listCert.get(i).baseCredentialInfo().getCredentialID());
                 if (!cert.baseCredentialInfo().getStatus().equals("EXPIRES")
                         && cert.baseCredentialInfo().getStatus().equals("OPERATED")) {
@@ -498,7 +825,8 @@ public class SigningService {
                 }
             }
             if (number == -1) {
-                issueCertificate(jwt.getDocument_number(),
+                issueCertificate(
+                        jwt.getDocument_number(),
                         jwt.getEmail(),
                         jwt.getPhone_number(),
                         jwt.getPlace_of_residence(),
@@ -519,16 +847,18 @@ public class SigningService {
                 throw new NullPointerException();
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class, "Error While Signing - Detail:" + e);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "",
+                    "Error While Signing!",
+                    e);
             return null;
         } catch (Throwable ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class, "Error While Signing - Detail:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "",
+                    "Error While Signing!",
+                    ex);
         }
         return null;
     }
@@ -541,10 +871,11 @@ public class SigningService {
         try {
             this.session.createUser(user, email, phone, "PERSONAL-ID", documentID);
         } catch (Throwable ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class, "User:" + user + "\nError While Create Owner - Detail:" + ex);
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User:" + user,
+                    "Error While Create Owner",
+                    ex);
         }
     }
 
@@ -565,7 +896,9 @@ public class SigningService {
         CertificateDetails crtDetails = new CertificateDetails();
         crtDetails.setCommonName(username);
         crtDetails.setEmail(email);
-        crtDetails.setTelephoneNumber(phone);
+        if (phone != null) {
+            crtDetails.setTelephoneNumber(phone);
+        }
         crtDetails.setLocation(location);
         crtDetails.setStateOrProvince(province);
         crtDetails.setCountry(country.equals("Việt Nam") ? "VN" : country);
@@ -578,10 +911,11 @@ public class SigningService {
         try {
             session.createCertificate(username, "", "", certProfile, sharedMode, authMode, 1, crtDetails);
         } catch (Throwable ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LogHandler.error(SigningService.class, "User:" + username + " Cannot issue Certificate!");
-            }
+            LogHandler.error(
+                    SigningService.class,
+                    "User:" + username,
+                    "Cannot issue Certificate!",
+                    ex);
         }
     }
 
@@ -596,11 +930,11 @@ public class SigningService {
         }
     }
 
-    public static List<String> hashDocument(                        
+    public static List<String> hashDocument(
             String fullNameWitness,
             byte[] content,
             List<String> images,
-            SigningProperties signing,
+            FrameSignatureProperties signing,
             JWT_Authenticate jwt,
             String transactionID
     ) throws Exception {

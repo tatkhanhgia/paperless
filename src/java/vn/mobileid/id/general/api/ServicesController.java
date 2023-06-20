@@ -5,22 +5,11 @@
  */
 package vn.mobileid.id.general.api;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.net.URI;
-import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,48 +18,33 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Variant;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.email.Email;
-import vn.mobileid.id.general.email.EmailReq;
-import vn.mobileid.id.general.objects.Attachment;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessService;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.kernel.CreateLogAPI;
 import vn.mobileid.id.paperless.objects.AppInfo;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.utils.HttpUtils;
 import vn.mobileid.id.utils.Utils;
 
 /**
  *
  * @author GiaTK
  */
-//@WebServlet("/hello")
 @Path("/")
 public class ServicesController {
 
-//    final private static Logger LOG = LogManager.getLogger(ServicesController.class);
-    @GET
-    @Path("hello")
-    public String hello() {
-        return "hello";
-    }
-
-    // Test INFO
     @GET
     @Path("/v1/info")
-    public Response getInfo(@Context final HttpServletRequest request, String payload) {
+    public Response getInfo(
+            @Context final HttpServletRequest request,
+            String payload) {
         String transactionID = "";
         try {
             //Check valid token
@@ -85,56 +59,76 @@ public class ServicesController {
                     return Response.status(401).type(MediaType.APPLICATION_JSON).entity(response.getMessage()).build();
                 }
             }
-            return Response.status(200).type(MediaType.APPLICATION_JSON).entity(data).build();
-        } catch (Exception e) {            
-                LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting Info",
-                        e);
+
+            return Response
+                    .status(200)
+                    .type(MediaType.APPLICATION_JSON)
+                    .entity(data)
+                    .build();
+        } catch (Exception e) {
+            LogHandler.error(
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting Info",
+                    e);
         }
-        return Response.status(500).entity("Internal Server Error").build();
-    }
-
-    //Test send mail
-    @GET
-    @Path("/sendmail")
-    public Response sendmail(@Context final HttpServletRequest requests, String payload) throws IOException {
-        EmailReq request = new EmailReq();
-        request.setSendTo("giatk@mobile-id.vn");
-        request.setSubject("SigedFilePDF");
-        List<Attachment> attachs = new ArrayList<>();
-        attachs.add(new Attachment(Files.readAllBytes(new File("D:\\NetBean\\qrypto\\file\\result.pdf").toPath()), "sIGNEDpdf"));
-        request.setAttachments(attachs);
-        request.setContent("test Content");
-        request.setEntityName("EntityName");
-
-        Email email = new Email(null);
-        email.send(request);
-        return Response.status(200).entity("").build();
+        return Response
+                .status(PaperlessConstant.HTTP_CODE_500)
+                .entity("{{Internal Server Error}}")
+                .build();
     }
 
     @POST
     @Path("/v1/authenticate")
-    public Response authenticateJSON(@Context final HttpServletRequest request, String payload) {
+    public Response authenticateJSON(
+            @Context final HttpServletRequest request,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("Authenticate", request, payload, 0);
+            transactionID = debugRequestLOG(
+                    "Authenticate",
+                    request,
+                    payload,
+                    0);
+
             if (request.getContentType() == null) {
-                return Response.status(400).entity("Missing Content-Type").build();
+                return Response
+                        .status(400)
+                        .entity("{Missing Content-Type}")
+                        .build();
             }
+
             if (request.getContentType().equalsIgnoreCase(MediaType.APPLICATION_JSON)) {
-                response = PaperlessService.getToken(request, payload, 0, transactionID);
+                response = PaperlessService.getToken(
+                        request,
+                        payload,
+                        0,
+                        transactionID);
             } else {
-                response = PaperlessService.getToken(request, payload, 1, transactionID);
+                response = PaperlessService.getToken(
+                        request,
+                        payload,
+                        1,
+                        transactionID);
             }
             debugResponseLOG("Authenticate", response);
+            logIntoDB(
+                    request,
+                    "",
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "Authenticate",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
-                        .entity(new ObjectMapper().writeValueAsString(response.getData()))
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
@@ -146,30 +140,42 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while authentication",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while authentication",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{{Internal Server Error}}")
+                    .build();
         }
     }
 
     // REVOKE TOKEN
     @DELETE
     @Path("/v1/tokens")
-    public Response revokeToken(@Context final HttpServletRequest request, String payload) {
+    public Response revokeToken(
+            @Context final HttpServletRequest request,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response = null;
             transactionID = debugRequestLOG("Revoke", request, payload, 0);
-//            if (request.getContentType().equalsIgnoreCase("application/json")) {
+
             response = PaperlessService.revoke(request, payload, transactionID);
-//            }
-//            } else {
-//                response = PaperlessService.revoke(request, payload, 1);
-//            }
 
             debugResponseLOG("token", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "RevokeToken",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -185,29 +191,49 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while revoking token ",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while revoking token ",
+                    e);
+            return Response.status(PaperlessConstant.HTTP_CODE_500).entity("{Internal Server Error}").build();
         }
     }
 
     @POST
     @Path("/v1/workflow")
-    public Response createWorkflow(@Context final HttpServletRequest request, String payload) {
+    public Response createWorkflow(
+            @Context final HttpServletRequest request,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("CreateWorkflow", request, payload, 0);
+            transactionID = debugRequestLOG(
+                    "CreateWorkflow",
+                    request,
+                    payload,
+                    0);
 
-            response = PaperlessService.createWorkflow(request, payload, transactionID);
+            response = PaperlessService.createWorkflow(
+                    request,
+                    payload,
+                    transactionID);
 
             debugResponseLOG("CreateWorkflow", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "CreateWorkflow",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
@@ -220,18 +246,23 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while creating workflow",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while creating workflow",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}").build();
         }
     }
 
     // Create workflow template
     @POST
     @Path("/v1/workflow/{id}")
-    public Response createWorkflowTemplate(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
+    public Response createWorkflowTemplate(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response;
@@ -256,18 +287,20 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while creating workflow template",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while creating workflow template",
+                    e);
+            return Response.status(PaperlessConstant.HTTP_CODE_500).entity("{Internal Server Error}").build();
         }
     }
 
     //GET WORKFLOW OPTION/DETAIL
     @GET
     @Path("/v1/workflow/{id}/option")
-    public Response getWorkflowDetail(@Context final HttpServletRequest request, @PathParam("id") int id) {
+    public Response getWorkflowDetail(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
             InternalResponse response;
@@ -275,6 +308,17 @@ public class ServicesController {
             response = PaperlessService.getWorkflowDetail(request, id, transactionID);
 
             debugResponseLOG("GetWorkflowDetail", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetWorkflowDetail",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -290,18 +334,24 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting workflow detail",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting workflow detail",
+                    e);
+
+            return Response.status(
+                    PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     //GET WORKFLOW 
     @GET
     @Path("/v1/workflow/{id}/details")
-    public Response getWorkflow(@Context final HttpServletRequest request, @PathParam("id") int id) {
+    public Response getWorkflow(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
             InternalResponse response;
@@ -309,9 +359,20 @@ public class ServicesController {
             response = PaperlessService.getWorkflow(request, id, transactionID);
 
             debugResponseLOG("getWorkflow", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetWorkflow",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
@@ -324,18 +385,19 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting workflow",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting workflow",
+                    e);
+            return Response.status(PaperlessConstant.HTTP_CODE_500).entity("{Internal Server Error}").build();
         }
     }
 
     //GET WORKFLOW TEMPLATE TYPE
     @GET
     @Path("/v1/settings/templates")
-    public Response getWorkflowTemplateType(@Context final HttpServletRequest request) {
+    public Response getWorkflowTemplateType(
+            @Context final HttpServletRequest request) {
         String transactionID = "";
         try {
             InternalResponse response;
@@ -348,13 +410,34 @@ public class ServicesController {
                 ObjectNode node = mapper.createObjectNode();
 
                 node.put("workflow_template_types", (ArrayNode) response.getData());
-
+                logIntoDB(
+                        request,
+                        getUser(request.getHeader("Authorization")),
+                        0, //id
+                        0, //WoAc
+                        response.getStatus(),
+                        "",
+                        response.getMessage(),
+                        "GetWorkflowTemplateType",
+                        transactionID
+                );
                 return Response
                         .status(200)
                         .type(MediaType.APPLICATION_JSON)
                         .entity(mapper.writeValueAsString(node))
                         .build();
             } else {
+                logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetWorkflowTemplateType",
+                    transactionID
+            );
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
@@ -363,18 +446,21 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting workflow template type ",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting workflow template type ",
+                    e);
+            return Response.status(
+                    PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}").build();
         }
     }
 
     //GET ALL WORKFLOW
     @GET
     @Path("/v1/workflow/{document_status}{var:.*}")
-    public Response getListWorkflow(@Context final HttpServletRequest request) {
+    public Response getListWorkflow(
+            @Context final HttpServletRequest request) {
         String transactionID = "";
         try {
             InternalResponse response;
@@ -385,13 +471,13 @@ public class ServicesController {
 
             debugResponseLOG("GetListWorkflow", response);
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                ResponseBuilder res = Response.status(200);
+                ResponseBuilder res = Response.status(response.getStatus());
                 res.type(MediaType.APPLICATION_JSON);
-                for(String key : response.getHeaders().keySet()){
+                for (String key : response.getHeaders().keySet()) {
                     res.header(key, response.getHeaders().get(key));
                 }
                 res.entity(response.getMessage());
-                return res.build();                    
+                return res.build();
             } else {
                 return Response
                         .status(response.getStatus())
@@ -401,18 +487,61 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting list of workflow",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting list of workflow",
+                    e);
+            return Response.status(PaperlessConstant.HTTP_CODE_500).entity("{Internal Server Error}").build();
+        }
+    }
+
+    //GET ALL WORKFLOW with total
+    @GET
+    @Path("/v1/workflow/gettotal/{document_status}")
+    public Response getTotalWorkflowWithCondition(
+            @Context final HttpServletRequest request) {
+        String transactionID = "";
+        try {
+            InternalResponse response;
+
+            transactionID = debugRequestLOG("GetTotalWorkflow", request, null, 0);
+
+            response = PaperlessService.getTotalWorkflowWithCondition(request, transactionID);
+
+            debugResponseLOG("GetTotalWorkflow", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                ResponseBuilder res = Response.status(response.getStatus());
+                res.type(MediaType.APPLICATION_JSON);
+                for (String key : response.getHeaders().keySet()) {
+                    res.header(key, response.getHeaders().get(key));
+                }
+                res.entity(response.getMessage());
+                return res.build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting list of workflow",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}").build();
         }
     }
 
     //GET WORKFLOW TEMPLATE
     @GET
     @Path("/v1/workflow/{id}/template")
-    public Response getWorkflowTemplate(@Context final HttpServletRequest request, @PathParam("id") int id) {
+    public Response getWorkflowTemplate(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
             InternalResponse response;
@@ -422,9 +551,20 @@ public class ServicesController {
             response = PaperlessService.getWorkflowTemplate(request, id, transactionID);
 
             debugResponseLOG("getWorkflowTemplate", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetWorkflowTemplate",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
@@ -437,30 +577,53 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting workflow template ",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting workflow template ",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     // Create workflow activity
     @POST
     @Path("/v1/workflowactivity")
-    public Response createWorkflowActivity(@Context final HttpServletRequest request, String payload) {
+    public Response createWorkflowActivity(
+            @Context final HttpServletRequest request,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("CreateWorkflowActivity", request, payload, 0);
+            transactionID = debugRequestLOG(
+                    "CreateWorkflowActivity",
+                    request,
+                    payload,
+                    0);
 
-            response = PaperlessService.createWorkflowActivity(request, payload, transactionID);
+            response = PaperlessService.createWorkflowActivity(
+                    request,
+                    payload,
+                    transactionID);
 
             debugResponseLOG("CreateWorkflowActivity", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "CreateWorkflowActivity",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
@@ -473,18 +636,24 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting workflow activity",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting workflow activity",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     // Process Workflow activity
     @POST
     @Path("/v1/workflowactivity/{id}/process")
-    public Response processWorkflowActivity(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
+    public Response processWorkflowActivity(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response;
@@ -494,6 +663,17 @@ public class ServicesController {
             response = PaperlessService.processWorkflowActivity(request, payload, id, transactionID);
 
             debugResponseLOG("ProcessActivity", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "ProcessWorkflowActivity",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(200)
@@ -509,30 +689,52 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while processing workflow activity",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while processing workflow activity",
+                    e);
+            return Response.status(PaperlessConstant.HTTP_CODE_500).entity("{Internal Server Error}").build();
         }
     }
 
     // Get PDF file to authenticate by user
     @POST
     @Path("/v1/workflowactivity/{id}/assign")
-    public Response assignDataWorkflowActivity(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
+    public Response assignDataWorkflowActivity(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("Assign", request, payload, id);
+            transactionID = debugRequestLOG(
+                    "Assign",
+                    request,
+                    payload,
+                    id);
 
-            response = PaperlessService.assignDataIntoWorkflowActivity(request, payload, id, transactionID);
+            response = PaperlessService.assignDataIntoWorkflowActivity(
+                    request,
+                    payload,
+                    id,
+                    transactionID);
 
             debugResponseLOG("Assign", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "AssignWorkflowActivity",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
@@ -545,31 +747,56 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while assigning data",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while assigning data",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     // Get PDF file to authenticate by user
     @POST
     @Path("/v1/workflowactivity/{id}/processAssign")
-    public Response processWorkflowActivityWithAuthenticate(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
+    public Response processWorkflowActivityWithAuthenticate(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("ProcessAssign", request, String.valueOf(id), id);
+            transactionID = debugRequestLOG(
+                    "ProcessAssign",
+                    request,
+                    payload,
+                    id);
 
-            response = PaperlessService.processWorkflowActivityWithAuthen(request, payload, id, transactionID);
+            response = PaperlessService.processWorkflowActivityWithAuthen(
+                    request,
+                    payload,
+                    id,
+                    transactionID);
 
             debugResponseLOG("processAssign", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "ProcessWorkflowActivity",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
-                        .entity(response.getMessage())
+                        .status(response.getStatus())
+                        .entity("")
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {
@@ -581,29 +808,52 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while processing workflow activity",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while processing workflow activity",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     @GET
     @Path("/v1/workflowactivity/{id}")
-    public Response downloadDocument(@Context final HttpServletRequest request, @PathParam("id") int id) {
+    public Response downloadDocument(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("Download", request, String.valueOf(id), id);
-            response = PaperlessService.downloadsDocument(request, id, transactionID);
+            transactionID = debugRequestLOG(
+                    "Download",
+                    request,
+                    String.valueOf(id),
+                    id);
+            response = PaperlessService.downloadsDocument(
+                    request,
+                    id,
+                    transactionID);
 
             debugResponseLOG("downloadDocument", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "DownloadDocument",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 FileManagement file = (FileManagement) response.getData();
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_OCTET_STREAM)
                         .entity(file.getData())
                         .build();
@@ -616,31 +866,54 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while downloading document",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while downloading document",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     @GET
     @Path("/v1/workflowactivity/{id}/base64")
-    public Response downloadDocumentBase64(@Context final HttpServletRequest request, @PathParam("id") int id) {
+    public Response downloadDocumentBase64(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("DownloadBase64", request, String.valueOf(id), id);
+            transactionID = debugRequestLOG(
+                    "DownloadBase64",
+                    request,
+                    String.valueOf(id),
+                    id);
 
-            response = PaperlessService.downloadsDocument(request, id, transactionID);
+            response = PaperlessService.downloadsDocument(
+                    request,
+                    id,
+                    transactionID);
 
             debugResponseLOG("DownloadBase64", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "DownloadDocumentBase64",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 FileManagement file = (FileManagement) response.getData();
                 String temp = "{" + Base64.getEncoder().encodeToString(file.getData()) + "}";
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_JSON)
                         .entity(temp)
                         .build();
@@ -653,217 +926,14 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while downloading document",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
-        }
-    }
-
-    //Get Asset Template
-    @GET
-    @Path("/v1/asset/{id}/template")
-    public Response getAssetTemplate(@Context final HttpServletRequest request, @PathParam("id") int id) {
-        String transactionID = "";
-        try {
-            InternalResponse response;
-
-            transactionID = debugRequestLOG("GetAssetTemplate", request, String.valueOf(id), id);
-            response = PaperlessService.getAssetTemplate(request, id, transactionID);
-
-            debugResponseLOG("getAssetTemplate", response);
-            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return Response
-                        .status(200)
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(response.getMessage())
-                        .build();
-            } else {
-                return Response
-                        .status(response.getStatus())
-                        .entity(response.getMessage())
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .build();
-            }
-        } catch (Exception e) {
-            LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting asset template",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
-        }
-    }
-
-    @GET
-    @Path("/v1/asset/{id}/details")
-    public Response getAssetDetails(@Context final HttpServletRequest request, @PathParam("id") int id) {
-        String transactionID = "";
-        try {
-            InternalResponse response;
-
-            transactionID = debugRequestLOG("GetAssetDetails", request, String.valueOf(id), id);
-            response = PaperlessService.getAssetDetails(request, id, transactionID);
-
-            debugResponseLOG("getAssetDetails", response);
-            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return Response
-                        .status(200)
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(new ObjectMapper().writeValueAsString(response.getData()))
-                        .build();
-            } else {
-                return Response
-                        .status(response.getStatus())
-                        .entity(response.getMessage())
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .build();
-            }
-        } catch (Exception e) {
-            LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting asset detail",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
-        }
-    }
-
-    //DownloadAsset
-    @GET
-    @Path("/v1/asset/{id}")
-    public Response downloadAsset(@Context final HttpServletRequest request, @PathParam("id") int id) {
-        String transactionID = "";
-        try {
-            InternalResponse response;
-
-            transactionID = debugRequestLOG("DownloadAsset", request, String.valueOf(id), id);
-            response = PaperlessService.downloadsAsset(request, id, transactionID);
-
-            debugResponseLOG("DownloadAsset", response);
-            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return Response
-                        .status(200)
-                        .type(MediaType.APPLICATION_OCTET_STREAM)
-                        .entity(response.getData())
-                        .build();
-            } else {
-                return Response
-                        .status(response.getStatus())
-                        .entity(response.getMessage())
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .build();
-            }
-        } catch (Exception e) {
-            LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while downloading asset",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
-        }
-    }
-
-    @GET
-    @Path("/v1/asset/{id}/base64")
-    public Response downloadAssetBase64(@Context final HttpServletRequest request, @PathParam("id") int id) {
-        String transactionID = "";
-        try {
-            InternalResponse response;
-
-            transactionID = debugRequestLOG("DownloadAsset", request, String.valueOf(id), id);
-            response = PaperlessService.downloadsAssetBase64(request, id, transactionID);
-
-            debugResponseLOG("DownloadAsset", response);
-            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return Response
-                        .status(200)
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(new ObjectMapper().writeValueAsString(response.getData()))
-                        .build();
-            } else {
-                return Response
-                        .status(response.getStatus())
-                        .entity(response.getMessage())
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .build();
-            }
-        } catch (Exception e) {
-            LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while downloading asset",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
-        }
-    }
-
-    //Upload Asset
-    @POST
-    @Path("/v1/asset")
-    public Response uploadAsset(@Context final HttpServletRequest request) {
-        String transactionID = "";
-        try {
-            InternalResponse response;
-
-            transactionID = debugRequestLOG("Upload Asset", request, null, 0);
-            response = PaperlessService.uploadAsset(request, transactionID);
-
-            debugResponseLOG("uploadAsset", response);
-            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return Response
-                        .status(200)
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(response.getMessage())
-                        .build();
-            } else {
-                return Response
-                        .status(response.getStatus())
-                        .entity(response.getMessage())
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .build();
-            }
-        } catch (Exception e) {
-            LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while uploading asset",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
-        }
-    }
-
-    @POST
-    @Path("/v1/asset/base64")
-    public Response uploadAssetBase64(@Context final HttpServletRequest request, String payload) {
-        String transactionID = "";
-        try {
-            InternalResponse response;
-            transactionID = debugRequestLOG("Upload Asset", request, null, 0);
-            response = PaperlessService.uploadAssetBase64(request, payload, transactionID);
-
-            debugResponseLOG("uploadAsset", response);
-            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return Response
-                        .status(200)
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(response.getMessage())
-                        .build();
-            } else {
-                return Response
-                        .status(response.getStatus())
-                        .entity(response.getMessage())
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .build();
-            }
-        } catch (Exception e) {
-            LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while uploading asset",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while downloading document",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
@@ -892,23 +962,43 @@ public class ServicesController {
             if (LogHandler.isShowErrorLog()) {
                 LogHandler.error(this.getClass(), transactionID, "Error " + e);
             }
-            return Response.status(500).entity("Internal Server Error").build();
+            return Response.status(PaperlessConstant.HTTP_CODE_500).entity("{Internal Server Error}").build();
         }
     }
 
     @DELETE
     @Path("/v1/workflow/{id}/deactive")
-    public Response deactiveWorkflow(@Context final HttpServletRequest request, String payload, @PathParam("id") int id) {
+    public Response deactiveWorkflow(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
-            transactionID = debugRequestLOG("deactiveWorkflow", request, payload, 0);
+            transactionID = debugRequestLOG(
+                    "deactiveWorkflow",
+                    request,
+                    null,
+                    id);
 
-            InternalResponse response = PaperlessService.deactiveWorkflow(request, id, transactionID);
+            InternalResponse response = PaperlessService.deactiveWorkflow(
+                    request,
+                    id,
+                    transactionID);
 
             debugResponseLOG("deactiveWorkflow", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "DeactiveWorkflow",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
@@ -921,27 +1011,50 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while deactiving workflow",
-                        e);
+                    this.getClass(),
+                    transactionID,
+                    "Error while deactiving workflow",
+                    e);
         }
-        return Response.status(500).entity("Internal Server Error").build();
+        return Response
+                .status(PaperlessConstant.HTTP_CODE_500)
+                .entity("{Internal Server Error}")
+                .build();
     }
 
     @PATCH
     @Path("/v1/workflow/{id}/reactive")
-    public Response reactiveWorkflow(@Context final HttpServletRequest request, String payload, @PathParam("id") int id) {
+    public Response reactiveWorkflow(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
-            transactionID = debugRequestLOG("reactiveWorkflow", request, payload, 0);
+            transactionID = debugRequestLOG(
+                    "reactiveWorkflow",
+                    request,
+                    null,
+                    id);
 
-            InternalResponse response = PaperlessService.reactiveWorkflow(request, id, transactionID);
+            InternalResponse response = PaperlessService.reactiveWorkflow(
+                    request,
+                    id,
+                    transactionID);
 
             debugResponseLOG("reactiveWorkflow", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "ReactiveWorkflow",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
@@ -952,29 +1065,53 @@ public class ServicesController {
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             }
-        } catch (Exception e) {            
+        } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while reactiving workflow",
-                        e);
+                    this.getClass(),
+                    transactionID,
+                    "Error while reactiving workflow",
+                    e);
         }
-        return Response.status(500).entity("Internal Server Error").build();
+        return Response
+                .status(PaperlessConstant.HTTP_CODE_500)
+                .entity("{Internal Server Error}")
+                .build();
     }
 
     @POST
     @Path("/v1/workflow/{id}/updateOption")
-    public Response updateWorkflowOption(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
+    public Response updateWorkflowOption(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id,
+            String payload) {
         String transactionID = "";
         try {
-            transactionID = debugRequestLOG("updateWorkflow", request, payload, id);
-            InternalResponse response;
-            response = PaperlessService.updateWorkflowDetail_option(request, id, payload, transactionID);
+            transactionID = debugRequestLOG(
+                    "updateWorkflow",
+                    request,
+                    payload,
+                    id);
+            InternalResponse response = PaperlessService.updateWorkflowDetail_option(
+                    request,
+                    id,
+                    payload,
+                    transactionID);
 
             debugResponseLOG(transactionID, response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "UpdateWorkflowOption",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
@@ -987,27 +1124,51 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while updating workflow option",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while updating workflow option",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     @POST
     @Path("/v1/workflow/{id}/updateTemplate")
-    public Response updateWorkflowTemplate(@Context final HttpServletRequest request, @PathParam("id") int id, String payload) {
+    public Response updateWorkflowTemplate(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id, String payload) {
         String transactionID = "";
         try {
-            transactionID = debugRequestLOG("updateWorkflowTemplate", request, null, id);
+            transactionID = debugRequestLOG(
+                    "updateWorkflowTemplate",
+                    request,
+                    null,
+                    id);
             InternalResponse response;
-            response = PaperlessService.updateWorkflowTemplate(request, id, payload, transactionID);
+            response = PaperlessService.updateWorkflowTemplate(
+                    request,
+                    id,
+                    payload,
+                    transactionID);
 
             debugResponseLOG(transactionID, response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "UpdateWorkflowTemplate",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
@@ -1020,64 +1181,50 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while updating workflow template",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
-        }
-    }
-
-    @GET
-    @Path("/v1/asset/{document_status}/{var:.*}")
-    public Response getListAsset(@Context final HttpServletRequest request) {
-        String transactionID = "";
-        try {
-            InternalResponse response;
-
-            transactionID = debugRequestLOG("GetListAsset", request, null, 0);
-
-            response = PaperlessService.getListAsset(request, transactionID);
-
-            debugResponseLOG("GetListAsset", response);
-            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                return Response
-                        .status(200)
-                        .type(MediaType.APPLICATION_JSON)
-                        .entity(response.getMessage())
-                        .build();
-            } else {
-                return Response
-                        .status(response.getStatus())
-                        .entity(response.getMessage())
-                        .type(MediaType.APPLICATION_JSON_TYPE)
-                        .build();
-            }
-        } catch (Exception e) {
-            LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting list of assets",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while updating workflow template",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     @GET
     @Path("/v1/workflowactivity/{document_status}/{var:.*}")
-    public Response getListWorkflowActivity(@Context final HttpServletRequest request) {
+    public Response getListWorkflowActivity(
+            @Context final HttpServletRequest request) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("GetListWorkflowAc", request, null, 0);
+            transactionID = debugRequestLOG(
+                    "GetListWorkflowAc",
+                    request,
+                    null,
+                    0);
 
-            response = PaperlessService.getListWorkflowAc(request, transactionID);
+            response = PaperlessService.getListWorkflowAc(
+                    request,
+                    transactionID);
 
             debugResponseLOG("GetListWorkflowAc", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetListWorkflowActivity",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
@@ -1090,28 +1237,51 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting list of workflow activity",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting list of workflow activity",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     @GET
     @Path("/v1/workflowactivity/{id}/details")
-    public Response getWoAcDetails(@Context final HttpServletRequest request, @PathParam("id") int id) {
+    public Response getWoAcDetails(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("GetWoAcDetails", request, String.valueOf(id), id);
-            response = PaperlessService.getWorkflowAcDetail(request, id, transactionID);
+            transactionID = debugRequestLOG(
+                    "GetWoAcDetails",
+                    request,
+                    String.valueOf(id),
+                    id);
+            response = PaperlessService.getWorkflowAcDetail(
+                    request,
+                    id,
+                    transactionID);
 
             debugResponseLOG("getWoAcDetails", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetWorkflowActivityDetails",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
@@ -1124,27 +1294,51 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting workflow activity details",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting workflow activity details",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     @GET
     @Path("/v1/workflowactivity/{id}/documentdetails")
-    public Response getDocumentDetail(@Context final HttpServletRequest request, @PathParam("id") int id) {
+    public Response getDocumentDetail(
+            @Context final HttpServletRequest request,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
             InternalResponse response;
-            transactionID = debugRequestLOG("GetDocumentDetail", request, null, id);
-            response = PaperlessService.getDocumentDetails(request, id, transactionID);
+            transactionID = debugRequestLOG(
+                    "GetDocumentDetail",
+                    request,
+                    null,
+                    id);
+
+            response = PaperlessService.getDocumentDetails(
+                    request,
+                    id,
+                    transactionID);
 
             debugResponseLOG("GetDocumentDetail", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetDocumentDetail",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
@@ -1157,31 +1351,54 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while getting document details",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting document details",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
 
     @PUT
     @Path("/v1/settings/profile/password")
-    public Response changePassword(@Context final HttpServletRequest request, String payload) {
+    public Response changePassword(
+            @Context final HttpServletRequest request,
+            String payload) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("changePassword", request, payload, 0);
+            transactionID = debugRequestLOG(
+                    "changePassword",
+                    request,
+                    payload,
+                    0);
             if (request.getContentType() == null) {
                 return Response.status(400).type(MediaType.APPLICATION_JSON).entity("Missing Content-Type").build();
             }
-            response = PaperlessService.updateUserPassword(request, payload, transactionID);
+            response = PaperlessService.updateUserPassword(
+                    request,
+                    payload,
+                    transactionID);
 
             debugResponseLOG("changePassword", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "ChangePassword",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
@@ -1194,33 +1411,55 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while changing user password",
-                        e);
+                    this.getClass(),
+                    transactionID,
+                    "Error while changing user password",
+                    e);
             return Response
-                    .status(500)
+                    .status(PaperlessConstant.HTTP_CODE_500)
                     .type(MediaType.APPLICATION_JSON)
-                    .entity("Internal Server Error")
+                    .entity("{Internal Server Error}")
                     .build();
         }
     }
 
     @POST
     @Path("/v1/workflowactivity/{id}/hash")
-    public Response generateHashDocument(@Context final HttpServletRequest request, String payload, @PathParam("id") int id) {
+    public Response generateHashDocument(
+            @Context final HttpServletRequest request,
+            String payload,
+            @PathParam("id") int id) {
         String transactionID = "";
         try {
             InternalResponse response;
 
-            transactionID = debugRequestLOG("generateHashDocument", request, payload, id);
+            transactionID = debugRequestLOG(
+                    "generateHashDocument",
+                    request,
+                    payload,
+                    id);
 
-            response = PaperlessService.generateHashDocument(request, payload, id,transactionID);
+            response = PaperlessService.generateHashDocument(
+                    request,
+                    payload,
+                    id,
+                    transactionID);
 
             debugResponseLOG("generateHashDocument", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    id, //WoAc
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "generateHashDocument",
+                    transactionID
+            );
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(200)
+                        .status(response.getStatus())
                         .entity(new ObjectMapper()
                                 .configure(SerializationFeature.WRAP_ROOT_VALUE, true)
                                 .writeValueAsString(response.getData()))
@@ -1235,40 +1474,120 @@ public class ServicesController {
             }
         } catch (Exception e) {
             LogHandler.error(
-                        this.getClass(),
-                        transactionID,
-                        "Error while creating workflow",
-                        e);
-            return Response.status(500).entity("Internal Server Error").build();
+                    this.getClass(),
+                    transactionID,
+                    "Error while creating workflow",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
         }
     }
-    
+
+    @GET
+    @Path("/v1/settings/templates/asset")
+    public Response getAssetTemplateType(
+            @Context final HttpServletRequest request) {
+        String transactionID = "";
+        try {
+            InternalResponse response;
+            transactionID = debugRequestLOG("GetAssetTemplateType", request, null, 0);
+            response = PaperlessService.getAssetType(request, transactionID);
+
+            debugResponseLOG("GetAssetTemplateType", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode node = mapper.createObjectNode();
+
+                node.put("asset_template_types", (ArrayNode) response.getData());
+                logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetAssetTemplateType",
+                    transactionID
+            );
+                return Response
+                        .status(200)
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(mapper.writeValueAsString(node))
+                        .build();
+            } else {
+                logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetAssetTemplateType",
+                    transactionID
+            );
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting asset template type ",
+                    e);
+            return Response.status(
+                    PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}").build();
+        }
+    }
+
     //========================INTERNAL METHOD==========================
-    private static String debugRequestLOG(String function, @Context final HttpServletRequest request, String payload, int id) {
-        String data = "\n------------------\n" + function + " request:\n" + "\tMETHOD:" + request.getMethod()
-                + "\n\tContentType:" + request.getContentType();
-        String user = "";
+    private static String debugRequestLOG(
+            String function,
+            @Context final HttpServletRequest request,
+            String payload,
+            int id) {
+        String data = "\n----------------------------\n" + function + " request :\n" + "\tMETHOD:" + request.getMethod()
+                + "\n\tContentType : " + request.getContentType();
+        String user = "@Account";
+
         if (request.getHeader("Authorization") != null) {
             user = getUser(request.getHeader("Authorization"));
-            data += "\n\tUser:" + user;
+            data += "\n\tUser : " + user;
         }
-        if (user.isEmpty()) {
-            user = "@username";
-        }
+
         String transaction = Utils.generateTransactionId(user);
-        data += "\n\tTransactionID:" + transaction;
+        data += "\n\tTransactionID : " + transaction;
         if (request.getHeader("x-send-mail") != null) {
-            data += "\n\tSendMail:" + request.getHeader("x-send-mail");
+            data += "\n\tSendMail : " + request.getHeader("x-send-mail");
         }
-        data += "\n\tID:" + id;
-        data += "\n\tBody (or ID):" + conclusionString(payload, id);
+        data += "\n\tID : " + id;
+        data += "\n\tBody (or ID) : " + conclusionString(payload, id);
 
         LogHandler.request(ServicesController.class, data);
         return transaction;
     }
 
-    private static void debugResponseLOG(String function, InternalResponse response) {
-        LogHandler.request(ServicesController.class, "\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
+    private static void debugResponseLOG(
+            String function,
+            InternalResponse response) {
+        String message = null;
+        if (response.getMessage() != null && response.getMessage().length() > 100) {
+            message = "{data}";
+        } else if (response.getMessage() != null) {
+            message = response.getMessage();
+        } else {
+            message = "{none data response}";
+        }
+        LogHandler.request(
+                ServicesController.class,
+                "\nRESPONSE:\n" + "\tStatus : " + response.getStatus() + "\n\tMessage : " + message);
     }
 
     private static String conclusionString(String payload, int id) {
@@ -1300,5 +1619,39 @@ public class ServicesController {
         int begin = payload.indexOf("email");
         int end = payload.indexOf("azp");
         return payload.substring(begin + 8, end - 3);
+    }
+
+    private static void logIntoDB(
+            HttpServletRequest requestHTTP,
+            String email,
+            int enterprise_id,
+            int workflow_activity_id,
+            int status,
+            String request,
+            String response,
+            String servicename,
+            String transactionID
+    ) throws Exception {
+        String http = requestHTTP.getMethod();
+        String url = requestHTTP.getRequestURL().toString();
+        String appname = HttpUtils.getClientBrowser(requestHTTP);
+        String ip = HttpUtils.getClientIpAddr(requestHTTP);
+        String os = HttpUtils.getClientOS(requestHTTP);
+        CreateLogAPI.createLogAPI(
+                email,
+                enterprise_id,
+                workflow_activity_id,
+                appname + "_" + os, //app name
+                ip, //api key
+                "2023.06.15", //version
+                servicename, //service name
+                url,
+                http,
+                status,
+                request,
+                response,
+                "HMAC",
+                email,
+                transactionID);
     }
 }

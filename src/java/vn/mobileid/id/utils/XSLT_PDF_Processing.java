@@ -149,22 +149,11 @@ public class XSLT_PDF_Processing {
                 item.appendData(detail);
             }
             return item;
-        } catch (SAXException ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error Parsing ObjectMapper");
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error Parsing ObjectMapper");
-            }
-        } catch (ParserConfigurationException ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error Parsing ObjectMapper");
-            }
-        }
+        } catch (Exception ex) {            
+           LogHandler.error(XSLT_PDF_Processing.class,
+                   "Cannot parse Data XSLT to object",
+                   ex);
+        } 
         return null;
     }
 

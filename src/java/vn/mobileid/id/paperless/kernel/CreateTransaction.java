@@ -4,11 +4,7 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -24,8 +20,12 @@ import vn.mobileid.id.paperless.objects.WorkflowActivity;
  * @author GiaTK
  */
 public class CreateTransaction {
-//    final private static Logger LOG = LogManager.getLogger(CreateTransaction.class);
 
+    /**
+     * Check Data in workflow activity is valid to create a Transaction
+     * @param workflow - WorkflowActivity
+     * @return boolean
+     */
     public static boolean checkData(WorkflowActivity workflow) {
         if (workflow == null) {
             return false;
@@ -39,6 +39,17 @@ public class CreateTransaction {
         return true;
     }
 
+    /**
+     * Processing Create a new Transaction
+     * @param logID - LogID
+     * @param ObjectID - ObjectID
+     * @param ObjectType - ObjectType
+     * @param user - User
+     * @param createdby
+     * @param transactionID
+     * @return
+     * @throws Exception 
+     */
     public static InternalResponse processingCreateTransaction(
             int logID,
             int ObjectID,
@@ -47,7 +58,8 @@ public class CreateTransaction {
             String createdby,
             String transactionID
     ) throws Exception {
-        return processingCreateTransaction(logID,
+        return processingCreateTransaction(
+                logID,
                 ObjectID,
                 ObjectType,
                 null,
@@ -64,6 +76,26 @@ public class CreateTransaction {
                 transactionID);
     }
 
+    /**
+     * Processing Create a new Transaction
+     * @param logID
+     * @param ObjectID
+     * @param ObjectType
+     * @param IPAddress
+     * @param initFile
+     * @param pY
+     * @param pX
+     * @param pC
+     * @param pS
+     * @param pages
+     * @param description
+     * @param HMAC
+     * @param user
+     * @param created_by
+     * @param transactionID
+     * @return
+     * @throws Exception 
+     */
     private static InternalResponse processingCreateTransaction(
             int logID,
             int ObjectID,
@@ -104,21 +136,19 @@ public class CreateTransaction {
         try {
             if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
                 String message = null;
-                if (LogHandler.isShowErrorLog()) {
-                    message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
-                            callDB.getStatus(),
-                            "en",
-                            null);
-                    LogHandler.error(CreateTransaction.class, "TransactionID:" + transactionID + "\nCannot create Transaction - Detail:" + message);
-                }
+                message = PaperlessMessageResponse.getErrorMessage(PaperlessConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                        null);
+//                    LogHandler.error(CreateTransaction.class, "TransactionID:" + transactionID + "\nCannot create Transaction - Detail:" + message);                
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         message
                 );
             }
             return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                     callDB.getIDResponse());
-        } catch (Exception e) {            
-                throw new Exception("Cannot create Transaction!" , e);            
+        } catch (Exception e) {
+            throw new Exception("Cannot create Transaction!", e);
 //            return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
 //                    e.getMessage()
 //            );

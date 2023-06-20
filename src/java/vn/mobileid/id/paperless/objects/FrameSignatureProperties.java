@@ -15,15 +15,17 @@ import com.fasterxml.jackson.annotation.JsonRootName;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonRootName("metadata_signature")
-public class SigningProperties {
+public class FrameSignatureProperties {
     private String location;    
     private String reason;
     private String date;
+    private String date_format;
     private String keyword;
     private String boxCoordinate;
+    private String textContent;
+    private String page;        
 
-    public SigningProperties() {
+    public FrameSignatureProperties() {
     }
 
     @JsonProperty("location")
@@ -69,6 +71,33 @@ public class SigningProperties {
 
     public void setBoxCoordinate(String boxCoordinate) {
         this.boxCoordinate = boxCoordinate;
+    }
+
+    @JsonProperty("text_content")
+    public String getTextContent() {
+        return textContent;
+    }
+
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
+    }
+
+    @JsonProperty("page")
+    public String getPage() {
+        return page;
+    }
+
+    public void setPage(String page) {
+        this.page = page;
+    }
+
+    @JsonProperty("date_format")
+    public String getFormat_date() {
+        return date_format;
+    }
+
+    public void setFormat_date(String format_date) {
+        this.date_format = format_date;
     }
    
     

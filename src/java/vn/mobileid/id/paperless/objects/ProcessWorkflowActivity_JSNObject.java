@@ -27,7 +27,7 @@ public class ProcessWorkflowActivity_JSNObject {
 
     private List<ItemDetails> item;
     private List<FileDataDetails> file_data;
-    private SigningProperties signing_properties;
+    private FrameSignatureProperties signing_properties;
 
     public ProcessWorkflowActivity_JSNObject() {
     }
@@ -43,9 +43,23 @@ public class ProcessWorkflowActivity_JSNObject {
     }
 
     @JsonProperty("metadata_signature")
-    public SigningProperties getSigning_properties() {
+    public FrameSignatureProperties getSigning_properties() {
         return signing_properties;
     }      
+
+    public void setItem(List<ItemDetails> item) {
+        this.item = item;
+    }
+
+    public void setFile_data(List<FileDataDetails> file_data) {
+        this.file_data = file_data;
+    }
+
+    public void setSigning_properties(FrameSignatureProperties signing_properties) {
+        this.signing_properties = signing_properties;
+    }
+    
+    
 
     public static void main(String[] args) throws JsonProcessingException {
 //        String body = "{\"metadata_signature\":{" +
@@ -58,10 +72,10 @@ public class ProcessWorkflowActivity_JSNObject {
 //        System.out.println("bod"+body);
 //        ProcessWorkflowActivity_JSNObject object = new ObjectMapper().readValue(body, ProcessWorkflowActivity_JSNObject.class);
 //        System.out.println(object.getSigningProperties().getLocation());
-////        SigningProperties sig = new ObjectMapper().readValue(body, SigningProperties.class);
+////        FrameSignatureProperties sig = new ObjectMapper().readValue(body, FrameSignatureProperties.class);
 //        System.out.println(object.getSigningProperties());
 
-        SigningProperties a = new SigningProperties();
+        FrameSignatureProperties a = new FrameSignatureProperties();
         a.setLocation("hello");
         a.setKeyword("asa");
         String temp = new ObjectMapper().enable(SerializationFeature.WRAP_ROOT_VALUE).writeValueAsString(a);

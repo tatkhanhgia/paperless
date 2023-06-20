@@ -14,8 +14,7 @@ import vn.mobileid.id.general.objects.InternalResponse;
  * @author GiaTK
  */
 public class ManageEnterprise {
-    
-    
+        
     public static InternalResponse getDataRP(
             int enterprise_id,
             String transactionID

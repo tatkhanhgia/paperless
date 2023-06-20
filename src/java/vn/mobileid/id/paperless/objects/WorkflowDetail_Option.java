@@ -43,14 +43,14 @@ public class WorkflowDetail_Option extends Object {
     private String stamp_in;
     private String page_size;
 
-    private String asset_Background_string;
-    private int asset_Background;
+    private String asset_background_string;
+    private int asset_background;
 
-    private String asset_Append_string;
-    private int asset_Append;
+    private String asset_append_string;
+    private int asset_append;
 
-    private String asset_Template_string;
-    private int asset_Template;
+    private String asset_template_string;
+    private int asset_template;
 
     private String disable_CSV_task_notification_email_string;
     private boolean disable_CSV_task_notification_email;
@@ -88,9 +88,9 @@ public class WorkflowDetail_Option extends Object {
         this.page = page;
         this.stamp_in = stamp_in;
         this.page_size = page_size;
-        this.asset_Background = asset_Background;
-        this.asset_Append = asset_Append;
-        this.asset_Template = asset_Template;
+        this.asset_background = asset_Background;
+        this.asset_append = asset_Append;
+        this.asset_template = asset_Template;
         this.disable_CSV_task_notification_email = disable_CSV_task_notification_email;
         this.CSV_email = CSV_email;
         this.omit_if_empty = omit_if_empty;
@@ -135,19 +135,19 @@ public class WorkflowDetail_Option extends Object {
         return page_size;
     }
 
-    @JsonProperty("asset_Background")
+    @JsonProperty("asset_background")
     public int getAsset_Background() {
-        return asset_Background;
+        return asset_background;
     }
 
-    @JsonProperty("asset_Append")
+    @JsonProperty("asset_append")
     public int getAsset_Append() {
-        return asset_Append;
+        return asset_append;
     }
 
-    @JsonProperty("asset_Template")
+    @JsonProperty("asset_template")
     public int getAsset_Template() {
-        return asset_Template;
+        return asset_template;
     }
 
     @JsonProperty("disable_CSV_task_notification_email")
@@ -270,18 +270,18 @@ public class WorkflowDetail_Option extends Object {
     }
 
     public void setAsset_Background(int asset_Background) {
-        this.asset_Background_string = "1";
-        this.asset_Background = asset_Background;
+        this.asset_background_string = "1";
+        this.asset_background = asset_Background;
     }
 
     public void setAsset_Append(int asset_Append) {
-        this.asset_Append_string = "1";
-        this.asset_Append = asset_Append;
+        this.asset_append_string = "1";
+        this.asset_append = asset_Append;
     }
 
     public void setAsset_Template(int asset_Template) {
-        this.asset_Template_string = "1";
-        this.asset_Template = asset_Template;
+        this.asset_template_string = "1";
+        this.asset_template = asset_Template;
     }
 
     public void setDisable_CSV_task_notification_email(boolean disable_CSV_task_notification_email) {

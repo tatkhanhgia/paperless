@@ -41,7 +41,7 @@ public class WorkflowActivity {
     private String modified_by;
     private Date modified_at;
     private boolean is_production;    
-    private FileManagement file;
+    private FileManagement file; //Pending
     private String CSV_id; //pending        
     private int generation_type;
     private String requestData;        

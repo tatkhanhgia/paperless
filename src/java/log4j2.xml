@@ -75,7 +75,8 @@
         <Logger name="vn.mobileid.id.paperless" additivity="false" level="ALL">            
 			<AppenderRef ref="LogToDEBUGfile"/>
 			<AppenderRef ref="LogToERRORfile"/>		
-			<AppenderRef ref="LogToRequestfile"/>		
+			<AppenderRef ref="LogToRequestfile"/>	
+			<AppenderRef ref="LogToFatalfile"/>				
         </Logger>
 		
 		<Logger name="RestfulFactory" additivity="false" level="ALL">
