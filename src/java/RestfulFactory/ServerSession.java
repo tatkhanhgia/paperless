@@ -129,7 +129,7 @@ public class ServerSession implements IServerSession {
             }
         }
 
-        LoginResponse signCloudResp = Utils.gsTmp.fromJson(response.getMsg(), LoginResponse.class);
+        LoginResponse signCloudResp = Utils.gsTmp.fromJson(response.getMsg(), LoginResponse.class);        
         if (signCloudResp.getError() == 3005 || signCloudResp.getError() == 3006) {
             refreshToken = null;
             if (retryLogin >= 5) {
@@ -853,4 +853,8 @@ public class ServerSession implements IServerSession {
         return false;
     }
 
+    public static void main(String[] args) throws Throwable{
+        ServerSession session = new ServerSession(null, null);
+        List<ICertificate> list =  session.listCertificates("as");        
+    }
 }

@@ -151,7 +151,7 @@ public class GetWorkflow {
 
         Database DB = new DatabaseImpl();        
 
-        DatabaseResponse callDB = DB.getTotalWorkflowWithCondition(
+        DatabaseResponse callDB = DB.getTotalRecordsWorkflow(
                 email,
                 enterprise_id,
                 status,

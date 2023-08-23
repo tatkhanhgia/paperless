@@ -79,7 +79,7 @@ public class AssetServiceController extends HttpServlet {
         String method = req.getMethod();
         String pathInfo = req.getPathInfo();
 
-        String delete_Regex = "/[0-9]+";
+        String delete_Regex = "/[0-9]+/deactive";
         String getTemplate_Regex = "/[0-9]+/template";
         String getDetail_Regex = "/[0-9]+/details";
         String download_Regex = "/[0-9]+";
@@ -119,38 +119,39 @@ public class AssetServiceController extends HttpServlet {
                     break;
                 }
                 if (pathInfo.matches(getTotal_Regex)) {
-                    response = this.getTotalAssetWithCondition(req);
+                    response = this.getTotalRecordsAsset(req);
                     break;
                 }
                 if (pathInfo.matches(getList_Regex)) {
                     response = this.getListAsset(req);
                     break;
-                }                
+                } 
+                
                 break;
             }
             case "DELETE": {
                 if (pathInfo.matches(delete_Regex)) {
-                    int id = Integer.parseInt(pathInfo.substring(1));
+                    String temp = pathInfo.replaceAll("/deactive", "");
+                    int id = Integer.parseInt(temp.substring(1));
                     response = this.deleteAsset(req, id);
                 }
                 break;
             }
             case "POST": {
-                if (pathInfo.matches(upload_Regex)) {
+                if (pathInfo == null) {
                     response = this.uploadAsset(req);
                     break;
                 }
                 if (pathInfo.matches(uploadBase64_Regex)) {
-                    int id = Integer.parseInt(pathInfo
-                            .replace("/base64", "")
-                            .substring(1));
-                    response = this.uploadAssetBase64(req, getBody(req));
-                }               
+//                    int id = Integer.parseInt(pathInfo
+//                            .replace("/base64", "")
+//                            .substring(1));
+                    response = this.uploadAssetBase64(req, getBody(req));                    
+                }
                 break;
             }
-        }        
-        res = populateHttpServletResponse(response, res);
-        this.destroy();
+        }
+        res = populateHttpServletResponse(response, res);       
     }
 
 //    @DELETE
@@ -291,7 +292,7 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-    
+
 //    @GET
 //    @Path("/v1/asset/{id}")
     public Response downloadAsset(
@@ -385,7 +386,7 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-    
+
 //    @POST
 //    @Path("/v1/asset")
     public Response uploadAsset(
@@ -477,6 +478,49 @@ public class AssetServiceController extends HttpServlet {
         }
     }
 
+    public Response updateAsset(
+        @Context final HttpServletRequest request) {
+        String transactionID = "";
+        try {
+            InternalResponse response;
+
+            transactionID = debugRequestLOG(
+                    "Update Asset",
+                    request,
+                    null,
+                    0);
+
+            response = PaperlessService.uploadAsset(
+                    request,
+                    transactionID);
+
+            debugResponseLOG("UpdateAsset", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(response.getStatus())
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(response.getMessage())
+                        .build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                    this.getClass(),
+                    transactionID,
+                    "Error while uploading asset",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
+        }
+    }
+    
 //    @GET
 //    @Path("/v1/asset/{document_status}{var:.*}")
     public Response getListAsset(
@@ -524,7 +568,7 @@ public class AssetServiceController extends HttpServlet {
 
 //    @GET
 //    @Path("/v1/asset/gettotal/{document_status}{var:.*}")
-    public Response getTotalAssetWithCondition(
+    public Response getTotalRecordsAsset(
             @Context final HttpServletRequest request) {
         String transactionID = "";
         try {
@@ -536,7 +580,7 @@ public class AssetServiceController extends HttpServlet {
                     null,
                     0);
 
-            response = PaperlessService.getTotalAssetWithCondition(
+            response = PaperlessService.getTotalRecordsAsset(
                     request,
                     transactionID);
 
@@ -712,13 +756,20 @@ public class AssetServiceController extends HttpServlet {
         return body;
     }
 
-    private static HttpServletResponse populateHttpServletResponse(Response response, HttpServletResponse res) throws IOException{
-        MultivaluedMap<String, Object> headers = response.getHeaders();
-        headers.forEach((key,value)->{
-            res.setHeader(key, String.valueOf(value));
-        });
-        res.setStatus(response.getStatus());
-        res.getWriter().write((String)response.getEntity());
-        return res;
+    private static HttpServletResponse populateHttpServletResponse(
+            Response response,
+            HttpServletResponse res) throws IOException {
+        if (response != null) {
+            MultivaluedMap<String, Object> headers = response.getHeaders();
+            headers.forEach((key, value) -> {
+                res.setHeader(key, String.valueOf(value));
+            });
+            res.setStatus(response.getStatus());
+            res.getWriter().write((String) response.getEntity());
+            return res;
+        } else {
+            res.sendError(404);
+            return res;
+        }
     }
 }

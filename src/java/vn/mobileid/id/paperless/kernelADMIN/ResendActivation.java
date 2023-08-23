@@ -25,6 +25,13 @@ import vn.mobileid.id.utils.Utils;
  */
 public class ResendActivation {
 
+    /**
+     * Hàm sử dụng để gửi lại mã cho user
+     * @param email
+     * @param enterprise_id
+     * @param transactionID
+     * @return 
+     */
     public static InternalResponse resend(
             String email,
             int enterprise_id,

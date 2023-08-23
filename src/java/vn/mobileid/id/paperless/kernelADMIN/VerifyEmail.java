@@ -21,6 +21,11 @@ import vn.mobileid.id.utils.Utils;
  */
 public class VerifyEmail {
 
+    /**
+     * Kiểm tra thông tin account, authorize code trước khi verify Email
+     * @param account
+     * @return 
+     */
     public static InternalResponse checkData(Account account) {
         if (account.getUser_email() == null || account.getUser_email().isEmpty()) {
             return new InternalResponse(
@@ -45,6 +50,14 @@ public class VerifyEmail {
                 "");
     }
 
+    /**
+     * Verify email của người dùng
+     * @param email
+     * @param authorizeCode
+     * @param transactionID
+     * @return
+     * @throws Exception 
+     */
     public static InternalResponse verifyEmail(
             String email,
             String authorizeCode,

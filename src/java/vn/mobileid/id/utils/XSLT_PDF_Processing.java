@@ -150,7 +150,8 @@ public class XSLT_PDF_Processing {
             }
             return item;
         } catch (Exception ex) {            
-           LogHandler.error(XSLT_PDF_Processing.class,
+           LogHandler.error(
+                   XSLT_PDF_Processing.class,
                    "Cannot parse Data XSLT to object",
                    ex);
         } 

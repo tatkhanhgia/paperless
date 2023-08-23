@@ -47,13 +47,16 @@ import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.utils.Configuration;
 import vn.mobileid.id.general.email.SendMail;
 import vn.mobileid.id.paperless.kernel.CheckWorkflowTemplate;
+import vn.mobileid.id.paperless.kernel.GetUser;
 import vn.mobileid.id.paperless.kernel.GetWorkflowActivity;
 import vn.mobileid.id.paperless.kernel.ManageStatusAsset;
 import vn.mobileid.id.paperless.kernel.ManageStatusWorkflow;
 import vn.mobileid.id.paperless.kernel.ProcessTrustManager;
+import vn.mobileid.id.paperless.kernel.UpdateAsset;
 import vn.mobileid.id.paperless.kernel.UpdateUser;
 import vn.mobileid.id.paperless.kernel.UpdateWorkflowDetail_option;
 import vn.mobileid.id.paperless.kernel.UpdateWorkflowTemplate;
+import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.paperless.objects.WorkflowTemplate;
@@ -83,7 +86,7 @@ public class PaperlessService {
             InternalResponse response = ManageTokenWithDB.processLogin(
                     request,
                     payload,
-                    transactionID);            
+                    transactionID);
             return response;
         } else {
             InternalResponse response = ManageTokenWithDB.processLoginURLEncode(
@@ -97,7 +100,7 @@ public class PaperlessService {
     public static InternalResponse revoke(
             final HttpServletRequest request,
             String payload,
-            String transactionID) throws Exception {        
+            String transactionID) throws Exception {
         return ManageTokenWithDB.processRevoke(
                 request,
                 payload,
@@ -355,10 +358,10 @@ public class PaperlessService {
         //Get Data header
         String x_file_name = Utils.getRequestHeader(request, "x-file-name");
         String headerJWT = Utils.getRequestHeader(request, "eid-jwt");
-        JWT_Authenticate JWT = new JWT_Authenticate();        
+        JWT_Authenticate JWT = new JWT_Authenticate();
         if (headerJWT != null) {
             result = ProcessTrustManager.verifyTrustManager(headerJWT, transactionID);
-            if(result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+            if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return result;
             }
             JWT = (JWT_Authenticate) ProcessEID_JWT.getInfoJWT(headerJWT).getData();
@@ -396,7 +399,7 @@ public class PaperlessService {
 
         if (headerJWT != null) {
             response = ProcessTrustManager.verifyTrustManager(headerJWT, transactionID);
-            if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
             response = ProcessEID_JWT.getInfoJWT(headerJWT);
@@ -405,7 +408,7 @@ public class PaperlessService {
             }
             jwt = (JWT_Authenticate) response.getData();
         }
-        
+
         if (email == null) {
             email = user_info.getEmail();
         }
@@ -562,7 +565,7 @@ public class PaperlessService {
         InternalResponse res = GetDocument.getDocument(id, transactionID);
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
-        }        
+        }
         res.setMessage(
                 new ObjectMapper().writeValueAsString(
                         res.getData()));
@@ -825,11 +828,11 @@ public class PaperlessService {
         String x_file_name = Utils.getRequestHeader(request, "x-file-name");
         Asset temp = new Asset();
         temp = new ObjectMapper().readValue(payload, Asset.class);
-        
-        byte[] temp2 ;
-        try{
+
+        byte[] temp2;
+        try {
             temp2 = Base64.getDecoder().decode(temp.getBase64().getBytes());
-        } catch (Exception ex){
+        } catch (Exception ex) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     "{INVALID_FILE}");
@@ -864,6 +867,79 @@ public class PaperlessService {
         );
 
         return UploadAsset.uploadAsset(user_info, asset, transactionID);
+    }
+
+    public static InternalResponse updateAsset(
+            final HttpServletRequest request,
+            String transactionID) throws Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Get header
+        int id = 0;
+        try {
+            id = Integer.parseInt(request.getRequestURI().replace("/v1/asset/", ""));
+        } catch (Exception ex) {
+            String message = "Cannot parse id from url";
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    message);
+        }
+        String x_file_type = Utils.getRequestHeader(request, "x-file-type");
+//        String x_file_name = Utils.getRequestHeader(request, "x-file-name");
+        ByteArrayOutputStream outputStream;
+        try {
+            final ServletInputStream input = request.getInputStream();
+            outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int n1;
+            while (-1 != (n1 = input.read(buffer))) {
+                outputStream.write(buffer, 0, n1);
+            }
+            input.close();
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException ex) {
+            outputStream = null;
+        }
+
+        //Processing
+        int i = convertStringIntoAssetType(x_file_type);
+        if (i == -1) {
+            String message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                    PaperlessConstant.SUBCODE_INVALID_FILE_TYPE,
+                    "en",
+                    null);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    message);
+        }
+
+        Asset asset = new Asset(
+                id,
+                null,
+                i,
+                0,
+                "",
+                null,
+                "",
+                null,
+                "",
+                "",
+                outputStream == null ? null : outputStream.toByteArray(),
+                null
+        );
+
+        return UpdateAsset.updateAsset(
+                asset,
+                user_info,
+                transactionID);
     }
 
     public static InternalResponse getAssetTemplate(
@@ -1010,10 +1086,10 @@ public class PaperlessService {
                 (page_no <= 1) ? 0 : (page_no - 1) * record, //offset
                 record == 0 ? numberOfRecords : record, //rowcount
                 transactionID);
-        if(res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
-        
+
         List<Workflow> list = (List<Workflow>) res.getData();
         CustomListWorkflowSerializer customSerializer = new CustomListWorkflowSerializer(
                 list,
@@ -1160,6 +1236,78 @@ public class PaperlessService {
         return res;
     }
 
+    public static InternalResponse getTotalRecordsWorkflowAc(
+            final HttpServletRequest request,
+            String transactionID) throws JsonProcessingException, Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Process header        
+        String URI = request.getRequestURI();
+        URI = URI.replaceFirst(".*workflowactivity/", "");
+        String[] data = URI.split("/");
+        String status = data[0];
+        String search = "1,2,3,4";
+        if (status != null) {
+            if (status.contains("ACTIVE")) {
+                search = "1";
+            } else if (status.contains("HIDDEN")) {
+                search = "2";
+            } else if (status.contains("EXPIRED")) {
+                search = "3";
+            } else if (status.contains("REVOKE")) {
+                search = "4";
+            } else if (status.contains("ALL")) {
+                search = "1,2,3,4";
+            }
+        }
+
+        int page_no;
+        int record;
+        int numberOfRecords = PaperlessConstant.DEFAULT_ROW_COUNT;
+        try {
+            page_no = (data[1] == null ? 0 : Integer.parseInt(data[1]));
+            record = (data[2] == null ? 0 : Integer.parseInt(data[2]));
+        } catch (Exception e) {
+            page_no = 0;
+            record = 0;
+        }
+        try {
+            numberOfRecords = Integer.parseInt(Utils.getRequestHeader(request, "x-number-records"));
+            page_no = 0;
+            record = 0;
+        } catch (Exception ex) {
+        }
+
+        String email_search = Utils.getRequestHeader(request, "x-search-email");
+
+        //Processing
+        InternalResponse res = GetWorkflowActivity.getRowCountWorkflowActivity(
+                user_info.getEmail(),
+                user_info.getAid(),
+                email_search, //email search
+                null, //searcg date
+                "1,2,3,4,5,6", //search generation
+                search, //search status
+                false,
+                false,
+                false,
+                null, //search from date
+                null, //search to date                
+                "ENG", //language ENG - VIE
+                transactionID);
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return res;
+        }
+        res.setMessage("{\"x-total-records\":" + res.getData() + "}");       
+        return res;
+    }
+
     public static InternalResponse getWorkflowTemplate(
             final HttpServletRequest request,
             int id,
@@ -1199,7 +1347,7 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        CustomWorkflowSerializer custom = new CustomWorkflowSerializer((Workflow)response.getData());
+        CustomWorkflowSerializer custom = new CustomWorkflowSerializer((Workflow) response.getData());
         response.setMessage(new ObjectMapper().writeValueAsString(custom));
         return response;
     }
@@ -1534,7 +1682,7 @@ public class PaperlessService {
             @Override
             public void run() {
                 //Get data from RAM first . If not existed => get from DB
-                FileManagement filemanagement = Resources.getListWorkflowActivity().get(String.valueOf(woAc.getId())).getFile();
+                FileManagement filemanagement = Resources.getWorkflowActivity(String.valueOf(woAc.getId())).getFile();
                 if (!filemanagement.isIsSigned()) {
                     InternalResponse temp = null;
                     try {
@@ -1588,7 +1736,7 @@ public class PaperlessService {
         temp.start();
     }
 
-    public static InternalResponse getTotalWorkflowWithCondition(
+    public static InternalResponse getTotalRecordsWorkflow(
             final HttpServletRequest request,
             String transactionID) throws JsonProcessingException, Exception {
         //Check valid token
@@ -1674,10 +1822,10 @@ public class PaperlessService {
                 false, //enable metadata
                 "", //value of metadata
                 transactionID);
-        if(res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
-        
+
         res.setMessage("{\"x-total-record\":" + (int) res.getData() + "}");
         HashMap<String, Object> hashmap = new HashMap<>();
         hashmap.put("x-total-records", (int) res.getData());
@@ -1685,7 +1833,7 @@ public class PaperlessService {
         return res;
     }
 
-    public static InternalResponse getTotalAssetWithCondition(
+    public static InternalResponse getTotalRecordsAsset(
             final HttpServletRequest request,
             String transactionID) throws JsonProcessingException, Exception {
         //Check valid token
@@ -1737,11 +1885,11 @@ public class PaperlessService {
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
-        int number = ((List<Asset>)res.getData()).size();
-        res.setMessage("{\"x-total-record\":"+number+"}");
+        int number = ((List<Asset>) res.getData()).size();
+        res.setMessage("{\"x-total-record\":" + number + "}");
         return res;
     }
-    
+
     public static InternalResponse deleteAsset(
             final HttpServletRequest request,
             int id,
@@ -1787,7 +1935,7 @@ public class PaperlessService {
         }
         return response;
     }
-    
+
     public static InternalResponse getAssetType(
             final HttpServletRequest request,
             String transactionID) throws Exception {
@@ -1815,5 +1963,43 @@ public class PaperlessService {
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 node);
+    }
+
+    public static InternalResponse getAccounts(
+            final HttpServletRequest request,
+            String transactionID
+    ) throws Exception {
+        //Check user token                
+        User user_info = null;
+        try {
+            InternalResponse response = verifyToken(request, transactionID);
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+                return response;
+            }
+            user_info = response.getUser();
+        } catch (Exception e) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                            PaperlessConstant.SUBCODE_INVALID_TOKEN,
+                            "en",
+                            null));
+        }
+
+        //Process headers                        
+        InternalResponse response = GetUser.getUser(
+                user_info.getEmail(),
+                0,
+                user_info.getAid(),
+                transactionID,
+                false);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        Account account = (Account) response.getData();
+        response.setMessage(new ObjectMapper().writeValueAsString(account));
+        return response;
+
     }
 }

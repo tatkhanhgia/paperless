@@ -28,6 +28,12 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateAccount {
 
+    /**
+     * Kiểm tra thông tin của Account
+     * @param account
+     * @param isJWTTokenExisted
+     * @return 
+     */
     public static InternalResponse checkDataAccount(
             Account account,
             boolean isJWTTokenExisted) {
@@ -73,6 +79,23 @@ public class CreateAccount {
 
     }
 
+    /**
+     * Tạo mới một Account - User
+     * @param email
+     * @param password
+     * @param mobile_number
+     * @param name
+     * @param doc_num
+     * @param enterprise_id
+     * @param enteprise_name
+     * @param role_name
+     * @param password_expired_at
+     * @param business_type
+     * @param org_web
+     * @param transactionID
+     * @return
+     * @throws Exception 
+     */
     public static InternalResponse createAccount(
             String email,
             String password,

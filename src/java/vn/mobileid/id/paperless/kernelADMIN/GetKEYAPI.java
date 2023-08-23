@@ -20,6 +20,14 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  */
 public class GetKEYAPI {
 
+    /**
+     * Lấy về giá trị keyAPI với 1 trong 2 tham số đầu vào
+     * @param enterprise_id
+     * @param clientID
+     * @param transactionID
+     * @return
+     * @throws Exception 
+     */
     public static InternalResponse getKEYAPI(
             int enterprise_id,
             String clientID,

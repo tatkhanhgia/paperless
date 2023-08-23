@@ -498,7 +498,7 @@ public class ServicesController {
     //GET ALL WORKFLOW with total
     @GET
     @Path("/v1/workflow/gettotal/{document_status}")
-    public Response getTotalWorkflowWithCondition(
+    public Response getTotalRecordsWorkflow(
             @Context final HttpServletRequest request) {
         String transactionID = "";
         try {
@@ -506,7 +506,7 @@ public class ServicesController {
 
             transactionID = debugRequestLOG("GetTotalWorkflow", request, null, 0);
 
-            response = PaperlessService.getTotalWorkflowWithCondition(request, transactionID);
+            response = PaperlessService.getTotalRecordsWorkflow(request, transactionID);
 
             debugResponseLOG("GetTotalWorkflow", response);
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -1193,6 +1193,62 @@ public class ServicesController {
     }
 
     @GET
+    @Path("/v1/workflowactivity/gettotal/{document_status}")
+    public Response getTotalRecordsWorkflowActivity(
+            @Context final HttpServletRequest request) {
+        String transactionID = "";
+        try {
+            InternalResponse response;
+
+            transactionID = debugRequestLOG(
+                    "GetTotalRecordsWorkflowAc",
+                    request,
+                    null,
+                    0);
+
+            response = PaperlessService.getTotalRecordsWorkflowAc(
+                    request,
+                    transactionID);
+
+            debugResponseLOG("GetTotalRecordsWorkflowAc", response);
+            logIntoDB(
+                    request,
+                    getUser(request.getHeader("Authorization")),
+                    0, //id
+                    0, //WoAc
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "GetTotalRecordsWorkflowAc",
+                    transactionID
+            );
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(response.getStatus())
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(response.getMessage())
+                        .build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                    this.getClass(),
+                    transactionID,
+                    "Error while getting list of workflow activity",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
+        }
+    }
+    
+    @GET
     @Path("/v1/workflowactivity/{document_status}/{var:.*}")
     public Response getListWorkflowActivity(
             @Context final HttpServletRequest request) {
@@ -1247,7 +1303,7 @@ public class ServicesController {
                     .build();
         }
     }
-
+    
     @GET
     @Path("/v1/workflowactivity/{id}/details")
     public Response getWoAcDetails(
@@ -1653,5 +1709,50 @@ public class ServicesController {
                 "HMAC",
                 email,
                 transactionID);
+    }
+    
+    @GET
+    @Path("/v1/settings/profile")
+    public Response getAccountDetails(
+            @Context final HttpServletRequest request) {
+        String transactionID="";
+        try {
+            InternalResponse response;
+            transactionID = debugRequestLOG(
+                    "getAccountDetails",
+                    request,
+                    null,
+                    0);            
+            if (request.getContentType() == null) {
+                return Response.status(400).entity("{Missing Content-Type}").build();
+            }
+            response = PaperlessService.getAccounts(
+                    request,
+                    transactionID);
+            debugResponseLOG("getAccount", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                        this.getClass(),
+                        transactionID,
+                        "Error while getting accounts",
+                        e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
+        }
     }
 }

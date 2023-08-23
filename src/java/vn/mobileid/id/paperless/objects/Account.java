@@ -31,6 +31,7 @@ public class Account {
     private int status_id;
     private String status_name;     
     private boolean verified;
+    private String role;
 
     public Account() {
     }
@@ -178,4 +179,15 @@ public class Account {
     public void setVerified(boolean verified) {
         this.verified = verified;
     }        
+
+    @JsonProperty("role")
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+    
+    
 }

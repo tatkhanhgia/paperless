@@ -37,6 +37,13 @@
         <servlet-class>vn.mobileid.id.general.api.AssetServiceController</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>resourcesLoad</servlet-name>
+        <servlet-class>vn.mobileid.id.general.Resources</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    
+    
     <servlet-mapping>
         <servlet-name>adminServlet</servlet-name>
         <url-pattern>/*</url-pattern>

@@ -5,6 +5,8 @@
 package vn.mobileid.id.general;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Level;
 import vn.mobileid.id.utils.Configuration;
@@ -126,15 +128,38 @@ public class LogHandler {
             String message,
             Exception ex) {
         if (isShowErrorLog()) {
-            ex.printStackTrace();
             Logger LOG = LogManager.getLogger(object);
-            message += "\n" + ex.toString();
-            Throwable a = ExceptionUtils.getRootCause(ex);
-            message += "\n\t" + a.getCause().getMessage();
-            for (StackTraceElement stackTraceElement : a.getStackTrace()) {
-                message = message + System.lineSeparator() + "\t" + stackTraceElement.toString();
+            StringBuilder sb = new StringBuilder();
+            StackTraceElement[] trace = null;
+            Throwable[] throwAble = ex.getSuppressed();
+            sb.append(ex.getClass().getName());
+            sb.append(": ");
+            sb.append(ex.getLocalizedMessage());
+            sb.append("_");sb.append(message);
+            if (ex.getCause() != null) {
+                sb.append("\n");
+                sb.append("Cause by:").append(ex.getCause().getMessage());
+                trace = ex.getCause().getStackTrace();
+            } else {
+                trace = ex.getStackTrace();
             }
-            LOG.error(message);
+            sb.append("\n\t");
+            List<String> temp = new ArrayList<>();
+            for (int i = trace.length - 1; i >= 0; i--) {
+//                if (trace[i].getClassName().equals(ManagementController.class.getCanonicalName())) {
+//                    for (int j = i; j >= 0; j--) {
+//                        temp.add(trace[j].getClassName() + " at(" + trace[j].getMethodName() + ":" + trace[j].getLineNumber() + ")");
+//                    }
+//                    break;
+//                }
+                temp.add(trace[i].getClassName() + " at(" + trace[i].getMethodName() + ":" + trace[i].getLineNumber() + ")");
+            }
+            for (int i = (temp.size() - 1); i >= 0; i--) {
+                sb.append(String.format("%5s", temp.get(i)));
+                sb.append("\n\t");
+            }
+            LOG.error(sb.toString());
+            System.out.println(sb.toString()); 
         }
     }
     

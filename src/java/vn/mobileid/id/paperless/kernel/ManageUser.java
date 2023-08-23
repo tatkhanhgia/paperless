@@ -81,7 +81,7 @@ public class ManageUser {
     }
 
     /**
-     * Set new password to user
+     * Set new password to user with OTP from user
      *
      * @param otp
      * @param password

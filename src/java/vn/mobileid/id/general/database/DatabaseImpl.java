@@ -2430,7 +2430,7 @@ public class DatabaseImpl implements Database {
             //In            
             cals.setString("pUSER_EMAIL", email);
             cals.setInt("pUSER_ID", (user_id <= 0 ? 0 : user_id));
-            cals.setInt("pENTERPRISE_ID", enterprise_id);
+            cals.setInt("pENTERPRISE_ID", enterprise_id);            
 
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
@@ -2457,6 +2457,7 @@ public class DatabaseImpl implements Database {
                     account.setUser_email(rs.getString("EMAIL"));
                     account.setUser_name(rs.getString("USER_NAME"));
                     account.setMobile_number(rs.getString("MOBILE_NUMBER"));
+                        
                     account.setVerified(rs.getBoolean("VERIFIED_ENABLED"));
                     response.setObject(account);
                     response.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -3521,7 +3522,7 @@ public class DatabaseImpl implements Database {
      * @return
      */
     @Override
-    public DatabaseResponse getTotalWorkflowWithCondition(
+    public DatabaseResponse getTotalRecordsWorkflow(
             String email,
             int enterprise_id,
             String status,
@@ -3906,6 +3907,183 @@ public class DatabaseImpl implements Database {
             throw new Exception("Error while getting transaction!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse getListUser(
+            String enterpriseName,
+            int enterpriseId,
+            int offset,
+            int rowCount,
+            String transactionId) throws Exception {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        String debugString = "";
+        try {
+            String str = "{ call USP_USER_LIST(?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            cals.setInt("pENTERPRISE_ID", enterpriseId);
+            cals.setInt("pOFFSET", offset);
+            cals.setInt("pROW_COUNT", rowCount);                
+
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+            debugString += "\t[SQL] " + cals.toString();
+
+            rs = cals.executeQuery();
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+            if (!cals.getString("pRESPONSE_CODE").equals("1")) {
+                databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+            } else {
+                List<Account> accounts = new ArrayList<>();
+                while(rs.next()){
+                    Account account = new Account();
+                    account.setUser_email(rs.getString("EMAIL"));
+                    account.setMobile_number(rs.getString("MOBILE_NUMBER"));
+                    account.setEnterprise_name(rs.getString("ENTERPRISE_NAME"));
+                    account.setRole(rs.getString("ROLE"));
+                    accounts.add(account);
+                }
+                databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);                
+                databaseResponse.setObject(accounts);
+            }
+        } catch (Exception e) {
+            numOfRetry--;
+            throw new Exception("Error while getting total Account!", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse getTotalRecordsAsset(
+            int enterpriseId, 
+            String email,
+            String fileName, 
+            String type, 
+            String transactionId) throws Exception {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        String debugString = transactionId + "\n";
+        while (numOfRetry > 0) {
+            try {
+                String str = "{ call USP_ASSET_GET_ROW_COUNT(?,?,?,?,?) }";
+                conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+                cals = conn.prepareCall(str);
+
+                cals.setInt("pENTERPRISE_ID", enterpriseId);
+                cals.setString("pEMAIL_USER", email);               
+                cals.setString("pFILE_NAME", fileName);                
+                cals.setString("TYPE", type);
+                
+
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+                debugString += "\t[SQL] " + cals.toString();
+
+                rs = cals.executeQuery();
+                if (cals.getString("pRESPONSE_CODE").equals("1")) {
+                    debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+                    int total = 0;
+                    while (rs.next()) {
+                        total = rs.getInt("ROW_COUNT");
+                    }
+                    databaseResponse.setObject(total);
+                    databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
+                } else {
+                    databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                }
+                break;
+            } catch (Exception e) {
+                numOfRetry--;
+                throw new Exception("Error while getting list Workflow!", e);
+            } finally {
+                DatabaseConnectionManager.getInstance().close(conn);
+            }
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse getTotalRecordsWorkflowActivity(
+            String email,
+            int enterpriseId,
+            String emailSearch,
+            String date,
+            String gType,
+            String status,
+            boolean isTest,
+            boolean isProduct,            
+            boolean isCustomRange,
+            String fromDate,
+            String toDate,
+            String languageName,
+            String transactionId) throws Exception {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        String debugString = transactionId + "\n";
+        while (numOfRetry > 0) {
+            try {
+                String str = "{ call USP_WORKFLOW_ACTIVITY_GET_ROW_COUNT(?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+                conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+                cals = conn.prepareCall(str);
+
+                cals.setString("U_EMAIL", email);
+                cals.setInt("pENTERPRISE_ID", enterpriseId);
+                cals.setString("EMAIL_SEARCH", emailSearch);
+                cals.setTimestamp("DATE_SEARCH", null);
+                cals.setString("G_TYPE", gType);
+                cals.setString("W_A_STATUS", status);
+                cals.setBoolean("IS_TEST", isTest);
+                cals.setBoolean("IS_PRODUCT", isTest);
+                cals.setBoolean("IS_CUSTOM_RANGE", isTest);
+                cals.setTimestamp("FROM_DATE", null);
+                cals.setTimestamp("TO_DATE", null);
+                cals.setString("pLANGUAGE_NAME", languageName);
+
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+                debugString += "\t[SQL] " + cals.toString();
+
+                rs = cals.executeQuery();
+                if (cals.getString("pRESPONSE_CODE").equals("1")) {
+                    debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+                    int total = 0;
+                    while (rs.next()) {
+                        total = rs.getInt("ROW_COUNT");
+                    }
+                    databaseResponse.setObject(total);
+                    databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
+                } else {
+                    databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                }
+                break;
+            } catch (Exception e) {
+                numOfRetry--;
+                throw new Exception("Error while getting list Workflow!", e);
+            } finally {
+                DatabaseConnectionManager.getInstance().close(conn);
+            }
         }
         LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;

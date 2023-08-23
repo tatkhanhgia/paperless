@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
@@ -316,7 +317,7 @@ public class Crypto {
         String[] list = algWrapping.split("/");
         AlgorithmParameters algParams = AlgorithmParameters.getInstance(list[0]);
         algParams.init(new IvParameterSpec(wrappingIv));
-        wrappingCipher.init(Cipher.WRAP_MODE, wrappingKey, algParams);          
+        wrappingCipher.init(Cipher.WRAP_MODE, wrappingKey, algParams);
         return wrappingCipher.wrap(keyToBeWrapped);
     }
 
@@ -823,11 +824,11 @@ public class Crypto {
                 new GeneralNames(new GeneralName(GeneralName.rfc822Name, "giatk@mobile-id.vn")));
 
         JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA256withRSA");
-        ContentSigner signer = builder.build(privateKey);          
+        ContentSigner signer = builder.build(privateKey);
         byte[] certBytes = certBuilder.build(signer).getEncoded();
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-        X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(certBytes));        
-        return certificate;        
+        X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(certBytes));
+        return certificate;
     }
 
     public static String getPKCS1Signature(String data, String relyingPartyKeyStore, String relyingPartyKeyStorePassword) throws Exception {
@@ -863,6 +864,14 @@ public class Crypto {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public static void main(String[] args) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        MessageDigest md = MessageDigest.getInstance("SHA256");
+        md.update("4ce98304ac0d59223c5fe5d297f73653905757ca1689319854".getBytes());
+        byte[] data = md.digest();
+        System.out.println(DatatypeConverter.printHexBinary(data));
+
     }
 
     public static String getOcspUri1(X509Certificate certificate) {
@@ -1325,16 +1334,15 @@ public class Crypto {
     }
 
     //Update by Gia
-    public static List<X509Certificate> getCertificate(String pemformat) throws IOException
-    {        
-        pemformat = pemformat.replace("\n", "");        
-        String splitString = X509Factory.END_CERT + X509Factory.BEGIN_CERT;        
-        String[] temp = pemformat.split(splitString);                
-        List<X509Certificate> result = new ArrayList<>();        
-        for (String cert : temp) {                        
+    public static List<X509Certificate> getCertificate(String pemformat) throws IOException {
+        pemformat = pemformat.replace("\n", "");
+        String splitString = X509Factory.END_CERT + X509Factory.BEGIN_CERT;
+        String[] temp = pemformat.split(splitString);
+        List<X509Certificate> result = new ArrayList<>();
+        for (String cert : temp) {
             cert = cert.replaceAll(X509Factory.BEGIN_CERT, "");
             cert = cert.replaceAll(X509Factory.END_CERT, "");
-            cert = cert.replace("\n", "");            
+            cert = cert.replace("\n", "");
             byte[] bytes = new BASE64Decoder().decodeBuffer(cert);
             try ( InputStream inputStream = new ByteArrayInputStream(bytes)) {
                 CertificateFactory cf = CertificateFactory.getInstance("X.509");

@@ -197,7 +197,7 @@ public class AdminServicesController extends HttpServlet {
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
                         .status(response.getStatus())
-                        .entity(new ObjectMapper().writeValueAsString(response.getData()))
+                        .entity(response.getMessage())
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build();
             } else {

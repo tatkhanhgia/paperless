@@ -9,10 +9,15 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.InternalResponse;
+import static vn.mobileid.id.paperless.PaperlessService.verifyToken;
 import vn.mobileid.id.paperless.kernel.ProcessTrustManager;
 import vn.mobileid.id.paperless.kernel.ManageTokenWithDB;
 import vn.mobileid.id.paperless.kernel.ManageUser;
@@ -25,6 +30,7 @@ import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.JWT_Request;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
+import vn.mobileid.id.paperless.serializer.CustomListAccount;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -45,7 +51,7 @@ public class PaperlessAdminService {
         }
 
         //Check input
-        if (Utils.isNullOrEmpty(payload)) {            
+        if (Utils.isNullOrEmpty(payload)) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
@@ -55,7 +61,7 @@ public class PaperlessAdminService {
                             null));
         }
 
-        response = ManageTokenWithDB.processLoginSSO(                
+        response = ManageTokenWithDB.processLoginSSO(
                 payload,
                 transactionID);
         return response;
@@ -234,26 +240,150 @@ public class PaperlessAdminService {
             final HttpServletRequest request,
             String transactionID
     ) throws Exception {
-        //Check valid token
-        InternalResponse response = verifyADMINToken(request, transactionID);
-        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
-            return response;
+        //Check admin token or user token
+        String authorizeHeader = Utils.getRequestHeader(request, "Authorization");
+        String token = null;
+        User user_info = null;
+        Enterprise ent = null;
+        try {
+            authorizeHeader = authorizeHeader.replace("Bearer ", "");
+            token = new String(Base64.getUrlDecoder().decode(authorizeHeader), "UTF-8");
+
+            InternalResponse response = verifyADMINToken(request, transactionID);
+            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+                return response;
+            }
+            ent = (Enterprise) response.getData();
+        } catch (Exception ex) {
+            try {
+                InternalResponse response = verifyToken(request, transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+                    return response;
+                }
+                user_info = response.getUser();
+            } catch (Exception e) {
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                                PaperlessConstant.SUBCODE_INVALID_TOKEN,
+                                "en",
+                                null));
+            }
         }
 
-        Enterprise ent = (Enterprise) response.getData();
-        
-        //Get headers
+        //Process headers
         String x_user_email = Utils.getRequestHeader(request, "x-user-email");
         String x_enterprise_name = Utils.getRequestHeader(request, "x-enterprise-name");
+        String URI = request.getRequestURI();
+        URI = URI.replaceFirst(".*accounts/", "");
+        String[] data = URI.split("/");
+        String status = "0,1";
+        String statusFromUrl = data[0];
+        if (statusFromUrl != null) {
+            switch (statusFromUrl) {
+                case "INACTIVE": {
+                    status = "0";
+                    break;
+                }
+                case "ACTIVE": {
+                    status = "1";
+                    break;
+                }
+                default: {
+                    status = "0,1";
+                    break;
+                }
+            }
+        }
 
-        return GetAccount.getAccount(
-                x_user_email,
-                null, //mobile number
-                null, //name
-                null,   //enterprise name
-                ent.getId(),
-                transactionID);
+        int page_no;
+        int record;
+        int numberOfRecords = PaperlessConstant.DEFAULT_ROW_COUNT;
+        try {
+            page_no = (data[1] == null ? 0 : Integer.parseInt(data[1]));
+            record = (data[2] == null ? 0 : Integer.parseInt(data[2]));
+        } catch (Exception e) {
+            page_no = 0;
+            record = 0;
+        }
+        try {
+            numberOfRecords = Integer.parseInt(Utils.getRequestHeader(request, "x-number-records"));
+            page_no = 0;
+            record = 0;
+        } catch (Exception ex) {
+            numberOfRecords = PaperlessConstant.DEFAULT_ROW_COUNT;
+        }
 
+        //Tồn tại x_user_email => get về 1 account
+        if (!Utils.isNullOrEmpty(x_user_email)) {
+            if (ent == null) {
+                InternalResponse response = GetAccount.getAccount(
+                        x_user_email,
+                        null, //mobile number
+                        null, //name
+                        null, //enterprise name
+                        user_info.getAid(),
+                        transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
+                }
+                List<Account> accounts = (List<Account>) response.getData();
+                CustomListAccount custom = new CustomListAccount(
+                        accounts,
+                        page_no,
+                        record);
+                HashMap<String, Object> hashmap = new HashMap<>();
+                hashmap.put("x-total-records", accounts.size());
+                response.setHeaders(hashmap);
+                response.setMessage(new ObjectMapper().writeValueAsString(custom));
+                return response;
+            } else {
+                InternalResponse response = GetAccount.getAccount(
+                        x_user_email,
+                        null, //mobile number
+                        null, //name
+                        null, //enterprise name
+                        ent.getId(),
+                        transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
+                }
+                List<Account> accounts = (List<Account>) response.getData();
+                CustomListAccount custom = new CustomListAccount(
+                        accounts,
+                        page_no,
+                        record);
+                HashMap<String, Object> hashmap = new HashMap<>();
+                hashmap.put("x-total-records", accounts.size());
+                response.setHeaders(hashmap);
+                response.setMessage(new ObjectMapper().writeValueAsString(custom));
+                return response;
+            }
+        } else {
+            //Get về hàng loạt
+            InternalResponse res = GetAccount.getAccounts(
+                    ent == null ? user_info.getAzp() : ent.getName(),
+                    ent == null ? user_info.getAid() : ent.getId(),
+                    (page_no <= 1) ? 0 : (page_no - 1) * record, //offset
+                    record == 0 ? numberOfRecords : record,
+                    transactionID);
+            if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return res;
+            }
+
+            //Parse to client
+            List<Account> accounts = (List<Account>) res.getData();
+            CustomListAccount custom = new CustomListAccount(
+                    accounts,
+                    page_no,
+                    record);
+            HashMap<String, Object> hashmap = new HashMap<>();
+            hashmap.put("x-total-records", accounts.size());
+            res.setHeaders(hashmap);
+            res.setMessage(new ObjectMapper().writeValueAsString(custom));
+            return res;
+        }
     }
 
     public static InternalResponse forgotPassword(

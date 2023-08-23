@@ -41,7 +41,12 @@ public class UploadAsset {
         Database DB = new DatabaseImpl();
         //Upload Asset Template
         Item_JSNObject item = XSLT_PDF_Processing.getValueFromXSLT(asset.getBinaryData());
-
+        
+        if(item == null){
+            return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                "{\"Error\":\"Cannot parse XSLT from file\"}");
+        }
         asset.setMetadata(new ObjectMapper().writeValueAsString(item));
 
         //Process file PDF
@@ -79,7 +84,7 @@ public class UploadAsset {
         }
 
         return new InternalResponse(
-                PaperlessConstant.CODE_SUCCESS,
+                PaperlessConstant.HTTP_CODE_SUCCESS,
                 "{\"asset_id\":" + callDB.getIDResponse() + "}");
     }
 

@@ -7,6 +7,8 @@ package vn.mobileid.id.general;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import javax.servlet.http.HttpServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.database.Database;
@@ -21,19 +23,30 @@ import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
  *
  * @author ADMIN
  */
-public class Resources {
+public class Resources extends HttpServlet {
 
     private static volatile Logger LOG = LogManager.getLogger(Resources.class);
 
     private static volatile HashMap<String, ResponseCode> responseCodes = new HashMap<>();
-    private static volatile HashMap<String, WorkflowActivity> ListWorkflowActivity = new HashMap<>();
+    private static volatile HashMap<String, WorkflowActivity> ListWorkflowActivity = new HashMap<>(100, 1f);
     private static volatile HashMap<Integer, String> listWorkflowTemplateTypeName = new HashMap<>();
     private static volatile HashMap<String, Integer> listAssetType = new HashMap();
     private static volatile HashMap<String, WorkflowTemplateType> listWoTemplateType = new HashMap<>();
     private static volatile HashMap<String, String> queueAuthorizeCode = new HashMap();
     private static volatile HashMap<String, String> queueForgotPassword = new HashMap<>();
-    
-    public static synchronized void init() throws Exception {
+
+    @Override
+    public void init() {
+        try {
+            Resources.init_();
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(Resources.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void init_() throws Exception {
+        System.out.println("====================START INIT RESOURCES==========");
+        long start = System.currentTimeMillis();
         Database db = new DatabaseImpl();
 
         if (responseCodes.isEmpty()) {
@@ -50,9 +63,9 @@ public class Resources {
             }
         }
 
-        if (LogHandler.isShowInfoLog()) {
-            LOG.info("Service is started up and ready to use!");
-        }
+        LOG.info("Service is started up and ready to use!");
+        System.out.println("\tTime init:" + (System.currentTimeMillis() - start));
+        System.out.println("=================SERVICE IS STARTED AND READY TO USE=======");
     }
 
     public static void reloadResponseCodes() throws Exception {
@@ -68,13 +81,17 @@ public class Resources {
         Database db = new DatabaseImpl();
         if (ListWorkflowActivity.isEmpty() || ListWorkflowActivity == null) {
             ListWorkflowActivity = new HashMap();
-        } 
+        }
         List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
         for (WorkflowActivity workflowAc : listOfWA) {
             if (!ListWorkflowActivity.containsKey(String.valueOf(workflowAc.getId()))) {
                 ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
             }
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Resources.reloadListWorkflowActivity();
     }
 
     public static void reloadListWorkflowTemplateTypeName() throws Exception {
@@ -114,6 +131,28 @@ public class Resources {
     public static HashMap<String, WorkflowActivity> getListWorkflowActivity() {
         return ListWorkflowActivity;
     }
+        
+    public static WorkflowActivity getWorkflowActivity(String key) {
+        return ListWorkflowActivity.get(key);
+    }
+
+    public static void putIntoRAM(String key, WorkflowActivity woAc) {
+        if (ListWorkflowActivity.size() == 100) {
+            Thread clear75PercentageOfRam = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (String temp : ListWorkflowActivity.keySet()) {
+                        ListWorkflowActivity.remove(temp);
+                        if (ListWorkflowActivity.size() >= 75) {
+                            break;
+                        }
+                    }
+                }
+            });
+          clear75PercentageOfRam.start();
+          ListWorkflowActivity.put(key, woAc);
+        }
+    }
 
     public static HashMap<Integer, String> getListWorkflowTemplateTypeName() {
         return listWorkflowTemplateTypeName;
@@ -133,15 +172,14 @@ public class Resources {
 
     public static void setQueueAuthorizeCode(HashMap<String, String> queueAuthorizeCode) {
         Resources.queueAuthorizeCode = queueAuthorizeCode;
-    }      
-    
-    public static HashMap<String, String> getQueueForgotPassword(){
+    }
+
+    public static HashMap<String, String> getQueueForgotPassword() {
         return queueForgotPassword;
     }
-    
-    public static void setQueueForgotPassword(HashMap<String, String> queue){
+
+    public static void setQueueForgotPassword(HashMap<String, String> queue) {
         Resources.queueForgotPassword = queue;
     }
-    
-    
+
 }

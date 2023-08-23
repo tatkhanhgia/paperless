@@ -29,36 +29,37 @@ public class GetWorkflowActivity {
 
     /**
      * Get data of workflow activity from RAM
+     *
      * @param id - id of workflow activity
      * @param transactionID
      * @return WorkflowActivity
-     * @throws Exception 
+     * @throws Exception
      */
     public static InternalResponse getWorkflowActivity(
             int id,
             String transactionID) throws Exception {
         InternalResponse res = null;
-        WorkflowActivity check = Resources.getListWorkflowActivity().get(String.valueOf(id));
+        WorkflowActivity check = Resources.getWorkflowActivity(String.valueOf(id));
         if (check == null) {
             res = getWorkflowActivityFromDB(id, transactionID);
             if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return res;
             }
             check = (WorkflowActivity) res.getData();
-            Resources.getListWorkflowActivity().put(String.valueOf(check.getId()), check);
-            Thread temp = new Thread() {
-                public void run() {
-                    try {
-                        Resources.reloadListWorkflowActivity();
-                    } catch (Exception ex) {
-                        Logger.getLogger(GetWorkflowActivity.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            };
-            temp.start();
+            Resources.putIntoRAM(String.valueOf(check.getId()), check);
+//            Thread temp = new Thread() {
+//                public void run() {
+//                    try {
+//                        Resources.reloadListWorkflowActivity();
+//                    } catch (Exception ex) {
+//                        Logger.getLogger(GetWorkflowActivity.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
+//            };
+//            temp.start();
             return res;
         }
-        
+
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 check);
@@ -66,10 +67,11 @@ public class GetWorkflowActivity {
 
     /**
      * Get data of workflow activity from DB
+     *
      * @param id - id of workflow activity
      * @param transactionID
      * @return WorkflowActivity
-     * @throws Exception 
+     * @throws Exception
      */
     public static InternalResponse getWorkflowActivityFromDB(
             int id,
@@ -84,21 +86,21 @@ public class GetWorkflowActivity {
                     null);
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                     message);
+                    message);
         }
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 (WorkflowActivity) res.getObject());
     }
-   
 
     /**
      * Get a list of workflow activity
+     *
      * @param aid - Enterprise id
      * @param email - Email of User
      * @param transactionID
      * @return List of Workflow Activity
-     * @throws Exception 
+     * @throws Exception
      */
     public static List<WorkflowActivity> getListWorkflowActivity(
             int aid,
@@ -157,12 +159,12 @@ public class GetWorkflowActivity {
                 rowcount,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = null;            
-                message = PaperlessMessageResponse.getErrorMessage(
-                        PaperlessConstant.CODE_FAIL,
-                        res.getStatus(),
-                        "en",
-                        null);
+            String message = null;
+            message = PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_FAIL,
+                    res.getStatus(),
+                    "en",
+                    null);
 //                LogHandler.error(GetWorkflowActivity.class,
 //                        "TransactionID:" + transactionID
 //                        + "\nCannot get List Workflow Activitys - Detail:" + message);
@@ -175,6 +177,53 @@ public class GetWorkflowActivity {
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 (List<WorkflowActivity>) res.getObject());
 
+    }
+
+    public static InternalResponse getRowCountWorkflowActivity(
+            String email,
+            int enterpriseId,
+            String emailSearch,
+            String date,
+            String gType,
+            String status,
+            boolean isTest,
+            boolean isProduct,
+            boolean isCustomRange,
+            String fromDate,
+            String toDate,
+            String languageName,
+            String transactionId
+    ) throws Exception {
+        DatabaseResponse response = new DatabaseImpl().getTotalRecordsWorkflowActivity(
+                email,
+                enterpriseId,
+                emailSearch,
+                date,
+                gType,
+                status,
+                isTest,
+                isProduct,
+                isCustomRange,
+                fromDate,
+                toDate,
+                languageName,
+                transactionId);
+
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            response.getStatus(),
+                            "en",
+                            null)
+            );
+        }
+        
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                (Object)response.getObject()
+        );
     }
 
     public static void main(String[] args) throws JsonProcessingException, Exception {
@@ -203,5 +252,25 @@ public class GetWorkflowActivity {
 //        CustomListWoAcSerializer test = new CustomListWoAcSerializer(list, 0, 0);
 //        System.out.println(new ObjectMapper().writeValueAsString(test));
 //        System.out.println(GetWorkflowActivity.isContains(30));
+        InternalResponse res = GetWorkflowActivity.getRowCountWorkflowActivity(
+                "khanhpx@mobile-id.vn", 
+                3,
+                null,
+                null, 
+                "1,2,3,4,5,6,7,8",
+                "1,2,3", 
+                false,
+                false, 
+                false, 
+                null, 
+                null, 
+                "ENG", 
+                "tran");
+        if(res.getStatus() == 200){
+            System.out.println("Count:"+res.getData());
+        } else {
+            System.out.println("Fail!");
+        }
     }
+    
 }
