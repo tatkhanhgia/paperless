@@ -12,30 +12,18 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.Resources;
-import vn.mobileid.id.general.database.Database;
-import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.QryptoService;
-import vn.mobileid.id.paperless.SigningService;
 import vn.mobileid.id.paperless.kernel.GetQRSize;
 import vn.mobileid.id.paperless.kernel.GetTransaction;
 import vn.mobileid.id.paperless.kernel.GetWorkflowDetail_option;
-import vn.mobileid.id.paperless.kernel.UpdateFileManagement;
 import vn.mobileid.id.paperless.kernel.UpdateQR;
 import vn.mobileid.id.paperless.objects.FileDataDetails;
-import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.ItemDetails;
-import vn.mobileid.id.paperless.objects.KYC;
-import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.QRSize;
-import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
 import vn.mobileid.id.paperless.objects.Transaction;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
@@ -61,8 +49,6 @@ public class ProcessSecureQRTemplate {
             String file_name,
             String transactionID
     ) throws IOException, Exception {
-        Database DB = new DatabaseImpl();
-
         //Get Workflow Detail 
         InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(
                 woAc.getWorkflow_id(),
@@ -77,18 +63,29 @@ public class ProcessSecureQRTemplate {
         try {
             configure = appendWorkflowDetail_into_Configure((WorkflowDetail_Option) response.getData(), transactionID);
             QR = appendData_into_QRScheme(fileData, fileItem, transactionID);
-
+            
             if (configure == null || QR == null) {
                 return new InternalResponse(PaperlessConstant.HTTP_CODE_500,
                         "Configure hoac QR null"
                 );
             }
+            LogHandler.info(ProcessSecureQRTemplate.class,"\tConfigure to call QRypto:"+new ObjectMapper().writeValueAsString(configure));
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            IssueQryptoWithFileAttachResponse QRdata = QryptoService.getInstance(1).generateQR(QR, configure, transactionID);
-
+            IssueQryptoWithFileAttachResponse QRdata = null;
+            try {
+                QRdata = QryptoService.getInstance(1).generateQR(QR, configure, transactionID);
+            } catch (IOException ex) {
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_500,
+                        "{\"message\":\"Error while calling to QRYPTO Service\",\"description_vn\":\"Lỗi do Bearer Token hết hạn hoặc bị lỗi token\"}"
+                );
+            } catch(Exception e){
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_500,
+                        "{\"message\":\"Error while calling to QRYPTO Service\",\"description_vn\":\"Lỗi không xác định!\"}"
+                );
+            }
             //Get Transaction =>get QR Id
             InternalResponse res = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
             if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -99,9 +96,9 @@ public class ProcessSecureQRTemplate {
             test.setFile_data(fileData);
             test.setItem(fileItem);
 
-            //Đang lỗi phần này 
+            //Update QR
             response = UpdateQR.updateQR(
-                    ((Transaction)res.getData()).getObject_id(),
+                    ((Transaction) res.getData()).getObject_id(),
                     new ObjectMapper().writeValueAsString(test),
                     QRdata.getQryptoBase64(),
                     user.getEmail(),
@@ -114,12 +111,12 @@ public class ProcessSecureQRTemplate {
         } catch (Exception e) {
             e.printStackTrace();
             return new InternalResponse(PaperlessConstant.HTTP_CODE_500,
-                    "{Lỗi trong lúc thực hiện call Qrypto}"
+                    "{\"message\":\"Error while calling to Qrypto\"}"
             );
         } catch (Throwable ex) {
             ex.printStackTrace();
             return new InternalResponse(PaperlessConstant.HTTP_CODE_500,
-                    "{Lỗi trong lúc thực hiện call Qrypto}"
+                    "{\"message\":\"Error while calling to Qrypto\"}"
             );
         }
     }
@@ -130,7 +127,7 @@ public class ProcessSecureQRTemplate {
             String transactionID) throws Exception {
         Configuration config = new Configuration();
         config.setContextIdentifier("QC1:");
-        config.setIsTransparent(true);
+        config.setIsTransparent(detail.getQr_background().equals("Transparent"));
 
         qryptoEffectiveDate effectiveDate = new qryptoEffectiveDate();
         Calendar now = Calendar.getInstance();

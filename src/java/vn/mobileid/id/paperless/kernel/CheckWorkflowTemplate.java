@@ -114,6 +114,45 @@ public class CheckWorkflowTemplate {
     }
 
     /**
+     * Check Item and FileData of a ProcessWorkflowActivity Object
+     *
+     * @param request - ProcessWorkflowActivity Object
+     * @return no object => check status
+     */
+    public static InternalResponse checkDataWorkflowTemplate(
+            ProcessWorkflowActivity_JSNObject request) {
+        List<FileDataDetails> listFile = request.getFile_data();
+        List<ItemDetails> listItem = request.getItem();
+        InternalResponse result;
+
+        //Check file details
+        if (listFile != null) {
+            for (FileDataDetails obj : listFile) {
+                result = checkFile_type(obj);
+                if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return result;
+                }
+            }
+        }
+
+        if (listItem != null) {
+            for (ItemDetails obj : listItem) {
+                result = CheckWorkflowTemplate.checkDataWorkflowTemplate(obj);
+                if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return result;
+                }
+            }
+        }
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_SUCCESS,
+                        PaperlessConstant.SUBCODE_SUCCESS,
+                        "en",
+                        null));
+    }
+    
+    /**
      * Check Item of a ProcessWorkflowActivity Object
      *
      * @param request - ProcessWorkflowActivity Object
@@ -167,44 +206,7 @@ public class CheckWorkflowTemplate {
                         null));
     }
 
-    /**
-     * Check Item and FileData of a ProcessWorkflowActivity Object
-     *
-     * @param request - ProcessWorkflowActivity Object
-     * @return no object => check status
-     */
-    public static InternalResponse checkDataWorkflowTemplate(
-            ProcessWorkflowActivity_JSNObject request) {
-        List<FileDataDetails> listFile = request.getFile_data();
-        List<ItemDetails> listItem = request.getItem();
-        InternalResponse result;
-
-        //Check file details
-        if (listFile != null) {
-            for (FileDataDetails obj : listFile) {
-                result = checkFile_type(obj);
-                if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return result;
-                }
-            }
-        }
-
-        if (listItem != null) {
-            for (ItemDetails obj : listItem) {
-                result = CheckWorkflowTemplate.checkDataWorkflowTemplate(obj);
-                if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return result;
-                }
-            }
-        }
-        return new InternalResponse(
-                PaperlessConstant.HTTP_CODE_SUCCESS,
-                PaperlessMessageResponse.getErrorMessage(
-                        PaperlessConstant.CODE_SUCCESS,
-                        PaperlessConstant.SUBCODE_SUCCESS,
-                        "en",
-                        null));
-    }
+    
 
     /**
      * Create a new WorkflowTemplate

@@ -57,10 +57,10 @@ public class Resources extends HttpServlet {
         }
 
         if (ListWorkflowActivity.isEmpty()) {
-            List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
-            for (WorkflowActivity workflowAc : listOfWA) {
-                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
-            }
+//            List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
+//            for (WorkflowActivity workflowAc : listOfWA) {
+//                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
+//            }
         }
 
         LOG.info("Service is started up and ready to use!");
@@ -78,16 +78,21 @@ public class Resources extends HttpServlet {
     }
 
     public static void reloadListWorkflowActivity() throws Exception {
-        Database db = new DatabaseImpl();
-        if (ListWorkflowActivity.isEmpty() || ListWorkflowActivity == null) {
-            ListWorkflowActivity = new HashMap();
+        if (ListWorkflowActivity == null) {
+            ListWorkflowActivity = new HashMap<>();
+        } else {
+            ListWorkflowActivity.clear();
         }
-        List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
-        for (WorkflowActivity workflowAc : listOfWA) {
-            if (!ListWorkflowActivity.containsKey(String.valueOf(workflowAc.getId()))) {
-                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
-            }
-        }
+//        Database db = new DatabaseImpl();
+//        if (ListWorkflowActivity.isEmpty() || ListWorkflowActivity == null) {
+//            ListWorkflowActivity = new HashMap();
+//        }
+//        List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
+//        for (WorkflowActivity workflowAc : listOfWA) {
+//            if (!ListWorkflowActivity.containsKey(String.valueOf(workflowAc.getId()))) {
+//                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
+//            }
+//        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -131,27 +136,29 @@ public class Resources extends HttpServlet {
     public static HashMap<String, WorkflowActivity> getListWorkflowActivity() {
         return ListWorkflowActivity;
     }
-        
+
     public static WorkflowActivity getWorkflowActivity(String key) {
         return ListWorkflowActivity.get(key);
     }
 
-    public static void putIntoRAM(String key, WorkflowActivity woAc) {
-        if (ListWorkflowActivity.size() == 100) {
+    public static void putIntoRAM(String key, WorkflowActivity woAc) {        
+        if (ListWorkflowActivity.size() == 100) {                        
+            long start = System.currentTimeMillis();
             Thread clear75PercentageOfRam = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     for (String temp : ListWorkflowActivity.keySet()) {
                         ListWorkflowActivity.remove(temp);
-                        if (ListWorkflowActivity.size() >= 75) {
+                        if (ListWorkflowActivity.size() <= 25) {
                             break;
                         }
                     }
                 }
             });
-          clear75PercentageOfRam.start();
-          ListWorkflowActivity.put(key, woAc);
+            clear75PercentageOfRam.start();      
+            System.out.println("\n\tTime clear:"+(System.currentTimeMillis() - start));
         }
+        ListWorkflowActivity.put(key, woAc);
     }
 
     public static HashMap<Integer, String> getListWorkflowTemplateTypeName() {

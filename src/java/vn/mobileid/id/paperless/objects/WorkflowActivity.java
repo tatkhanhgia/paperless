@@ -31,6 +31,7 @@ public class WorkflowActivity {
     private int workflow_id;
     private String workflow_label;
     private int workflow_template_type;
+    private String workflow_template_type_name;
     private String user_email;
     private String transaction;
     private String remark;
@@ -254,6 +255,16 @@ public class WorkflowActivity {
     public void setModified_at(Date modified_at) {
         this.modified_at = modified_at;
     }
+
+    @JsonProperty("workflow_template_type_name")
+    public String getWorkflow_template_type_name() {
+        return workflow_template_type_name;
+    }
+    
+    public void setWorkflow_template_type_name(String workflow_template_type_name) {
+        this.workflow_template_type_name = workflow_template_type_name;
+    }
+    
     
     
     

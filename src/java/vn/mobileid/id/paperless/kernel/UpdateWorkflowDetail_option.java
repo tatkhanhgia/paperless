@@ -27,6 +27,7 @@ public class UpdateWorkflowDetail_option {
      * Update Workflow Option of the workflow
      *
      * @param id
+     * @param user
      * @param email
      * @param aid - Enterprise _ id
      * @param detail
@@ -46,7 +47,7 @@ public class UpdateWorkflowDetail_option {
             String transactionID) throws Exception {
 
         //Get Old Option => get Asset        
-        updateAsset(id, detail, user, transactionID);
+        updateUsedByInAsset(id, detail, user, transactionID);
 
         Database DB = new DatabaseImpl();
 
@@ -59,6 +60,24 @@ public class UpdateWorkflowDetail_option {
                 created_by,
                 transactionID);
 
+        if (callDB.getObject() != null) {
+            for (Integer error : (List<Integer>) callDB.getObject()) {
+                String message = "{\"message\":\"All data already update except\",";
+                String temp = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
+                        error,
+                        "en",
+                        null);
+                temp = temp.replace("{", "");
+                temp = temp.replace("}", "");
+                message += temp;
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        message + "}"
+                );
+            }
+        }
+        
         if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             String message = PaperlessMessageResponse.getErrorMessage(
                     PaperlessConstant.CODE_FAIL,
@@ -71,37 +90,18 @@ public class UpdateWorkflowDetail_option {
             );
         }
 
-        if (callDB.getObject() != null) {
-            for (Integer error : (List<Integer>) callDB.getObject()) {
-                String message = "{All data already update except:";
-                message += PaperlessMessageResponse.getErrorMessage(
-                        PaperlessConstant.CODE_FAIL,
-                        error,
-                        "en",
-                        null);
-                return new InternalResponse(
-                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                        message + "}"
-                );
-            }
-        }
-
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 "");
     }
 
-    private static InternalResponse updateAsset(
-            int id,
+    private static InternalResponse updateUsedByInAsset(
+            int workflowId,
             WorkflowDetail_Option detail,
             User user,
             String transactionID) throws Exception {
-//        InternalResponse response = GetWorkflow.getWorkflow(id, transactionID);
-//        if( response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
-//            return response;
-//        }
-//        Workflow worfklow = (Workflow)response.getData();
-        InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(id, transactionID);
+        
+        InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(workflowId, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
@@ -115,7 +115,7 @@ public class UpdateWorkflowDetail_option {
             }
             Asset asset = (Asset) response.getData();
             String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();
-            String[] tokens = used_by.split(String.valueOf(id));
+            String[] tokens = used_by.split(String.valueOf(workflowId));
             used_by = "";
             if (tokens.length <= 1) {
                 used_by = tokens[0];
@@ -133,7 +133,7 @@ public class UpdateWorkflowDetail_option {
             }
             Asset asset = (Asset) response.getData();
             String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();
-            String[] tokens = used_by.split(String.valueOf(id));
+            String[] tokens = used_by.split(String.valueOf(workflowId));
             used_by = "";
             if (tokens.length <= 1) {
                 used_by = tokens[0];
@@ -151,7 +151,7 @@ public class UpdateWorkflowDetail_option {
             }
             Asset asset = (Asset) response.getData();
             String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();            
-            String[] tokens = used_by.split(String.valueOf(id));
+            String[] tokens = used_by.split(String.valueOf(workflowId));
             used_by = "";
             if (tokens.length <= 1) {
                 used_by = tokens[0];
@@ -171,7 +171,7 @@ public class UpdateWorkflowDetail_option {
             }
             Asset asset = (Asset) response.getData();
             String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();
-            used_by += id + ",";
+            used_by += workflowId + ",";
             asset.setUsed_by(used_by);
             UpdateAsset.updateAsset(asset, user, transactionID);
         }
@@ -182,7 +182,7 @@ public class UpdateWorkflowDetail_option {
             }
             Asset asset = (Asset) response.getData();
             String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();
-            used_by += id + ",";
+            used_by += workflowId + ",";
             asset.setUsed_by(used_by);
             UpdateAsset.updateAsset(asset, user, transactionID);
         }
@@ -193,7 +193,7 @@ public class UpdateWorkflowDetail_option {
             }
             Asset asset = (Asset) response.getData();
             String used_by = asset.getUsed_by() == null ? "" : asset.getUsed_by();
-            used_by += id + ",";
+            used_by += workflowId + ",";
             asset.setUsed_by(used_by);
             UpdateAsset.updateAsset(asset, user, transactionID);
         }

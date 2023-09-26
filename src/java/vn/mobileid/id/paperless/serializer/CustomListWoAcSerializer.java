@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 
 /**
@@ -43,6 +46,12 @@ public class CustomListWoAcSerializer implements JsonSerializable {
             jg.writeNumberField("workflow_id", woAc.getWorkflow_id());
             jg.writeStringField("workflow_label", woAc.getWorkflow_label());
             jg.writeNumberField("workflow_template_type", woAc.getWorkflow_template_type());
+            try {
+                Resources.reloadListWorkflowTemplateTypeName();
+            } catch (Exception ex) {
+                Logger.getLogger(CustomListWoAcSerializer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            jg.writeStringField("workflow_template_type_name", Resources.getListWorkflowTemplateTypeName().get(woAc.getWorkflow_template_type()));
             jg.writeStringField("user_email", woAc.getUser_email());
             jg.writeStringField("status", woAc.getStatus());
             jg.writeStringField("transaction_id", woAc.getTransaction());
@@ -50,7 +59,7 @@ public class CustomListWoAcSerializer implements JsonSerializable {
             jg.writeBooleanField("use_test_token", woAc.use_test_token);
             jg.writeBooleanField("update_enable", woAc.update_enable);
             jg.writeNumberField("generation_type", woAc.getGeneration_type());
-//            jg.writeStringField("created_at", dateFormat.format(woAc.getCreated_at()));
+            jg.writeStringField("created_at", woAc.getCreated_at()!=null?dateFormat.format(woAc.getCreated_at()):"null");
             jg.writeStringField("created_by", woAc.getCreated_by());
             if (woAc.getModified_at() != null) {
                 jg.writeStringField("modified_at", dateFormat.format(woAc.getModified_at()));

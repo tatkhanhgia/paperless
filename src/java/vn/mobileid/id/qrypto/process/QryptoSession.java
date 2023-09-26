@@ -32,12 +32,12 @@ import vn.mobileid.id.qrypto.response.IssueQryptoWithFileAttachResponse;
  */
 public class QryptoSession implements ISession {
 
-    private String bearerToken;
-    private String refreshToken;
-    private Property prop;
-    private int retryLogin = 0;
+    public String bearerToken;
+    public String refreshToken;
+    public Property prop;
+    public int retryLogin = 0;
 
-    public  QryptoSession(Property prop) {
+    public QryptoSession(Property prop) {
         this.prop = prop;
     }
 
@@ -90,10 +90,10 @@ public class QryptoSession implements ISession {
                     + "\nDetails:" + qryptoResp.getDetails());
             throw new Exception(qryptoResp.getProblem() + " - " + qryptoResp.getDetails());
         } else {
-            this.bearerToken =  "Bearer "+qryptoResp.getAccess_token();
+            this.bearerToken = "Bearer " + qryptoResp.getAccess_token();
 
             if (qryptoResp.getRefresh_token() != null) {
-                this.refreshToken =  "Bearer "+qryptoResp.getRefresh_token();
+                this.refreshToken = "Bearer " + qryptoResp.getRefresh_token();
             }
         }
     }
@@ -157,7 +157,7 @@ public class QryptoSession implements ISession {
         } else {
             retryLogin++;
             this.login();
-            if(retryLogin == 2){
+            if (retryLogin == 2) {
                 throw new Exception("Cannot login again!");
             }
         }
@@ -166,7 +166,6 @@ public class QryptoSession implements ISession {
 //        data.setPayload(new ObjectMapper().writeValueAsString(QR));
 //        data.setMapFile(QR.getHeader());
 //        data.setConfiguration(configuration);
-
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", bearerToken);
 
@@ -174,7 +173,7 @@ public class QryptoSession implements ISession {
         Map<String, Object> bodypart = new HashMap<>();
         bodypart.put("payload", new ObjectMapper().writeValueAsString(QR));
         bodypart.put("configuration", new ObjectMapper().writeValueAsString(configuration));
-        for(String key : QR.getHeader().keySet()){
+        for (String key : QR.getHeader().keySet()) {
             bodypart.put(key, QR.getHeader().get(key));
         }
 
@@ -185,7 +184,14 @@ public class QryptoSession implements ISession {
         }
         String message = sb.toString();
         IssueQryptoWithFileAttachResponse responses = new IssueQryptoWithFileAttachResponse();
-        responses = new ObjectMapper().readValue(message, IssueQryptoWithFileAttachResponse.class);
+        try {
+            responses = new ObjectMapper().readValue(message, IssueQryptoWithFileAttachResponse.class);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        if (response.getStatusLine().getStatusCode() == 401) {
+            return null;
+        }
         if (response.getStatusLine().getStatusCode() != 200) {
             throw new Exception(responses.getStatus() + "\n" + responses.getData() + "\n" + responses.getMessage());
         }
@@ -201,16 +207,16 @@ public class QryptoSession implements ISession {
         } else {
             retryLogin++;
             this.login();
-            if(retryLogin == 2){
+            if (retryLogin == 2) {
                 throw new Exception("Cannot login again!");
             }
         }
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", bearerToken);
-        
+
         String jsonReq = new ObjectMapper().writeValueAsString(request);
-        System.out.println("JsonRequest:"+jsonReq);
+        System.out.println("JsonRequest:" + jsonReq);
         HttpResponse response = HTTPUtils.sendPost(prop.getBaseUrl() + "/issuance/qrci/wallet/claim", jsonReq, authHeader);
         if (response.getHttpCode() != 0) {
             try {
@@ -221,8 +227,8 @@ public class QryptoSession implements ISession {
             }
         }
 //        System.out.println("credentials/list response.getMsg() = "+ response.getMsg());
-        ClaimResponse responses = new ObjectMapper().readValue(response.getMsg(), ClaimResponse.class);        
-        
+        ClaimResponse responses = new ObjectMapper().readValue(response.getMsg(), ClaimResponse.class);
+
         return responses;
     }
 

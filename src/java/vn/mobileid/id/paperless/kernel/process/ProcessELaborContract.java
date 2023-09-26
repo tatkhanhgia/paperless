@@ -5,6 +5,7 @@
 package vn.mobileid.id.paperless.kernel.process;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
@@ -16,7 +17,6 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.SigningService;
@@ -174,8 +174,6 @@ public class ProcessELaborContract {
             String file_name,
             String transactionID
     ) throws IOException, Exception {
-        Database DB = new DatabaseImpl();
-
         //Get Workflow Detail to get Asset
         InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(
                 woAc.getWorkflow_id(),
@@ -273,6 +271,10 @@ public class ProcessELaborContract {
             }
 
             byte[] xsltC = file.getData();
+//            FileOutputStream out = new FileOutputStream("C:\\Users\\Admin\\Downloads\\test.pdf");
+//            out.write(xsltC);
+//            out.close();
+            
             byte[] html = XSLT_PDF_Processing.appendData(objects, xsltC);
             byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
 
@@ -329,8 +331,8 @@ public class ProcessELaborContract {
                 user.getEmail(),
                 result2.get(0),
                 true,
-                null,
-                null,
+                FileType.PDF.getName(),
+                new ObjectMapper().writeValueAsString(signing),
                 null,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -357,14 +359,14 @@ public class ProcessELaborContract {
             User user,
             int id, //workflow activity
             Asset file,
-            String object, // dữ liệu truyền lên từ client
+            List<ItemDetails> items, // dữ liệu truyền lên từ client
             JWT_Authenticate jwt,
             List<FileDataDetails> image,
             FrameSignatureProperties signing,
             String transactionID
     ) throws IOException, Exception {
         List<String> result1 = null;
-        KYC objects = new ObjectMapper().readValue(object, KYC.class);
+        KYC objects = assignAllItem(items);
         try {
             //Assign JWT Data
             if (jwt != null && jwt.isMath_result()) {                
@@ -449,7 +451,7 @@ public class ProcessELaborContract {
 
 //=====================INTERNAL METHOD =======================
     //Function Assign All value in Item into KYC Object
-    private static KYC assignAllItem(List<ItemDetails> listItem) {
+    public static KYC assignAllItem(List<ItemDetails> listItem) {
         KYC kyc = new KYC();
         for (ItemDetails details : listItem) {
             String field = details.getField();
@@ -497,7 +499,7 @@ public class ProcessELaborContract {
         return oldValue;
     }
 
-    //backup
+    //BACKUP
 //    public static InternalResponse processELaborContractWithAuthen(
 //            User user,
 //            int id, //workflow activity

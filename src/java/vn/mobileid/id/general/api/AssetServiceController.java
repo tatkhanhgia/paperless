@@ -84,7 +84,7 @@ public class AssetServiceController extends HttpServlet {
         String getDetail_Regex = "/[0-9]+/details";
         String download_Regex = "/[0-9]+";
         String downloadBase64_Regex = "/[0-9]+/base64";
-        String upload_Regex = "";
+        String upload_Regex = "";        
         String uploadBase64_Regex = "/base64";
         String getList_Regex = "^/(ALL|INACTIVE|ACTIVE)[0-9/]*$";
         String getTotal_Regex = "^/gettotal/(ALL|INACTIVE|ACTIVE)[0-9/]*$";
@@ -125,8 +125,7 @@ public class AssetServiceController extends HttpServlet {
                 if (pathInfo.matches(getList_Regex)) {
                     response = this.getListAsset(req);
                     break;
-                } 
-                
+                }                 
                 break;
             }
             case "DELETE": {
@@ -149,6 +148,16 @@ public class AssetServiceController extends HttpServlet {
                     response = this.uploadAssetBase64(req, getBody(req));                    
                 }
                 break;
+            }
+            case "PUT":{
+                if(pathInfo != null && pathInfo.matches("/[0-9]+")){
+                    response = this.updateAsset(req);
+                    break;
+                }
+                if(pathInfo != null && pathInfo.matches("/[0-9]+/base64")){
+                    response = this.updateAssetBase64(req);
+                    break;
+                }
             }
         }
         res = populateHttpServletResponse(response, res);       
@@ -490,9 +499,7 @@ public class AssetServiceController extends HttpServlet {
                     null,
                     0);
 
-            response = PaperlessService.uploadAsset(
-                    request,
-                    transactionID);
+            response = PaperlessService.updateAsset(request, transactionID);
 
             debugResponseLOG("UpdateAsset", response);
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -512,7 +519,48 @@ public class AssetServiceController extends HttpServlet {
             LogHandler.error(
                     this.getClass(),
                     transactionID,
-                    "Error while uploading asset",
+                    "Error while updating asset",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
+        }
+    }
+    
+    public Response updateAssetBase64(
+        @Context final HttpServletRequest request) {
+        String transactionID = "";
+        try {
+            InternalResponse response;
+
+            transactionID = debugRequestLOG(
+                    "Update Asset",
+                    request,
+                    null,
+                    0);
+
+            response = PaperlessService.updateAssetBase64(request, transactionID);
+
+            debugResponseLOG("UpdateAsset", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(response.getStatus())
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(response.getMessage())
+                        .build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                    this.getClass(),
+                    transactionID,
+                    "Error while updating asset",
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
@@ -765,7 +813,14 @@ public class AssetServiceController extends HttpServlet {
                 res.setHeader(key, String.valueOf(value));
             });
             res.setStatus(response.getStatus());
-            res.getWriter().write((String) response.getEntity());
+            res.setContentType(response.getMediaType().getType());
+            if(response.getEntity() instanceof String){
+                res.getWriter().write((String) response.getEntity());
+                return res;
+            }
+            if(response.getEntity() instanceof byte[]){
+                res.getOutputStream().write((byte[])response.getEntity());
+            }
             return res;
         } else {
             res.sendError(404);

@@ -380,6 +380,7 @@ public interface Database {
             String email,
             String file_name,
             String type,
+            String status,
             int offset,
             int rowcount,
             String transactionID
@@ -429,10 +430,9 @@ public interface Database {
             String transactionID
     ) throws Exception;
 
-    public DatabaseResponse updateStatusWorkflowActivity(
+    public DatabaseResponse updateStatusWorkflowActivity_(
             int id,
             String status,
-            boolean process_enable,
             String last_modified_by,
             String transactionID
     ) throws Exception;
@@ -510,15 +510,18 @@ public interface Database {
             int rowCount,
             String transactionId
     ) throws Exception;
-    
+
     public DatabaseResponse getTotalRecordsAsset(
             int enterpriseId,
             String email,
             String fileName,
             String type,
+            String status,
+            int offset,
+            int rowcount,
             String transactionId
     ) throws Exception;
-    
+
     public DatabaseResponse getTotalRecordsWorkflowActivity(
             String email,
             int enterpriseId,
@@ -527,12 +530,58 @@ public interface Database {
             String gType,
             String status,
             boolean isTest,
-            boolean isProduct,            
+            boolean isProduct,
             boolean isCustomRange,
-            String fromDate,
-            String toDate,
+            Date fromDate,
+            Date toDate,
             String languageName,
+            int offset,
+            int rowcount,
             String transactionId
-           
+    ) throws Exception;
+
+    public DatabaseResponse updateUser(
+            String email,
+            String userName,
+            String mobile,
+            Date passwordExpiredAt,
+            int remaining,
+            String status,
+            int changePass, //0 - None 1 - Enforce Reset pass 2 - Pass changes by admin
+            boolean lock,
+            Date lockAt,
+            int businessType,// 1 - Personal 2- Business
+            String website,
+            String hmac,
+            String modifiedBy,
+            String transactionId
+    ) throws Exception;
+
+    public DatabaseResponse updateRole(
+            String email,
+            int enterprise_id,
+            String role_name,
+            String transactionId
+    ) throws Exception;
+
+    public DatabaseResponse deleteUser(
+            String emailAdmin,
+            String emailToBeDelete,
+            int enterpriseId,
+            String transactionId
+    ) throws Exception;
+    
+    public DatabaseResponse getQR(
+            int qrId,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse updateWorkflow(
+            int workflowId,
+            int enterpriseId,
+            String userEmail,
+            String workflowLabel,
+            String hmac,
+            String transactionId
     )throws Exception;
 }

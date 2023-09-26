@@ -16,30 +16,32 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class User {
     //Format JWT
-    private long exp;
-    private long iat;
+    private long exp; //expired time
+    private long iat; //issued at
     private String jti;
-    private String iss;
-    private String aud;
-    private String sub;
-    private String typ;
+    private String iss; //Issure
+    private String aud; //Audience
+    private String sub; //Subject
+    private String typ; //Type
     private String session_state;
     private String acr;
     private Role realm_access;
     private ResourceAccess resource_access;
     private String scope;
-    private String sid;
+    private String sid; //Session id
     private boolean email_verified;
     private String name;
     private String preferred_username;
     private String given_name;
     private String family_name;
     private String email;
-    private String azp;
+    private String azp; //Authorize Party
+    private String nbf; //Not before time
     //DB
     private String mobile;
     private int id;
-
+    private String role_name;
+    private String role_id;
     private int aid; //authorized party ID
     
     @JsonProperty("exp")
@@ -248,6 +250,22 @@ public class User {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getRole_name() {
+        return role_name;
+    }
+
+    public void setRole_name(String role_name) {
+        this.role_name = role_name;
+    }
+
+    public String getRole_id() {
+        return role_id;
+    }
+
+    public void setRole_id(String role_id) {
+        this.role_id = role_id;
     }
     
     

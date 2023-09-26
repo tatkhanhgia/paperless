@@ -13,8 +13,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author GiaTK
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Account {
+
+    //SigningHub Attribute
     private String user_name;
     private String user_email;
     private String mobile_number;
@@ -27,11 +29,15 @@ public class Account {
     private String security_answer;
     private String notification;
     private String service_agreement;
-    private String authorization_code;   
-    private int status_id;
-    private String status_name;     
+    private String authorization_code;
     private boolean verified;
+
+    //Database
+    private int id;
     private String role;
+    private BusinessType businessType;
+    private String organizationWebsite;
+    private Status status;
 
     public Account() {
     }
@@ -153,22 +159,16 @@ public class Account {
         this.authorization_code = authorization_code;
     }
 
-    @JsonProperty("status_id")
-    public int getStatus_id() {
-        return status_id;
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
-    public void setStatus_id(int status_id) {
-        this.status_id = status_id;
+    public void setStatus(int statusid) {
+        this.status = Status.get(statusid);
     }
 
-    @JsonProperty("status_name")
-    public String getStatus_name() {
-        return status_name;
-    }
-
-    public void setStatus_name(String status_name) {
-        this.status_name = status_name;
+    public Status getStatus() {
+        return this.status;
     }
 
     @JsonProperty("verified")
@@ -178,9 +178,9 @@ public class Account {
 
     public void setVerified(boolean verified) {
         this.verified = verified;
-    }        
+    }
 
-    @JsonProperty("role")
+    @JsonProperty("enterprise_role")
     public String getRole() {
         return role;
     }
@@ -188,6 +188,89 @@ public class Account {
     public void setRole(String role) {
         this.role = role;
     }
-    
-    
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setBusinessType(BusinessType businessType) {
+        this.businessType = businessType;
+    }
+
+    public void setOrganizationWebsite(String organizationWebsite) {
+        this.organizationWebsite = organizationWebsite;
+    }
+
+    @JsonProperty("id")
+    public int getId() {
+        return id;
+    }
+
+    @JsonProperty("business_type")
+    public BusinessType getBusinessType() {
+        return businessType;
+    }
+
+    @JsonProperty("organization_website")
+    public String getOrganizationWebsite() {
+        return organizationWebsite;
+    }
+
+    public enum BusinessType {
+        PERSONAL("PERSONAL", 1),
+        BUSINESS("BUSINESS", 2);
+        private String nameType;
+        private int type;
+
+        private BusinessType(String nameType, int type) {
+            this.nameType = nameType;
+            this.type = type;
+        }
+
+        public String getNameType() {
+            return nameType;
+        }
+
+        public int getType() {
+            return type;
+        }
+    }
+
+    public enum Status {
+        INVITED("INVITED", 1),
+        REGISTERED("REGISTERED", 2),
+        ACTIVATED("ACTIVATED", 3),
+        BANNED("BANNED", 4),
+        MARK_DELETED("MARK_DELETED", 5),
+        GUEST("GUEST", 6),
+        IN_ACTIVE("IN_ACTIVE", 7),
+        APPROVAL_REQUIRED("APPROVAL_REQUIRED", 8);
+
+        private String status_name;
+        private int status;
+
+        private Status(String status_name, int status) {
+            this.status_name = status_name;
+            this.status = status;
+        }
+
+        @JsonProperty("status_name")
+        public String getStatus_name() {
+            return status_name;
+        }
+
+        @JsonProperty("status_id")
+        public int getStatus() {
+            return status;
+        }
+
+        public static Status get(int statusId) {
+            for (Status status : values()) {
+                if (status.getStatus() == statusId) {
+                    return status;
+                }
+            }
+            return Status.BANNED;
+        }
+    }
 }

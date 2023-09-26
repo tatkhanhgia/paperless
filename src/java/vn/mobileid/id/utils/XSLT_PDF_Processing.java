@@ -32,6 +32,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -68,64 +69,48 @@ public class XSLT_PDF_Processing {
         });
     }
 
-    public static byte[] appendData(Object ob, byte[] xslt) {
-        try {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(xslt);
+    public static byte[] appendData(Object ob, byte[] xslt) throws Exception {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(xslt);
 
-            JAXBContext jc = JAXBContext.newInstance(ob.getClass());
+        JAXBContext jc = JAXBContext.newInstance(ob.getClass());
 
-            Marshaller mar = jc.createMarshaller();
-            mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            mar.marshal(ob, out);
+        Marshaller mar = jc.createMarshaller();
+        mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        mar.marshal(ob, out);
 
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            try ( InputStream is = new ByteArrayInputStream(out.toByteArray())) {
-                DocumentBuilder db = dbf.newDocumentBuilder();
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
-                ByteArrayOutputStream output = new ByteArrayOutputStream(); //chua thay fileResult
-                TransformerFactory tf = TransformerFactory.newInstance();
-                Transformer transformer = tf.newTransformer(
-                        new StreamSource(inputStream));
+        InputStream is = new ByteArrayInputStream(out.toByteArray());
 
-                StreamResult result = new StreamResult(output);
-                transformer.transform(new DOMSource(db.parse(is)), result);
+        DocumentBuilder db = dbf.newDocumentBuilder();
 
-                return output.toByteArray();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } catch (JAXBException ex) {
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error while append User Data into XSLT! - Detail" + ex);
-            }
-        }
-        return null;
+        ByteArrayOutputStream output = new ByteArrayOutputStream(); //chua thay fileResult
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer(
+                new StreamSource(inputStream));
+
+        StreamResult result = new StreamResult(output);
+        transformer.transform(new DOMSource(db.parse(is)), result);
+
+        return output.toByteArray();
     }
 
     public static byte[] convertHTMLtoPDF(byte[] contentHTML) {
-        try {
-            String temp = new String(contentHTML, StandardCharsets.UTF_8);            
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            PdfWriter writer = new PdfWriter(outputStream);
-            ConverterProperties converter = new ConverterProperties();
+        String temp = new String(contentHTML, StandardCharsets.UTF_8);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        ConverterProperties converter = new ConverterProperties();
 
-            FontProvider fontProvider = loadFont(); 
-            converter.setFontProvider(fontProvider);
-            PdfDocument pdfDoc = new PdfDocument(writer);
-            pdfDoc.setDefaultPageSize(new PageSize(PageSize.A3));
+        FontProvider fontProvider = loadFont();
+        converter.setFontProvider(fontProvider);
+        PdfDocument pdfDoc = new PdfDocument(writer);
+        pdfDoc.setDefaultPageSize(new PageSize(PageSize.A3));
 
-            Document document = HtmlConverter.convertToDocument(temp, pdfDoc, converter);
-            document.close();
+        Document document = HtmlConverter.convertToDocument(temp, pdfDoc, converter);
+        document.close();
 
-            return outputStream.toByteArray();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            if (LogHandler.isShowErrorLog()) {
-                LOG.error("Error while append User Data into XSLT! - Detail" + ex);
-            }
-        }
-        return null;
+        return outputStream.toByteArray();
     }
 
     public static Item_JSNObject getValueFromXSLT(byte[] xslt) {
@@ -149,12 +134,12 @@ public class XSLT_PDF_Processing {
                 item.appendData(detail);
             }
             return item;
-        } catch (Exception ex) {            
-           LogHandler.error(
-                   XSLT_PDF_Processing.class,
-                   "Cannot parse Data XSLT to object",
-                   ex);
-        } 
+        } catch (Exception ex) {
+            LogHandler.error(
+                    XSLT_PDF_Processing.class,
+                    "Cannot parse Data XSLT to object",
+                    ex);
+        }
         return null;
     }
 
@@ -184,7 +169,7 @@ public class XSLT_PDF_Processing {
             }
             buffer.flush();
             byte[] font2 = buffer.toByteArray();
-            
+
             //Read Font 3
             input = loader.getResourceAsStream("resources/verdana-bold-italic.ttf");
             buffer = new ByteArrayOutputStream();
@@ -195,7 +180,7 @@ public class XSLT_PDF_Processing {
             }
             buffer.flush();
             byte[] font3 = buffer.toByteArray();
-            
+
             fontProvider.addFont(font1);
             fontProvider.addFont(font2);
             fontProvider.addFont(font3);
@@ -208,12 +193,10 @@ public class XSLT_PDF_Processing {
         }
     }
 
-    
-    
-    public static void main(String[] arhs) throws IOException {
+    public static void main(String[] arhs) throws IOException, Exception {
         byte[] html = XSLT_PDF_Processing.appendData(new KYC(), Files.readAllBytes(new File("D:\\NetBean\\qrypto\\file\\result.xslt").toPath()));
         byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
-        try ( FileOutputStream fileOuputStream = new FileOutputStream("D:\\NetBean\\qrypto\\file\\result2.pdf")) {
+        try (FileOutputStream fileOuputStream = new FileOutputStream("D:\\NetBean\\qrypto\\file\\result2.pdf")) {
             fileOuputStream.write(pdf);
         }
 

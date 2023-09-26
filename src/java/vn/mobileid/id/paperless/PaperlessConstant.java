@@ -106,6 +106,7 @@ public class PaperlessConstant {
     final public static int HTTP_CODE_BAD_REQUEST = 400;
     final public static int HTTP_CODE_NOT_FOUND = 404;
     final public static int HTTP_CODE_500 = 500;
+    final public static int HTTP_CODE_METHOD_NOT_ALLOWED = 405;
 
     //Code
     final public static int CODE_SUCCESS = 0;
@@ -134,7 +135,7 @@ public class PaperlessConstant {
     final public static int SUBCODE_RESET_PASSWORD_ACCOUNT_AGAIN = 7;
     final public static int SUBCODE_MISSING_X_SECURITY_CODE = 8;
     final public static int SUBCODE_MISSING_OLD_OR_NEW_PASSWORD = 9;
-    final public static int SUBCODE_CANNOT_GET_ASSET_TEMPLATE_TYPE = 10;
+    final public static int SUBCODE_CANNOT_GET_ASSET_TEMPLATE_TYPE = 10;        
 
     //SUBCODE INVALID KEYCLOAK - 5000
     final public static int SUBCODE_INVALID_USER_CREDENTIALS = 2;
@@ -184,6 +185,7 @@ public class PaperlessConstant {
     //SUBCODE INVALID ASSET - 5004
     final public static int SUBCODE_CANNOT_UPLOAD_ASSET = 2;
     final public static int SUBCODE_INVALID_FILE_TYPE = 3;
+    final public static int SUBCODE_ASSET_DOES_NOT_HAVE_DATA=4;
 
     //SUBCODE INVALID JWT - 5005
     final public static int SUBCODE_INVALID_JWT_TOKEN = 2;

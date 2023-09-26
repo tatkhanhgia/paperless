@@ -33,6 +33,10 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +60,7 @@ import vn.mobileid.id.paperless.objects.JWT_Request;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.RefreshToken;
 import vn.mobileid.id.utils.Crypto;
+import vn.mobileid.id.utils.TaskV2;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -312,6 +317,7 @@ public class ManageTokenWithDB {
 
         User info = (User) res.getObject();
 
+        //Get enterprise info
         InternalResponse res2 = GetEnterpriseInfo.getEnterpriseInfo(
                 info.getEmail(),
                 transactionID);
@@ -320,6 +326,7 @@ public class ManageTokenWithDB {
         }
         Enterprise enterprise = (Enterprise) res2.getData();
 
+        //Create token
         try {
             String[] temp = createAccess_RefreshToken(info, enterprise);
 
@@ -375,11 +382,6 @@ public class ManageTokenWithDB {
         String alg = null;
 
         try {
-//            LogHandler.debug(ManageTokenWithDB.class,
-//                    "\n\tBefore decode token"
-//                    + "\n\tHeader:" + chunks[0]
-//                    + "\n\tPayload:" + chunks[1]
-//                    + "\n\tSignature:" + chunks[2]);
             header = new String(Base64.getUrlDecoder().decode(chunks[0]), "UTF-8");
             payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
 
@@ -401,11 +403,6 @@ public class ManageTokenWithDB {
                             "en",
                             null));
         }
-//        LogHandler.debug(ManageTokenWithDB.class,
-//                "\n\tAfter decode token"
-//                + "\n\tHeader:" + header
-//                + "\n\tPayload:" + payload
-//                + "\n\tSignature:" + signature);
 
         //Convert to Object
         User data = null;
@@ -426,40 +423,107 @@ public class ManageTokenWithDB {
                             null));
         }
 
-        //Verify Token        
-        if (verifyTokenByCode(chunks[0] + "." + chunks[1], signature, getPublicKey())) {
-            Date date = new Date();
-            if (data.getExp() < date.getTime()) {
-                return new InternalResponse(
-                        PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                        PaperlessMessageResponse.getErrorMessage(
-                                PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
-                                PaperlessConstant.SUBCODE_TOKEN_EXPIRED, "en", null));
+        //Verify Token    
+        TaskV2 verifyToken = new TaskV2(new Object[]{chunks[0], chunks[1], signature, getPublicKey()}, transactionID) {
+            @Override
+            public Object call() {
+                InternalResponse response = new InternalResponse();
+                try {
+                    Object[] obj = this.get();
+                    if (verifyTokenByCode((String) obj[0] + "." + (String) obj[1], (String) obj[2], (PublicKey) obj[3])) {
+                        response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
+                        return response;
+                    }
+                } catch (Exception e) {
+                    response.setStatus(PaperlessConstant.HTTP_CODE_UNAUTHORIZED);
+                    return response;
+                }
+                response.setStatus(PaperlessConstant.HTTP_CODE_UNAUTHORIZED);
+                return response;
             }
-            //Check accessToken in DB
-            if (!isRefreshToken) {
-                InternalResponse res = checkAccessToken(
-                        data.getEmail(),
-                        data.getSid(),
-                        transactionID);
-                if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return res;
+        };
+
+        TaskV2 verifyDate = new TaskV2(new Object[]{data}, transactionID) {
+            @Override
+            public Object call() {
+                try{
+                User data = (User)this.get()[0];
+                Date date = new Date();
+                if (data.getExp() < date.getTime()) {
+                    return new InternalResponse(
+                            PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                            PaperlessMessageResponse.getErrorMessage(
+                                    PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                                    PaperlessConstant.SUBCODE_TOKEN_EXPIRED, "en", null));
+                }
+                //Check accessToken in DB
+                if (!isRefreshToken) {
+                    InternalResponse res = checkAccessToken(
+                            data.getEmail(),
+                            data.getSid(),
+                            transactionID);
+                    if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                        return res;
+                    }
+                }
+                //Get role of user
+                InternalResponse response = new InternalResponse();
+                response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
+                response.setUser(data);
+                return response;
+                } catch(Exception ex){
+                    return new InternalResponse(
+                            PaperlessConstant.HTTP_CODE_500,
+                            ""
+                    );
                 }
             }
-            InternalResponse response = new InternalResponse();
-            response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
-            response.setUser(data);
-            return response;
-
-        }
-
-        return new InternalResponse(
-                PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
-                PaperlessMessageResponse.getErrorMessage(
-                        PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
-                        PaperlessConstant.SUBCODE_INVALID_TOKEN,
-                        "en",
-                        null));
+        };
+        
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        
+        Future<?> future1 = executor.submit(verifyToken);
+        Future<?> future2 = executor.submit(verifyDate);
+        executor.shutdown();
+          
+        InternalResponse response = 
+                ((InternalResponse) future1.get()).getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS
+                ? (InternalResponse)future1.get()                       
+                : (InternalResponse)future2.get();
+        return response;
+//        if (verifyTokenByCode(chunks[0] + "." + chunks[1], signature, getPublicKey())) {
+//            Date date = new Date();
+//            if (data.getExp() < date.getTime()) {
+//                return new InternalResponse(
+//                        PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+//                        PaperlessMessageResponse.getErrorMessage(
+//                                PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+//                                PaperlessConstant.SUBCODE_TOKEN_EXPIRED, "en", null));
+//            }
+//            //Check accessToken in DB
+//            if (!isRefreshToken) {
+//                InternalResponse res = checkAccessToken(
+//                        data.getEmail(),
+//                        data.getSid(),
+//                        transactionID);
+//                if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+//                    return res;
+//                }
+//            }
+//            //Get role of user
+//            InternalResponse response = new InternalResponse();
+//            response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
+//            response.setUser(data);
+//            return response;
+//        }
+//
+//        return new InternalResponse(
+//                PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+//                PaperlessMessageResponse.getErrorMessage(
+//                        PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+//                        PaperlessConstant.SUBCODE_INVALID_TOKEN,
+//                        "en",
+//                        null));
 
     }
 

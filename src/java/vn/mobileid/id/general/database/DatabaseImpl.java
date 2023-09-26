@@ -6,6 +6,7 @@
 package vn.mobileid.id.general.database;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.org.apache.bcel.internal.generic.TABLESWITCH;
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -14,6 +15,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +32,7 @@ import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.FileManagement;
+import vn.mobileid.id.paperless.objects.QR;
 import vn.mobileid.id.paperless.objects.QRSize;
 import vn.mobileid.id.paperless.objects.RefreshToken;
 import vn.mobileid.id.paperless.objects.Transaction;
@@ -1091,7 +1094,7 @@ public class DatabaseImpl implements Database {
             cals.setDate("TO_DATE", null);
             cals.setString("pLANGUAGE_NAME", "ENG");
             cals.setInt("pOFFSET", 0);
-            cals.setInt("pROW_COUNT", 100);
+            cals.setInt("pROW_COUNT", 50);
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
 //                    
@@ -1346,7 +1349,7 @@ public class DatabaseImpl implements Database {
             String str = "{ call USP_TEMPLATE_TYPE_GET() }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
-      
+
             debugString += "\t[SQL] " + cals.toString();
 
             cals.execute();
@@ -1998,7 +2001,7 @@ public class DatabaseImpl implements Database {
                     FileManagement file = new FileManagement();
                     file.setID(rs.getString("FILE_ID"));
                     file.setName(rs.getString("DOWNLOAD_LINK"));
-                    file.setData(rs.getBytes("BINARY_DATA"));
+//                    file.setData(rs.getBytes("BINARY_DATA"));
 
                     wa.setFile(file);
                     wa.setCSV_id(rs.getString("CSV"));
@@ -2430,7 +2433,7 @@ public class DatabaseImpl implements Database {
             //In            
             cals.setString("pUSER_EMAIL", email);
             cals.setInt("pUSER_ID", (user_id <= 0 ? 0 : user_id));
-            cals.setInt("pENTERPRISE_ID", enterprise_id);            
+            cals.setInt("pENTERPRISE_ID", enterprise_id);
 
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
@@ -2450,14 +2453,29 @@ public class DatabaseImpl implements Database {
                     User user = new User();
                     user.setEmail(rs.getString("EMAIL"));
                     user.setName(rs.getString("USER_NAME"));
+                    user.setRole_name(rs.getString("ROLE_NAME"));
                     response.setObject(user);
                     response.setStatus(PaperlessConstant.CODE_SUCCESS);
                 } else {
                     Account account = new Account();
+                    account.setId(rs.getInt("ID"));
                     account.setUser_email(rs.getString("EMAIL"));
                     account.setUser_name(rs.getString("USER_NAME"));
                     account.setMobile_number(rs.getString("MOBILE_NUMBER"));
-                        
+                    account.setStatus(rs.getInt("STATUS"));
+                    account.setOrganizationWebsite(rs.getString("ORGANIZATION_WEBSITE"));
+                    account.setRole(rs.getString("ROLE_NAME"));
+                    switch (rs.getInt("BUSINESS_TYPE")) {
+                        case 1: {
+                            account.setBusinessType(Account.BusinessType.PERSONAL);
+                            break;
+                        }
+                        case 2: {
+                            account.setBusinessType(Account.BusinessType.BUSINESS);
+                            break;
+                        }
+                    }
+
                     account.setVerified(rs.getBoolean("VERIFIED_ENABLED"));
                     response.setObject(account);
                     response.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -2986,6 +3004,7 @@ public class DatabaseImpl implements Database {
             String email,
             String file_name,
             String type,
+            String status,
             int offset,
             int rowcount,
             String transactionID) throws Exception {
@@ -2997,7 +3016,7 @@ public class DatabaseImpl implements Database {
         DatabaseResponse response = new DatabaseResponse();
         String debugString = transactionID + "\n";
         try {
-            String str = "{ call USP_ASSET_LIST(?,?,?,?,?,?,?) }";
+            String str = "{ call USP_ASSET_LIST(?,?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
@@ -3006,6 +3025,7 @@ public class DatabaseImpl implements Database {
             cals.setString("pEMAIL_USER", email);
             cals.setString("pFILE_NAME", file_name);
             cals.setString("TYPE", type);
+            cals.setString("pSTATUS", status);
             cals.setInt("pOFFSET", offset);
             cals.setInt("pROW_COUNT", rowcount);
 
@@ -3036,6 +3056,7 @@ public class DatabaseImpl implements Database {
                 response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Exception("Error while getListAsset!", e);
         } finally {
             DatabaseConnectionManager.getInstance().close(conn);
@@ -3081,9 +3102,9 @@ public class DatabaseImpl implements Database {
             cals.setString("W_A_STATUS", status);
             cals.setInt("IS_TEST", is_test ? 1 : 0);
             cals.setInt("IS_PRODUCT", is_product ? 1 : 0);
-            cals.setInt("IS_CUSTOM_RANGE", is_custom_range ? 1 : 0);
-            cals.setDate("FROM_DATE", (fromdate != null) ? (new java.sql.Date(fromdate.getTime())) : null);
-            cals.setDate("TO_DATE", (todate != null) ? (new java.sql.Date(todate.getTime())) : null);
+            cals.setByte("IS_CUSTOM_RANGE", (byte)(is_custom_range?1:0));
+            cals.setTimestamp("FROM_DATE", (fromdate != null) ? (new java.sql.Timestamp(fromdate.getTime())) : null);
+            cals.setTimestamp("TO_DATE", (todate == null) ? null : (new java.sql.Timestamp(todate.getTime())));
             cals.setString("pLANGUAGE_NAME", languagename == null ? "ENG" : languagename);
             cals.setInt("pOFFSET", offset);
             cals.setInt("pROW_COUNT", rowcount == 0 ? 1 : rowcount);
@@ -3106,10 +3127,10 @@ public class DatabaseImpl implements Database {
                         wa.setWorkflow_id(rs.getInt("WORKFLOW_ID"));
                         wa.setWorkflow_label(rs.getString("WORKFLOW_LABEL"));
                         wa.setUser_email(rs.getString("USER"));
-                        wa.setCreated_by(rs.getString("DATE"));
+                        wa.setCreated_by(rs.getString("USER"));
                         wa.setTransaction(rs.getString("TRANSACTION_ID"));
                         wa.setEnterprise_id(rs.getInt("ENTERPRISE_ID"));
-
+                        wa.setWorkflow_template_type(rs.getInt("TEMPLATE_TYPE"));
                         FileManagement file = new FileManagement();
                         file.setID(rs.getString("FILE_ID"));
                         file.setName(rs.getString("DOWNLOAD_LINK"));
@@ -3219,7 +3240,7 @@ public class DatabaseImpl implements Database {
                 Account account = new Account();
                 account.setUser_email(rs.getString("EMAIL"));
                 account.setUser_name(rs.getString("USER_NAME"));
-                account.setStatus_name(rs.getString("STATUS_NAME"));
+                account.setStatus(rs.getInt("STATUS"));
                 res.setObject(account);
                 res.setStatus(PaperlessConstant.CODE_SUCCESS);
             } else {
@@ -3461,53 +3482,6 @@ public class DatabaseImpl implements Database {
         return res;
     }
 
-    @Override
-    public DatabaseResponse updateStatusWorkflowActivity(
-            int id,
-            String status,
-            boolean process_enable,
-            String last_modified_by,
-            String transactionID) throws Exception {
-        DatabaseResponse res = new DatabaseResponse();
-        long startTime = System.nanoTime();
-        Connection conn = null;
-        ResultSet rs = null;
-        CallableStatement cals = null;
-        String debugString = transactionID + "\n";
-        try {
-            String str = "{ call USP_WORKFLOW_ACTIVITY_UPDATE_STATUS(?,?,?,?,?) }";
-            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
-            cals = conn.prepareCall(str);
-
-            cals.setInt("pWORKFLOW_ACTIVITY_ID", id);
-            cals.setString("pSTATUS_NAME", status);
-            cals.setBoolean("pPROCESS_ENABLED", process_enable);
-            cals.setString("pLAST_MODIFIED_BY", last_modified_by);
-
-            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
-
-            debugString += "\t[SQL] " + cals.toString();
-
-            cals.execute();
-            rs = cals.getResultSet();
-            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
-
-            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
-
-            if (mysqlResult != 1) {
-                res.setStatus(mysqlResult);
-            } else {
-                res.setStatus(PaperlessConstant.CODE_SUCCESS);
-            }
-        } catch (Exception e) {
-            throw new Exception("Error while updating status WorkflowActivity", e);
-        } finally {
-            DatabaseConnectionManager.getInstance().close(conn);
-        }
-        LogHandler.debug(this.getClass(), debugString);
-        return res;
-    }
-
     /**
      * Get all Workflow from DB
      *
@@ -3631,7 +3605,7 @@ public class DatabaseImpl implements Database {
 
                 rs = cals.executeQuery();
                 debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
-                if (cals.getString("pRESPONSE_CODE").equals("1")) {                    
+                if (cals.getString("pRESPONSE_CODE").equals("1")) {
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
                 } else {
                     databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
@@ -3785,7 +3759,7 @@ public class DatabaseImpl implements Database {
                 cals.setInt("pASSET_ID", id);
                 cals.setString("U_EMAIL", email);
                 cals.setString("pFILE_NAME", file_name);
-                cals.setInt("pASSET_TYPE", asset_type);
+                cals.setObject("pASSET_TYPE", asset_type <= 0 ? null : asset_type);
                 cals.setObject("pSIZE", size <= 0 ? null : size);
                 cals.setObject("pUSED_BY", used_by);
                 cals.setString("pUUID", uuid);
@@ -3861,7 +3835,7 @@ public class DatabaseImpl implements Database {
 
     @Override
     public DatabaseResponse getTransaction(
-            String id, 
+            String id,
             String transaction_id) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
@@ -3933,7 +3907,7 @@ public class DatabaseImpl implements Database {
 
             cals.setInt("pENTERPRISE_ID", enterpriseId);
             cals.setInt("pOFFSET", offset);
-            cals.setInt("pROW_COUNT", rowCount);                
+            cals.setInt("pROW_COUNT", rowCount);
 
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
@@ -3945,7 +3919,7 @@ public class DatabaseImpl implements Database {
                 databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
             } else {
                 List<Account> accounts = new ArrayList<>();
-                while(rs.next()){
+                while (rs.next()) {
                     Account account = new Account();
                     account.setUser_email(rs.getString("EMAIL"));
                     account.setMobile_number(rs.getString("MOBILE_NUMBER"));
@@ -3953,7 +3927,7 @@ public class DatabaseImpl implements Database {
                     account.setRole(rs.getString("ROLE"));
                     accounts.add(account);
                 }
-                databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);                
+                databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
                 databaseResponse.setObject(accounts);
             }
         } catch (Exception e) {
@@ -3968,10 +3942,13 @@ public class DatabaseImpl implements Database {
 
     @Override
     public DatabaseResponse getTotalRecordsAsset(
-            int enterpriseId, 
+            int enterpriseId,
             String email,
-            String fileName, 
-            String type, 
+            String fileName,
+            String type,
+            String status,
+            int offset,
+            int rowcount,
             String transactionId) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
@@ -3982,15 +3959,17 @@ public class DatabaseImpl implements Database {
         String debugString = transactionId + "\n";
         while (numOfRetry > 0) {
             try {
-                String str = "{ call USP_ASSET_GET_ROW_COUNT(?,?,?,?,?) }";
+                String str = "{ call USP_ASSET_GET_ROW_COUNT(?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
 
                 cals.setInt("pENTERPRISE_ID", enterpriseId);
-                cals.setString("pEMAIL_USER", email);               
-                cals.setString("pFILE_NAME", fileName);                
+                cals.setString("pEMAIL_USER", email);
+                cals.setString("pFILE_NAME", fileName);
                 cals.setString("TYPE", type);
-                
+                cals.setString("pSTATUS", status);
+                cals.setInt("pOFFSET", offset < 0 ? 0:offset);
+                cals.setInt("pROW_COUNT", rowcount<0?0:rowcount);
 
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
@@ -4029,11 +4008,13 @@ public class DatabaseImpl implements Database {
             String gType,
             String status,
             boolean isTest,
-            boolean isProduct,            
+            boolean isProduct,
             boolean isCustomRange,
-            String fromDate,
-            String toDate,
+            Date fromDate,
+            Date toDate,
             String languageName,
+            int offset,
+            int rowcount,
             String transactionId) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
@@ -4044,7 +4025,7 @@ public class DatabaseImpl implements Database {
         String debugString = transactionId + "\n";
         while (numOfRetry > 0) {
             try {
-                String str = "{ call USP_WORKFLOW_ACTIVITY_GET_ROW_COUNT(?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+                String str = "{ call USP_WORKFLOW_ACTIVITY_GET_ROW_COUNT(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
 
@@ -4056,10 +4037,12 @@ public class DatabaseImpl implements Database {
                 cals.setString("W_A_STATUS", status);
                 cals.setBoolean("IS_TEST", isTest);
                 cals.setBoolean("IS_PRODUCT", isTest);
-                cals.setBoolean("IS_CUSTOM_RANGE", isTest);
-                cals.setTimestamp("FROM_DATE", null);
-                cals.setTimestamp("TO_DATE", null);
+                cals.setByte("IS_CUSTOM_RANGE", (byte)(isCustomRange?1:0));
+                cals.setTimestamp("FROM_DATE", fromDate != null ? new java.sql.Timestamp(fromDate.getTime()) : null);
+                cals.setTimestamp("TO_DATE", toDate!=null ? new java.sql.Timestamp(toDate.getTime()): null);
                 cals.setString("pLANGUAGE_NAME", languageName);
+                cals.setInt("pOFFSET", offset < 0? 0: offset);
+                cals.setInt("pROW_COUNT", rowcount < 0? 0: rowcount);
 
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
@@ -4087,6 +4070,311 @@ public class DatabaseImpl implements Database {
         }
         LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse updateUser(
+            String email,
+            String userName,
+            String mobile,
+            Date passwordExpiredAt,
+            int remaining,
+            String status,
+            int changePass,
+            boolean lock,
+            Date lockAt,
+            int businessType,
+            String website,
+            String hmac,
+            String modifiedBy,
+            String transactionId) throws Exception {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        String debugString = transactionId + "\n";
+        while (numOfRetry > 0) {
+            try {
+                String str = "{ call USP_USER_UPDATE(?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+                conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+                cals = conn.prepareCall(str);
+
+                cals.setString("pUSER_EMAIL", email);
+                cals.setString("pUSER_NAME", userName);
+                cals.setString("pMOBILE_NUMBER", mobile);
+                cals.setTimestamp("pPASSWORD_EXPIRED_AT", passwordExpiredAt == null ? null : new Timestamp(passwordExpiredAt.getTime()));
+                cals.setObject("pREMAINING_COUNTER", remaining <= 0 ? null : remaining);
+                cals.setString("pSTATUS_NAME", status);
+                cals.setInt("pCHANGE_PASSWORD", changePass);
+                cals.setBoolean("pLOCKED_ENABLED", lock);
+                cals.setTimestamp("pLOCKED_AT", lockAt == null ? null : new Timestamp(lockAt.getTime()));
+                cals.setObject("pBUSINESS_TYPE", businessType <= 0 ? null : businessType);
+                cals.setString("pORGANIZATION_WEBSITE", website);
+                cals.setString("pHMAC", hmac);
+                cals.setString("pLAST_MODIFIED_BY", modifiedBy);
+
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+                debugString += "\t[SQL] " + cals.toString();
+
+                rs = cals.executeQuery();
+                if (cals.getString("pRESPONSE_CODE").equals("1")) {
+                    debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+                    databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
+                } else {
+                    databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                }
+                break;
+            } catch (Exception e) {
+                numOfRetry--;
+                throw new Exception("Error while update User!", e);
+            } finally {
+                DatabaseConnectionManager.getInstance().close(conn);
+            }
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse updateRole(
+            String email,
+            int enterprise_id,
+            String role_name,
+            String transactionId) throws Exception {
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        DatabaseResponse databaseResponse = new DatabaseResponse();
+        int numOfRetry = retryTimes;
+        String debugString = transactionId + "\n";
+        while (numOfRetry > 0) {
+            try {
+                String str = "{ call USP_USER_UPDATE_ROLE(?,?,?,?) }";
+                conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
+                cals = conn.prepareCall(str);
+
+                cals.setString("U_EMAIL", email);
+                cals.setObject("pENTERPRISE_ID", enterprise_id);
+                cals.setString("pROLE_NAME", role_name);
+
+                cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+                debugString += "\t[SQL] " + cals.toString();
+
+                rs = cals.executeQuery();
+                debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+                if (cals.getString("pRESPONSE_CODE").equals("1")) {
+                    databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
+                } else {
+                    databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
+                }
+                break;
+            } catch (Exception e) {
+                numOfRetry--;
+                throw new Exception("Error while update User!", e);
+            } finally {
+                DatabaseConnectionManager.getInstance().close(conn);
+            }
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse updateStatusWorkflowActivity_(
+            int id,
+            String status,
+            String last_modified_by,
+            String transactionID) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionID + "\n";
+        try {
+            String str = "{ call USP_WORKFLOW_ACTIVITY_UPDATE_STATUS(?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            cals.setInt("pWORKFLOW_ACTIVITY_ID", id);
+            cals.setString("pSTATUS_NAME", status);
+//            cals.setObject("pPROCESS_ENABLED", null);
+            cals.setString("pLAST_MODIFIED_BY", last_modified_by);
+
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+            debugString += "\t[SQL] " + cals.toString();
+
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+
+            if (mysqlResult != 1) {
+                res.setStatus(mysqlResult);
+            } else {
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while updating status WorkflowActivity", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+
+    @Override
+    public DatabaseResponse deleteUser(
+            String emailAdmin,
+            String emailToBeDelete,
+            int enterpriseId,
+            String transactionId) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionId + "\n";
+        try {
+            String str = "{ call USP_USER_DELETE(?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            cals.setString("pUSER_EMAIL", emailAdmin);
+            cals.setString("pDELETED_USER_EMAIL", emailToBeDelete);
+            cals.setInt("pENTERPRISE_ID", enterpriseId);
+
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+            debugString += "\t[SQL] " + cals.toString();
+
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+
+            if (mysqlResult != 1) {
+                res.setStatus(mysqlResult);
+            } else {
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while deleting user", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+
+    @Override
+    public DatabaseResponse getQR(
+            int qrId,
+            String transactionId) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionId + "\n";
+        try {
+            String str = "{ call USP_QR_GET(?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            cals.setObject("pQR_ID", qrId);
+
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+            debugString += "\t[SQL] " + cals.toString();
+
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+
+            if (mysqlResult != 1) {
+                res.setStatus(mysqlResult);
+            } else {
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);
+                rs.next();
+                QR qr = new QR();
+                qr.setId(rs.getInt("ID"));
+                qr.setMetadata(rs.getString("META_DATA"));
+                qr.setImageBase64(rs.getString("IMAGE"));
+                qr.setImage(Base64.getDecoder().decode(rs.getString("IMAGE")));
+                qr.setCreateAt(new Date(rs.getTimestamp("CREATED_AT").getTime()));
+                qr.setCreatedBy(rs.getString("CREATED_BY"));
+                qr.setModifiedAt(new Date(rs.getTimestamp("LAST_MODIFIED_AT").getTime()));
+                qr.setModifiedBy(rs.getString("LAST_MODIFIED_BY"));
+                res.setObject(qr);
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while getting QR", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
+    }
+
+    @Override
+    public DatabaseResponse updateWorkflow(
+            int workflowId,
+            int enterpriseId,
+            String userEmail,
+            String workflowLabel,
+            String hmac,
+            String transactionId) throws Exception {
+        DatabaseResponse res = new DatabaseResponse();
+        long startTime = System.nanoTime();
+        Connection conn = null;
+        ResultSet rs = null;
+        CallableStatement cals = null;
+        String debugString = transactionId + "\n";
+        try {
+            String str = "{ call USP_WORKFLOW_UPDATE(?,?,?,?,?,?,?) }";
+            conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
+            cals = conn.prepareCall(str);
+
+            cals.setString("pUSER_EMAIL", userEmail);
+            cals.setInt("pENTERPRISE_ID", enterpriseId);
+            cals.setInt("pWORKFLOW_ID", workflowId);
+            cals.setString("pLABEL", workflowLabel);
+            cals.setString("pHMAC", hmac);
+            cals.setString("pLAST_MODIFIED_BY", userEmail);
+
+            cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+            debugString += "\t[SQL] " + cals.toString();
+
+            cals.execute();
+            rs = cals.getResultSet();
+            int mysqlResult = Integer.parseInt(cals.getString("pRESPONSE_CODE"));
+
+            debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
+
+            if (mysqlResult != 1) {
+                res.setStatus(mysqlResult);
+            } else {
+                res.setStatus(PaperlessConstant.CODE_SUCCESS);                
+            }
+        } catch (Exception e) {
+            throw new Exception("Error while getting QR", e);
+        } finally {
+            DatabaseConnectionManager.getInstance().close(conn);
+        }
+        LogHandler.debug(this.getClass(), debugString);
+        return res;
     }
 
 }

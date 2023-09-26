@@ -4,10 +4,15 @@
  */
 package vn.mobileid.id.qrypto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  *
  * @author GiaTK
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class IssueQryptoWithFileAttachResponse extends Response{
     private String tan;
     private String qryptoBase45;

@@ -51,6 +51,19 @@ public class GetAsset {
 
             Asset asset = (Asset) callDB.getObject();
 
+            //Check binary in asset?
+            if(asset.getBinaryData() == null || asset.getBinaryData().length <=0){
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                        PaperlessConstant.SUBCODE_ASSET_DOES_NOT_HAVE_DATA,
+                        "en",
+                        null);
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        message
+                );
+            }
+            
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     asset);
@@ -114,6 +127,7 @@ public class GetAsset {
             String email,
             String file_name,
             String type,
+            String status,
             int offset,
             int rowcount,
             String transactionID
@@ -125,6 +139,7 @@ public class GetAsset {
                 email,
                 file_name,
                 type,
+                status,
                 offset,
                 rowcount,
                 transactionID);
@@ -153,6 +168,60 @@ public class GetAsset {
         }
     }
 
+    /**
+     * Get a list of Asset
+     * @param ent_id - Enterprise id
+     * @param email - Email of User
+     * @param file_name - Get with condition file name
+     * @param type - Get with condition type of Asset
+     * @param transactionID
+     * @return List of Asset
+     * @throws Exception 
+     */
+    public static InternalResponse getTotalRecordOfAssets(
+            int ent_id,
+            String email,
+            String file_name,
+            String type,
+            String status,
+            int offset,
+            int rowcount,
+            String transactionID
+    ) throws Exception {
+        Database DB = new DatabaseImpl();        
+
+        DatabaseResponse callDB = DB.getTotalRecordsAsset(
+                ent_id,
+                email,
+                file_name,
+                type,
+                status,
+                offset,
+                rowcount,
+                transactionID);
+
+        try {
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                        null);
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        message
+                );
+            }
+
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
+                    callDB.getObject());
+
+        } catch (Exception e) {
+            throw new Exception("Cannot get List of Asset!", e);
+        }
+    }
+    
     public static void main(String[] args) throws IOException, Exception {
 //        Asset resposne = GetAsset.getTemplateOfAsset(7);        
 //        Files.write(new File("D:\\NetBean\\QryptoServices\\file\\asset.xslt").toPath(), resposne.getBinaryData(), StandardOpenOption.CREATE);

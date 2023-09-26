@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -35,31 +32,24 @@ public class GetWorkflowActivity {
      * @return WorkflowActivity
      * @throws Exception
      */
-    public static InternalResponse getWorkflowActivity(
+     public static InternalResponse getWorkflowActivity(
             int id,
             String transactionID) throws Exception {
         InternalResponse res = null;
+        long start = System.currentTimeMillis();
         WorkflowActivity check = Resources.getWorkflowActivity(String.valueOf(id));
+        start = System.currentTimeMillis();
         if (check == null) {
             res = getWorkflowActivityFromDB(id, transactionID);
             if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return res;
             }
+            start = System.currentTimeMillis();
             check = (WorkflowActivity) res.getData();
-            Resources.putIntoRAM(String.valueOf(check.getId()), check);
-//            Thread temp = new Thread() {
-//                public void run() {
-//                    try {
-//                        Resources.reloadListWorkflowActivity();
-//                    } catch (Exception ex) {
-//                        Logger.getLogger(GetWorkflowActivity.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
-//            };
-//            temp.start();
+            Resources.putIntoRAM(String.valueOf(id), check);
             return res;
         }
-
+         
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 check);
@@ -76,6 +66,7 @@ public class GetWorkflowActivity {
     public static InternalResponse getWorkflowActivityFromDB(
             int id,
             String transactionID) throws Exception {
+        long start = System.currentTimeMillis();
         Database db = new DatabaseImpl();
         DatabaseResponse res = db.getWorkflowActivity(id, transactionID);
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
@@ -189,9 +180,11 @@ public class GetWorkflowActivity {
             boolean isTest,
             boolean isProduct,
             boolean isCustomRange,
-            String fromDate,
-            String toDate,
+            Date fromDate,
+            Date toDate,
             String languageName,
+            int offset,
+            int rowcount,
             String transactionId
     ) throws Exception {
         DatabaseResponse response = new DatabaseImpl().getTotalRecordsWorkflowActivity(
@@ -207,6 +200,8 @@ public class GetWorkflowActivity {
                 fromDate,
                 toDate,
                 languageName,
+                offset,
+                rowcount,
                 transactionId);
 
         if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
@@ -264,7 +259,8 @@ public class GetWorkflowActivity {
                 false, 
                 null, 
                 null, 
-                "ENG", 
+                "ENG",
+                1,1,
                 "tran");
         if(res.getStatus() == 200){
             System.out.println("Count:"+res.getData());

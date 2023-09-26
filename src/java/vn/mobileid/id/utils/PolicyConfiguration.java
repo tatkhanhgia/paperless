@@ -152,6 +152,7 @@ public class PolicyConfiguration {
                 .systemConfig;
         System.out.println(systemConfig.getAttributes().get(0).getDefault_row_count());
         System.out.println(systemConfig.getRemark());
+        System.out.println(systemConfig.getAttributes().get(0).getDateFormat());
         
         System.out.println(PolicyConfiguration
                     .getInstant()

@@ -7,6 +7,7 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 
 /**
  *
@@ -21,6 +22,8 @@ public class ItemDetails {
     private Object value;
     private String file_field;
     private String file_format;
+    private String remark;
+    private String group;
 
     public ItemDetails() {
     }
@@ -86,6 +89,30 @@ public class ItemDetails {
             return true;
         if( i ==3 )
             return 1;
+        if( i == 4)
+            return new Date();
+        if( i== 5)
+            return new byte[1];
         return null;
     }
+
+    @JsonProperty("remark")
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    @JsonProperty("group")
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+    
+    
 }

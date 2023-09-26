@@ -18,10 +18,10 @@ import vn.mobileid.id.general.objects.Attributes;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonRootName("attributes")
-public class PolicySystemConfiguration  extends Attributes{
-    
+public class PolicySystemConfiguration extends Attributes {
+
     private List<SystemConfiguration> attributes;
-       
+
     public PolicySystemConfiguration() {
     }
 
@@ -39,11 +39,21 @@ public class PolicySystemConfiguration  extends Attributes{
     public static class SystemConfiguration {
 
         private int default_row_count;
+        private String dateFormat;
         private TokenConfiguration tokenConfig;
 
         @JsonProperty("defaultRowCount")
         public int getDefault_row_count() {
             return default_row_count;
+        }
+
+        @JsonProperty("dateFormat")
+        public String getDateFormat() {
+            return dateFormat;
+        }
+
+        public void setDateFormat(String dateFormat) {
+            this.dateFormat = dateFormat;
         }
 
         public void setDefault_row_count(int default_row_count) {
