@@ -7,6 +7,7 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import vn.mobileid.id.general.annotation.AnnotationORM;
 
 /**
  *
@@ -15,7 +16,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QRSize {
+    @AnnotationORM(nameInDb="QR_SIZE_NAME")
     private String qr_size_name;
+    
+    @AnnotationORM(nameInDb="SIZE_VALUE")
     private int size;
 
     public QRSize(String qr_size_name, int size) {

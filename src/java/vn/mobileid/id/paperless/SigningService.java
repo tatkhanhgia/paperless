@@ -48,7 +48,7 @@ import vn.mobileid.id.general.policy.object.SignatureProperties;
 import vn.mobileid.id.paperless.kernel.GetEnterpriseInfo;
 import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
-import vn.mobileid.id.utils.AnnotationJWT;
+import vn.mobileid.id.general.annotation.AnnotationJWT;
 import vn.mobileid.id.utils.PolicyConfiguration;
 import vn.mobileid.id.utils.Utils;
 

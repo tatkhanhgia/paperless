@@ -6,7 +6,6 @@ package vn.mobileid.id.paperless.kernel;
 
 import java.io.IOException;
 import java.util.List;
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
@@ -174,5 +173,22 @@ public class GetAsset {
 //        String temp = new ObjectMapper().writeValueAsString(tempp);
 //      
 //        System.out.println("Temp:"+temp);
+
+          InternalResponse response = GetAsset.getListAsset(
+                  3,
+                  "khanhpx@mobile-id.vn",
+                  null, 
+                  "1,2,3",
+                  0, 
+                  100,
+                  "transactionId");
+          if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+              System.out.println("Mess:"+response.getMessage());
+          } else{
+              List<Asset> assets = (List<Asset>) response.getData();
+              for(Asset asset:assets){
+                  System.out.println("Name:"+asset.getName());
+              }
+          }
     }
 }

@@ -5,11 +5,11 @@
 package vn.mobileid.id.paperless.objects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import vn.mobileid.id.paperless.PaperlessConstant;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
+import vn.mobileid.id.general.annotation.AnnotationORM;
 
 /**
  *
@@ -18,6 +18,7 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Workflow {
+        
     private int workflow_id;
     private int status; //0 - inactive  1 - active    
     private int template_type;

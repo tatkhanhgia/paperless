@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import java.util.Date;
+import vn.mobileid.id.general.annotation.AnnotationORM;
 
 /**
  *
@@ -20,24 +21,54 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 @JsonRootName("Assets")
 public class Asset {
+        
+    @AnnotationORM(nameInDb="ID")
     private int id;
+    
+    @AnnotationORM(nameInDb="FILE_NAME")
     private String name;
+    
+    @AnnotationORM(nameInDb="TYPE")
     private int type;
+    
     private String type_name;
+    
+    @AnnotationORM(nameInDb="SIZE")
     private long size;
+    
+    @AnnotationORM(nameInDb="UUID")
     private String file_uuid;
+    
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+    @AnnotationORM(nameInDb="CREATED_AT")
     private Date created_at;
+    
+    @AnnotationORM(nameInDb="CREATED_BY")
     private String created_by;
+    
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+    @AnnotationORM(nameInDb="LAST_MODIFIED_AT")
     private Date modified_at;
+    
+    @AnnotationORM(nameInDb="LAST_MODIFIED_BY")
     private String modified_by;
+    
+    @AnnotationORM(nameInDb="USED_BY")
     private String used_by;
+    
     @JsonIgnore
+    @AnnotationORM(nameInDb="BINARY_DATA")
     private byte[] binaryData;
+    
+    @AnnotationORM(nameInDb="META_DATA")
     private String metadata;
+    
+    @AnnotationORM(nameInDb="DMS_PROPERTY")
     private String dbms;
+    
+    @AnnotationORM(nameInDb="HMAC")
     private String hmac;
+    
     private String base64;
 
     public Asset() {

@@ -5,7 +5,8 @@
  */
 package vn.mobileid.id.general.objects;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -20,8 +21,9 @@ public class DatabaseResponse {
     private String ID_Response_String;
 
     //Test
-    private Object object;        
-
+    private Object object;      
+    private String debugString;
+    private List<HashMap<String, Object>> rows;
   
 
     public void setID_Response_int(int ID_Response_int) {
@@ -76,6 +78,20 @@ public class DatabaseResponse {
     public void setObject(Object object) {
         this.object = object;
     }
+
+    public String getDebugString() {
+        return debugString;
+    }
+
+    public void setDebugString(String debugString) {
+        this.debugString = debugString;
+    }
             
+    public void setRows(List<HashMap<String, Object>> rows){
+        this.rows = rows;
+    }
     
+    public List<HashMap<String, Object>> getRows(){
+        return this.rows;
+    }
 }
