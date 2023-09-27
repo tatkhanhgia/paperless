@@ -18,7 +18,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.io.IOUtils;
-import sun.misc.BASE64Encoder;
+//import sun.misc.BASE64Encoder;
 import sun.security.provider.X509Factory;
 import vn.mobileid.id.utils.Crypto;
 
@@ -28,23 +28,23 @@ import vn.mobileid.id.utils.Crypto;
  */
 public class TestCreateCertificate {
 
-    public static void main(String[] arhs) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, GeneralSecurityException, Exception {
-        PublicKey pub = getPublicKey();
-        PrivateKey pri = getPrivateKey();
-
-        FileOutputStream fos = new FileOutputStream("D:\\NetBean\\paperless\\file\\temp.cer");
-        X509Certificate temp = Crypto.generateSelfSignCertificate(
-                "CN=Paperless Service, O=MOBILE-ID TECHNOLOGIES AND SERVICES JOINT STOCK COMPANY, L=Quận 2,C=VN",
-                pub.getEncoded(),
-                pri);
-        BASE64Encoder encoder = new BASE64Encoder();
-            fos.write(X509Factory.BEGIN_CERT.getBytes());   
-            fos.write("\n".getBytes());
-            encoder.encodeBuffer(temp.getEncoded(), fos);
-            fos.write(X509Factory.END_CERT.getBytes());
-        
-
-    }
+//    public static void main(String[] arhs) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, GeneralSecurityException, Exception {
+//        PublicKey pub = getPublicKey();
+//        PrivateKey pri = getPrivateKey();
+//
+//        FileOutputStream fos = new FileOutputStream("D:\\NetBean\\paperless\\file\\temp.cer");
+//        X509Certificate temp = Crypto.generateSelfSignCertificate(
+//                "CN=Paperless Service, O=MOBILE-ID TECHNOLOGIES AND SERVICES JOINT STOCK COMPANY, L=Quận 2,C=VN",
+//                pub.getEncoded(),
+//                pri);
+//        BASE64Encoder encoder = new BASE64Encoder();
+//            fos.write(X509Factory.BEGIN_CERT.getBytes());   
+//            fos.write("\n".getBytes());
+//            encoder.encodeBuffer(temp.getEncoded(), fos);
+//            fos.write(X509Factory.END_CERT.getBytes());
+//        
+//
+//    }
 
     private static PrivateKey getPrivateKey() throws IOException, GeneralSecurityException {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();

@@ -113,7 +113,6 @@ import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.ejbca.util.CertTools;
-import sun.misc.BASE64Decoder;
 import sun.security.provider.X509Factory;
 import vn.mobileid.id.general.LogHandler;
 
@@ -1343,7 +1342,7 @@ public class Crypto {
             cert = cert.replaceAll(X509Factory.BEGIN_CERT, "");
             cert = cert.replaceAll(X509Factory.END_CERT, "");
             cert = cert.replace("\n", "");
-            byte[] bytes = new BASE64Decoder().decodeBuffer(cert);
+            byte[] bytes = Base64.getDecoder().decode(cert);
             try ( InputStream inputStream = new ByteArrayInputStream(bytes)) {
                 CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
