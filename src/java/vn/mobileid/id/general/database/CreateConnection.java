@@ -91,7 +91,7 @@ class CreateConnection {
                 int i = outParameters.size() - 1;
                 HashMap<String, Object> datas = new HashMap<>();
                 for (String key : outParameters.keySet()) {
-                    datas.put(key, cals.getObject(cals.getParameterMetaData().getParameterCount() - i));
+                    datas.put(key, cals.getObject(key));
                     i--;
                 }
                 rows.add(datas);
@@ -168,9 +168,9 @@ class CreateConnection {
             response.setRows(rows);
 
             //
-            if (rows.size() == 1) {
+            if (rows.size() == 1 && rows.get(0).size() == 1) {
                 response.setObject(cast(classType, rows.get(0)));
-            } else {
+            } else {                
                 List<Object> objects = new ArrayList<>();
                 for (int i = 0; i < rows.size(); i++) {
                     Object result = classType.newInstance();
@@ -187,7 +187,11 @@ class CreateConnection {
                     }
                     objects.add(result);
                 }
-                response.setObject(objects);
+                if(objects.size() == 1){
+                    response.setObject(objects.get(0));
+                } else {
+                    response.setObject(objects);
+                }
             }
 
         } catch (Exception e) {
@@ -265,10 +269,12 @@ class CreateConnection {
             Class<?> clazz = field.getType();
             Method[] methods = clazz.getMethods();
             for(Method method :methods){
-                if(method.getReturnType() == clazz){
+                if(method.getReturnType() == clazz && method.getParameterCount()==1){
                     try {
                         return method.invoke(clazz, data);
                     } catch (IllegalArgumentException ex) {
+                        System.out.println("Data:"+data);
+                        System.out.println("Field:"+field);
                         Logger.getLogger(CreateConnection.class.getName()).log(Level.SEVERE, null, ex);
                         return null;
                     } catch (InvocationTargetException ex) {

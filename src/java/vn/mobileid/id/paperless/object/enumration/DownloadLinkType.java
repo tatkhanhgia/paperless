@@ -9,17 +9,17 @@ package vn.mobileid.id.paperless.object.enumration;
  * author GiaTK
  */
 public enum DownloadLinkType {
-    PDF(1),
-    IMAGE(2),
-    ZIP(3);
+    PDF("PDF"),
+    IMAGE("IMAGE"),
+    ZIP("ZIP");
     
-    private int id;
+    private String type;
 
-    private DownloadLinkType(int id) {
-        this.id = id;
+    private DownloadLinkType(String type) {
+        this.type= type;
     }
 
-    public int getId() {
-        return id;
+    public String getType() {
+        return type;
     }
 }

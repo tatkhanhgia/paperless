@@ -4,20 +4,23 @@
  */
 package vn.mobileid.id.general.database;
 
+import java.util.Date;
 import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.paperless.object.enumration.DownloadLinkType;
 
 /**
  *
  * @author GiaTK
  */
-public interface  DatabaseV2_WorkflowActivity {
+public interface DatabaseV2_WorkflowActivity {
+
     public DatabaseResponse createWorkflowActivity(
             int pENTERPRISE_ID,
             int pWORKFLOW_ID,
             String pUSER_EMAIL,
             String pTRANSACTION_ID,
             String pDOWNLOAD_LINK,
-            int pDOWNLOAD_LINK_TYPE,
+            DownloadLinkType pDOWNLOAD_LINK_TYPE,
             String pREMARK,
             int pPRODUCTION_TYPE,
             int pWORKFLOW_TYPE,
@@ -26,9 +29,55 @@ public interface  DatabaseV2_WorkflowActivity {
             String pCREATED_BY,
             String transactionId
     ) throws Exception;
-    
-     public DatabaseResponse getWorkflowActivity(
+
+    public DatabaseResponse getWorkflowActivity(
             int id,
             String transaction_id)
             throws Exception;
+
+    public DatabaseResponse getTotalRecordsWorkflowActivity(
+            String U_EMAIL,
+            int pENTERPRISE_ID,
+            String EMAIL_SEARCH,
+            String DATE_SEARCH,
+            String G_TYPE,
+            String W_A_STATUS,
+            String pPRODUCTION_TYPE_LIST,
+            boolean isCustomRange,
+            String FROM_DATE,
+            String TO_DATE,
+            int pOFFSET,
+            int pROW_COUNT,
+            String transactionId
+    ) throws Exception;
+
+    public DatabaseResponse getListWorkflowActivity(
+            String U_EMAIL,
+            long pENTERPRISE_ID,
+            String EMAIL_SEARCH,
+            Date DATE_SEARCH,
+            String G_TYPE,
+            String W_A_STATUS,
+            String pPRODUCTION_TYPE_LIST,
+            boolean IS_CUSTOM_RANGE,
+            Date FROM_DATE,
+            Date TO_DATE,
+            int pOFFSET,
+            int pROW_COUNT,
+            String transactionId
+    ) throws Exception;
+
+    public DatabaseResponse updateRequestDataOfWorkflowActivity(
+            int id,
+            String meta_data,
+            String modified_by,
+            String transactionID
+    ) throws Exception;
+
+    public DatabaseResponse updateStatusWorkflowActivity(
+            int id,
+            String status,
+            String last_modified_by,
+            String transactionID
+    ) throws Exception;
 }

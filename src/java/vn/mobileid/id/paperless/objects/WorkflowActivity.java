@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Date;
 import vn.mobileid.id.general.annotation.AnnotationORM;
+import vn.mobileid.id.paperless.object.enumration.DownloadLinkType;
 import vn.mobileid.id.paperless.serializer.CustomWorkflowActivitySerializer;
 
 /**
@@ -23,28 +24,58 @@ import vn.mobileid.id.paperless.serializer.CustomWorkflowActivitySerializer;
 @JsonSerialize(using = CustomWorkflowActivitySerializer.class)
 public class WorkflowActivity {
     
+    @AnnotationORM(columnName = "ID")
     private int id;
-    private String status;    
+    
+    @AnnotationORM(columnName = "STATUS")
+    private int statusId; 
+    
+    @AnnotationORM(columnName = "STATUS_NAME_EN")
+    private String status_name;
+    
     private String enterprise_name;
+    
+    @AnnotationORM(columnName = "ENTERPRISE_ID")
     private int enterprise_id;
+    
+    @AnnotationORM(columnName = "WORFLOW_ID")
     private int workflow_id;
+    
+    @AnnotationORM(columnName = "WORKFLOW_LABEL")
     private String workflow_label;
+    
+    @AnnotationORM(columnName = "WORKFLOW_TEMPLATE_TYPE_ID")
     private int workflow_template_type;
+    
     private String user_email;
+    
+    @AnnotationORM(columnName = "TRANSACTION_ID")
     private String transaction;
+    
+    @AnnotationORM(columnName = "REMARK")
     private String remark;
-    public  boolean use_test_token;
-    public  boolean update_enable;
+    
+    @AnnotationORM(columnName = "REQUEST_DATA")
+    private String requestData;     
+    
+    public  boolean use_test_token; //PENDING
+    public  boolean update_enable;  //PENDING
+    private boolean is_production;  //PENDING
+    
     private String created_by;
     private Date created_at;
     private String modified_by;
     private Date modified_at;
-    private boolean is_production;    
     private FileManagement file; //Pending
     private String CSV_id; //pending        
     private int generation_type;
-    private String requestData;        
     
+    @AnnotationORM(columnName = "DOWNLOAD_LINK")
+    private String dowload_link;
+    
+    @AnnotationORM(columnName = "DOWNLOAD_LINK_TYPE")
+    private DownloadLinkType download_link_type = DownloadLinkType.PDF;
+       
 
     public WorkflowActivity() {
         enterprise_name = null;
@@ -223,11 +254,11 @@ public class WorkflowActivity {
 
     @JsonProperty("status")
     public String getStatus() {
-        return status;
+        return status_name;
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        this.status_name = status;
     }       
 
     public Date getCreated_at() {
@@ -252,6 +283,32 @@ public class WorkflowActivity {
 
     public void setModified_at(Date modified_at) {
         this.modified_at = modified_at;
+    }
+
+    public int getStatusId() {
+        return statusId;
+    }
+
+    public void setStatusId(int statusId) {
+        this.statusId = statusId;
+    }
+
+    @JsonProperty("download_link")
+    public String getDowload_link() {
+        return dowload_link;
+    }
+
+    public void setDowload_link(String dowload_link) {
+        this.dowload_link = dowload_link;
+    }
+
+    @JsonProperty("download_link_type")
+    public DownloadLinkType getDownload_link_type() {
+        return download_link_type;
+    }
+
+    public void setDownload_link_type(DownloadLinkType download_link_type) {
+        this.download_link_type = download_link_type;
     }
     
     
