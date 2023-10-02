@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import vn.mobileid.id.paperless.objects.FileManagement;
-import vn.mobileid.id.paperless.objects.FileManagement.FileType;
+import vn.mobileid.id.paperless.object.enumration.FileType;
 
 
 /**
@@ -58,7 +58,7 @@ public class CustomFileManagementSerializer extends JsonSerializer<FileManagemen
                     DateFormat date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa X");
                     jg.writeStringField(field.getName(), date.format(((Date)field.get(t)).getTime()));
                 }
-                if (field.get(t) instanceof FileManagement.FileType){                                        
+                if (field.get(t) instanceof FileType){                                        
                     jg.writeStringField("type", ((FileType) field.get(t)).getName());
                 }
                 

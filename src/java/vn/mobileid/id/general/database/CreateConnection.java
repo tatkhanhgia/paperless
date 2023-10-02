@@ -5,6 +5,8 @@
 package vn.mobileid.id.general.database;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -20,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jersey.repackaged.com.google.common.collect.Lists;
 import org.apache.commons.lang3.ClassUtils;
 import vn.mobileid.id.general.annotation.AnnotationORM;
@@ -175,7 +179,7 @@ class CreateConnection {
                     for (Field field : fields) {
                         field.setAccessible(true);
                         AnnotationORM temp = field.getDeclaredAnnotation(AnnotationORM.class);
-                        String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::nameInDb).orElse(null);
+                        String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::columnName).orElse(null);
                         if (nameInDb != null && rows.get(i).get(nameInDb) != null) {
                             Object datas = cast(field, rows.get(i).get(nameInDb));
                             field.set(result, datas);
@@ -203,7 +207,7 @@ class CreateConnection {
         for (Field field : fields) {
             field.setAccessible(true);
             AnnotationORM temp = field.getDeclaredAnnotation(AnnotationORM.class);
-            String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::nameInDb).orElse(null);
+            String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::columnName).orElse(null);
             if (nameInDb != null && row.get(nameInDb) != null) {
                 Object datas = cast(field, row.get(nameInDb));
                 field.set(result, datas);
@@ -256,6 +260,23 @@ class CreateConnection {
                 return (byte[]) data;
             }
             return null;
+        }
+        if(field.getType().isEnum()){
+            Class<?> clazz = field.getType();
+            Method[] methods = clazz.getMethods();
+            for(Method method :methods){
+                if(method.getReturnType() == clazz){
+                    try {
+                        return method.invoke(clazz, data);
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(CreateConnection.class.getName()).log(Level.SEVERE, null, ex);
+                        return null;
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(CreateConnection.class.getName()).log(Level.SEVERE, null, ex);
+                        return null;
+                    }                    
+                }
+            }
         }
         if (!getWrapperTypes().contains(field.getClass())) {
             Class<?> clazz = field.getClass();

@@ -27,4 +27,29 @@ public interface  DatabaseV2_FileManagement {
             String hash_values,
             String transaction_id
     ) throws Exception;
+    
+    public DatabaseResponse getFileManagement(
+            long fileManagementId,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse updateFileManagement(
+            long id,
+            String UUID,
+            String DBMS,
+            String name,
+            int pages,
+            long size,
+            float width,
+            float height,
+            int status,
+            String hmac,
+            String created_by,
+            String last_modified_by,
+            boolean isSigned,
+            String file_type,
+            String signing_properties,
+            String hash_values,
+            String transactionID
+    )throws Exception;
 }

@@ -5,9 +5,6 @@
 package vn.mobileid.id.paperless.kernel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.database.Database;
-import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.FileManagement;
@@ -49,7 +46,7 @@ public class GetDocument {
         }
         WorkflowActivity woAc = (WorkflowActivity) response.getData();
 
-        response = GetFileManagement.getFileManagement(Integer.parseInt(woAc.getFile().getID()), transactionID);
+        response = GetFileManagement.getFileManagement(woAc.getFile().getID(), transactionID);
 
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;

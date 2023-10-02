@@ -4,7 +4,6 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
@@ -27,11 +26,11 @@ public class GetFileManagement {
      * @throws Exception 
      */
     public static InternalResponse getFileManagement(
-            int id,
+            long id,
             String transactionID) 
         throws Exception {
         Database DB = new DatabaseImpl();                                
-
+ 
         DatabaseResponse callDB = DB.getFileManagement(
                 id,
                 transactionID);

@@ -117,6 +117,7 @@ public class PaperlessConstant {
     final public static int CODE_INVALID_PARAMS_ASSET = 5004;
     final public static int CODE_INVALID_PARAMS_JWT = 5005;
 //    final public static int CODE_INVALID_PARAMS_WORKFLOW_TEMPLATE = 5003;
+    final public static int CODE_FMS = 5006;
 
     final public static int CODE_FUNCTION_ACCESS_DENIED = 5005;
     final public static int CODE_INVALID_BEARER_TOKEN = 5006;
@@ -188,4 +189,8 @@ public class PaperlessConstant {
     //SUBCODE INVALID JWT - 5005
     final public static int SUBCODE_INVALID_JWT_TOKEN = 2;
     final public static int SUBCODE_MISSING_EMAIL_IN_JWT = 3;
+    
+    //SUBCODE INVALID FMS - 5006
+    final public static int SUBCODE_ERROR_WHILE_UPLOADING_TO_FMS = 2;
+    final public static int SUBCODE_FMS_REJECT_UPLOAD = 3;
 }

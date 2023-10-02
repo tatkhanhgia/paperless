@@ -68,7 +68,7 @@ public class ProcessWorkflowActivity {
         }
         //Check file management to ensure that WoAc already process.
         response = GetFileManagement.getFileManagement(
-                Integer.parseInt(woAc.getFile().getID()),
+                woAc.getFile().getID(),
                 transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
@@ -191,7 +191,7 @@ public class ProcessWorkflowActivity {
         }
 
         response = GetFileManagement.getFileManagement(
-                Integer.parseInt(woAc.getFile().getID()),
+                woAc.getFile().getID(),
                 transactionID);
 
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {

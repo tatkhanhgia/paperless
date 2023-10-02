@@ -84,6 +84,8 @@ public class Configuration {
     private String sendFromAddr;
     private String sendFromName;
          
+    //FMS
+    private String urlFMS;
     
     public static Configuration getInstance() {
         if (instance == null) {
@@ -270,6 +272,8 @@ public class Configuration {
             
             serverTimeType = prop.getProperty("server.time.type") == null ? System.getenv("SERVER_TIME_TYPE") : prop.getProperty("server.time.type");
             
+            urlFMS = prop.getProperty("fms.url");
+            
             keycloakURL = keycloakprop.getProperty("dtis.keycloak.url") == null ? System.getenv("DTIS_KEYCLOAK_URL") : keycloakprop.getProperty("dtis.keycloak.url");
             keycloakRealm = keycloakprop.getProperty("dtis.keycloak.realm") == null ? System.getenv("DTIS_KEYCLOAK_REALM") : keycloakprop.getProperty("dtis.keycloak.realm");
             keycloakClient_secret = keycloakprop.getProperty("dtis.keycloak.clientsecret") == null ? System.getenv("DTIS_KEYCLOAK_CLIENTSECRET") : keycloakprop.getProperty("dtis.keycloak.clientsecret");
@@ -449,4 +453,8 @@ public class Configuration {
     public boolean isShowRequestLog() {
         return this.showRequestLog ;
     }        
+
+    public String getUrlFMS() {
+        return urlFMS;
+    }
 }

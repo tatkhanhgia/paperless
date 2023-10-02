@@ -5,6 +5,7 @@
 package vn.mobileid.id.paperless.objects;
 
 import java.util.Date;
+import vn.mobileid.id.paperless.object.enumration.ObjectType;
 
 /**
  *
@@ -184,23 +185,5 @@ public class Transaction {
         this.modified_at = modified_at;
     }
     
-    public enum ObjectType{
-        QR(1),
-        CSV(2),
-        PDF(3);
-        
-        private int number;
-
-        private ObjectType(int number) {
-            this.number = number;
-        }
-
-        public int getNumber() {
-            return number;
-        }     
-
-        public void setNumber(int number) {
-            this.number = number;
-        }                
-    }
+   
 }

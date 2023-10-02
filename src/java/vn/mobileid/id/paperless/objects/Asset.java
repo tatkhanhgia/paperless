@@ -22,51 +22,51 @@ import vn.mobileid.id.general.annotation.AnnotationORM;
 @JsonRootName("Assets")
 public class Asset {
         
-    @AnnotationORM(nameInDb="ID")
+    @AnnotationORM(columnName="ID")
     private int id;
     
-    @AnnotationORM(nameInDb="FILE_NAME")
+    @AnnotationORM(columnName="FILE_NAME")
     private String name;
     
-    @AnnotationORM(nameInDb="TYPE")
+    @AnnotationORM(columnName="TYPE")
     private int type;
     
     private String type_name;
     
-    @AnnotationORM(nameInDb="SIZE")
+    @AnnotationORM(columnName="SIZE")
     private long size;
     
-    @AnnotationORM(nameInDb="UUID")
+    @AnnotationORM(columnName="UUID")
     private String file_uuid;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
-    @AnnotationORM(nameInDb="CREATED_AT")
+    @AnnotationORM(columnName="CREATED_AT")
     private Date created_at;
     
-    @AnnotationORM(nameInDb="CREATED_BY")
+    @AnnotationORM(columnName="CREATED_BY")
     private String created_by;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
-    @AnnotationORM(nameInDb="LAST_MODIFIED_AT")
+    @AnnotationORM(columnName="LAST_MODIFIED_AT")
     private Date modified_at;
     
-    @AnnotationORM(nameInDb="LAST_MODIFIED_BY")
+    @AnnotationORM(columnName="LAST_MODIFIED_BY")
     private String modified_by;
     
-    @AnnotationORM(nameInDb="USED_BY")
+    @AnnotationORM(columnName="USED_BY")
     private String used_by;
     
     @JsonIgnore
-    @AnnotationORM(nameInDb="BINARY_DATA")
+    @AnnotationORM(columnName="BINARY_DATA")
     private byte[] binaryData;
     
-    @AnnotationORM(nameInDb="META_DATA")
+    @AnnotationORM(columnName="META_DATA")
     private String metadata;
     
-    @AnnotationORM(nameInDb="DMS_PROPERTY")
+    @AnnotationORM(columnName="DMS_PROPERTY")
     private String dbms;
     
-    @AnnotationORM(nameInDb="HMAC")
+    @AnnotationORM(columnName="HMAC")
     private String hmac;
     
     private String base64;

@@ -16,5 +16,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE, ElementType.PARAMETER})
 public @interface AnnotationORM {
-    String nameInDb();
+    String columnName();
 }

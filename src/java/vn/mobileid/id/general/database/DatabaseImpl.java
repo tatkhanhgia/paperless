@@ -25,6 +25,7 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.policy.object.PolicyResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.object.enumration.FileType;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
@@ -825,7 +826,7 @@ public class DatabaseImpl implements Database {
      */
     @Override
     public DatabaseResponse getFileManagement(
-            int fileID,
+            long fileID,
             String transactionID) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
@@ -839,7 +840,7 @@ public class DatabaseImpl implements Database {
                 String str = "{ call USP_FILE_MANAGEMENT_GET(?,?) }";
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
-                cals.setInt("pFILE_ID", fileID);
+                cals.setLong("pFILE_ID", fileID);
 
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
@@ -853,7 +854,7 @@ public class DatabaseImpl implements Database {
                 if (mysqlResult == 1) {
                     rs.next();
                     FileManagement file = new FileManagement();
-                    file.setID(rs.getString("ID"));
+                    file.setID(rs.getLong("ID"));
                     file.setUUID(rs.getString("UUID"));
                     file.setName(rs.getString("NAME"));
                     file.setPages(rs.getInt("PAGES"));
@@ -863,14 +864,14 @@ public class DatabaseImpl implements Database {
                     file.setStatus(rs.getInt("STATUS"));
                     file.setData(rs.getBytes("BINARY_DATA"));
                     file.setIsSigned(rs.getBoolean("PROCESSED_ENABLED"));
-                    if (rs.getString("FILE_TYPE").equals(FileManagement.FileType.PDF.getName())) {
-                        file.setFile_type(FileManagement.FileType.PDF);
+                    if (rs.getString("FILE_TYPE").equals(FileType.PDF.getName())) {
+                        file.setFile_type(FileType.PDF);
                     }
-                    if (rs.getString("FILE_TYPE").equals(FileManagement.FileType.WORD.getName())) {
-                        file.setFile_type(FileManagement.FileType.WORD);
+                    if (rs.getString("FILE_TYPE").equals(FileType.WORD.getName())) {
+                        file.setFile_type(FileType.WORD);
                     }
-                    if (rs.getString("FILE_TYPE").equals(FileManagement.FileType.XSLT.getName())) {
-                        file.setFile_type(FileManagement.FileType.XSLT);
+                    if (rs.getString("FILE_TYPE").equals(FileType.XSLT.getName())) {
+                        file.setFile_type(FileType.XSLT);
                     }
 
                     databaseResponse.setObject(file);
@@ -1116,7 +1117,7 @@ public class DatabaseImpl implements Database {
                         wa.setEnterprise_id(rs.getInt("ENTERPRISE_ID"));
 
                         FileManagement file = new FileManagement();
-                        file.setID(rs.getString("FILE_ID"));
+                        file.setID(rs.getLong("FILE_ID"));
                         file.setName(rs.getString("DOWNLOAD_LINK"));
 //                        file.setData(rs.getBytes("BINARY_DATA"));                        
                         wa.setFile(file);
@@ -1398,7 +1399,7 @@ public class DatabaseImpl implements Database {
      */
     @Override
     public DatabaseResponse updateFileManagement(
-            int id,
+            long id,
             String UUID,
             String DBMS,
             String name,
@@ -1441,7 +1442,7 @@ public class DatabaseImpl implements Database {
             cals.setInt("pSTATUS", status < 0 || status > 1 ? null : status);
             cals.setBlob("pBINARY_DATA", blob);
             cals.setString("pHMAC", hmac);
-            cals.setInt("pFILE_ID", id);
+            cals.setLong("pFILE_ID", id);
             cals.setString("pLAST_MODIFIED_BY", last_modified_by);
             cals.setBoolean("pPROCESSED_ENABLED", is_signed);
             cals.setString("pFILE_TYPE", file_type);
@@ -1996,7 +1997,7 @@ public class DatabaseImpl implements Database {
                     wa.setRequestData(rs.getString("REQUEST_DATA"));
 
                     FileManagement file = new FileManagement();
-                    file.setID(rs.getString("FILE_ID"));
+                    file.setID(rs.getLong("FILE_ID"));
                     file.setName(rs.getString("DOWNLOAD_LINK"));
                     file.setData(rs.getBytes("BINARY_DATA"));
 
@@ -3111,7 +3112,7 @@ public class DatabaseImpl implements Database {
                         wa.setEnterprise_id(rs.getInt("ENTERPRISE_ID"));
 
                         FileManagement file = new FileManagement();
-                        file.setID(rs.getString("FILE_ID"));
+                        file.setID(rs.getLong("FILE_ID"));
                         file.setName(rs.getString("DOWNLOAD_LINK"));
 //                        file.setData(rs.getBytes("BINARY_DATA"));                        
                         wa.setFile(file);

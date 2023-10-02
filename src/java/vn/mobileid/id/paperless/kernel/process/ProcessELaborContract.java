@@ -16,7 +16,6 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.SigningService;
@@ -27,7 +26,6 @@ import vn.mobileid.id.paperless.kernel.UpdateWorkflowActivity;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.FileDataDetails;
 import vn.mobileid.id.paperless.objects.FileManagement;
-import vn.mobileid.id.paperless.objects.FileManagement.FileType;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.KYC;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
@@ -35,6 +33,7 @@ import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.general.annotation.AnnotationJWT;
+import vn.mobileid.id.paperless.object.enumration.FileType;
 import vn.mobileid.id.utils.PDFAnalyzer;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
 
@@ -212,7 +211,7 @@ public class ProcessELaborContract {
 
         //Write into DB
         response = UpdateFileManagement.updateFileManagement(
-                Integer.parseInt(woAc.getFile().getID()),
+                woAc.getFile().getID(),
                 null,
                 null,
                 file_name,
@@ -312,10 +311,9 @@ public class ProcessELaborContract {
         name = AnnotationJWT.replaceWithJWT(name, jwt);
 
         //Write into DB
-        int ids = Integer.parseInt(file.getID());
         file = PDFAnalyzer.analysisPDF(result2.get(0));
         InternalResponse res = UpdateFileManagement.updateFileManagement(
-                ids,
+                file.getID(),
                 null,
                 null,
                 name,

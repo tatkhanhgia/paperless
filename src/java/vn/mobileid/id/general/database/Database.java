@@ -132,7 +132,7 @@ public interface Database {
     ) throws Exception;
 
     public DatabaseResponse getFileManagement(
-            int fileID,
+            long fileID,
             String transaction_id
     ) throws Exception;
 
@@ -191,7 +191,7 @@ public interface Database {
     public HashMap<Integer, String> initTemplateTypeForProcessClass() throws Exception;
 
     public DatabaseResponse updateFileManagement(
-            int id,
+            long id,
             String UUID,
             String DBMS,
             String name,

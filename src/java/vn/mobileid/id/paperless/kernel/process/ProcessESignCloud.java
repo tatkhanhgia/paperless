@@ -15,7 +15,6 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.SigningService;
@@ -90,7 +89,7 @@ public class ProcessESignCloud {
 
         //Write into DB
         response = UpdateFileManagement.updateFileManagement(
-                Integer.parseInt(woAc.getFile().getID()),
+                woAc.getFile().getID(),
                 null,
                 null,
                 file_name,
@@ -214,10 +213,9 @@ public class ProcessESignCloud {
         name = AnnotationJWT.replaceWithJWT(name, jwt);
 
         //Write into DB
-        int ids = Integer.parseInt(file.getID());
         file = PDFAnalyzer.analysisPDF(result2.get(0));
         InternalResponse res = UpdateFileManagement.updateFileManagement(
-                ids,
+                file.getID(),
                 null,
                 null,
                 name,

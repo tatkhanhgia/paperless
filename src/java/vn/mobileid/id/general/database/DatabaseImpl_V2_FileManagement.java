@@ -9,6 +9,7 @@ import java.util.List;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.FileManagement;
 
 /**
  *
@@ -69,4 +70,75 @@ public class DatabaseImpl_V2_FileManagement implements DatabaseV2_FileManagement
         }
         return response;
     }
+
+    @Override
+    public DatabaseResponse getFileManagement(
+            long fileManagementId,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_FILE_MANAGEMENT_GET(?,?)}";
+        
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pFILE_ID", fileManagementId);
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                FileManagement.class,
+                nameStore,
+                input,
+                null,
+                "Get FileManagement");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+       
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse updateFileManagement(
+            long id,
+            String UUID,  
+            String DBMS, 
+            String name, 
+            int pages, 
+            long size,
+            float width, 
+            float height,
+            int status,
+            String hmac,
+            String created_by,
+            String last_modified_by,
+            boolean isSigned,
+            String file_type,
+            String signing_properties, 
+            String hash_values, 
+            String transactionID) throws Exception {
+        String nameStore = "{ CALL USP_FILE_MANAGEMENT_UPDATE(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+        
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pUUID", UUID);
+        input.put("pDMS_PROPERTY", DBMS);
+        input.put("pNAME", name);
+        input.put("pPAGES", pages<0 ? null : pages);
+        input.put("pSIZE", size<0 ? null : size);
+        input.put("pWIDTH", width<0 ? null: width);
+        input.put("pHEIGHT", height <0 ? null : height);
+        input.put("pSTATUS", status<0 ? null : status);
+        input.put("pHMAC", hmac);
+        input.put("pFILE_ID", id);
+        input.put("pLAST_MODIFIED_BY", last_modified_by);
+        input.put("pPROCESSED_ENABLED", isSigned);
+        input.put("pFILE_TYPE", file_type);
+        input.put("pSIGNING_PROPERTIES", signing_properties);
+        input.put("pHASH_VALUES", hash_values);
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(                
+                nameStore,
+                input,
+                null,
+                "Update FileManagement");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+       
+        return response;
+    }
+
 }

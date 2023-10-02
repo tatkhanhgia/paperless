@@ -5,13 +5,11 @@
 package vn.mobileid.id.paperless.kernel;
 
 import java.io.IOException;
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 
 /**
@@ -45,7 +43,7 @@ public class UpdateFileManagement {
      * @throws Exception
      */
     public static InternalResponse updateFileManagement(
-            int id,
+            long id,
             String UUID,
             String DBMS,
             String name,

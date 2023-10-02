@@ -4,13 +4,14 @@
  */
 package vn.mobileid.id.paperless.objects;
 
+import vn.mobileid.id.paperless.object.enumration.FileType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Date;
+import vn.mobileid.id.general.annotation.AnnotationORM;
 import vn.mobileid.id.paperless.serializer.CustomFileManagementSerializer;
 
 /**
@@ -23,32 +24,64 @@ import vn.mobileid.id.paperless.serializer.CustomFileManagementSerializer;
 @JsonSerialize(using = CustomFileManagementSerializer.class)
 public class FileManagement extends Object{
     private byte[] data;
+    
+    @AnnotationORM(columnName = "NAME")
     private String name;
-    private String ID;
+    
+    @AnnotationORM(columnName = "ID")
+    private long ID;
+    
+    @AnnotationORM(columnName = "CREATED_BY")
     private String created_by;
+    
+    @AnnotationORM(columnName = "UUID")
     private String UUID;
+    
+    @AnnotationORM(columnName = "DMS_PROPERTY")
     private String DBMS;
+    
+    @AnnotationORM(columnName = "PAGES")
     private int pages;
+    
+    @AnnotationORM(columnName = "SIZE")
     private long size;
+    
+    @AnnotationORM(columnName = "WIDTH")
     private float width;
+    
+    @AnnotationORM(columnName = "HEIGHT")
     private float height;
+    
+    @AnnotationORM(columnName = "STATUS")
     private int status;    //Disable - enable
+    
+    @AnnotationORM(columnName = "HMAC")
     private String hmac;
+    
+    @AnnotationORM(columnName = "CREATED_AT")
     private Date created_at;
+    
+    @AnnotationORM(columnName = "LAST_MODIFIED_BY")
     private String lastmodified_by;
+    
+    @AnnotationORM(columnName = "LAST_MODIFIED_AT")
     private Date lastmodified_at;
+    
+    @AnnotationORM(columnName = "PROCESSED_ENABLED")
     private boolean isSigned;
-    private FileType file_type;
+    
+    @AnnotationORM(columnName = "FILE_TYPE")
+    private FileType file_type = FileType.PDF;
            
 
-    public FileManagement(byte[] data, String name, String ID, String created_by) {
+    public FileManagement(byte[] data, String name, long ID, String created_by) {
         this.data = data;
         this.name = name;
         this.ID = ID;
         this.created_by = created_by;
     }
 
-    public FileManagement(byte[] data, String name, String ID) {
+    public FileManagement(byte[] data, String name, long ID) {
         this.data = data;
         this.name = name;
         this.ID = ID;
@@ -75,11 +108,11 @@ public class FileManagement extends Object{
         this.name = name;
     }
 
-    public String getID() {
+    public long getID() {
         return ID;
     }
 
-    public void setID(String ID) {
+    public void setID(long ID) {
         this.ID = ID;
     }
 
@@ -203,6 +236,10 @@ public class FileManagement extends Object{
         this.file_type = file_type;
     }
     
+    public void setFile_type(String file_type){
+        this.file_type = FileType.valueOf(file_type);
+    }
+    
     
     
     public static void main(String[] args) throws JsonProcessingException{
@@ -213,19 +250,5 @@ public class FileManagement extends Object{
         System.out.println(mapper.writeValueAsString(a));
     }
     
-    public enum FileType{
-        PDF("PDF"),
-        WORD("DOCX"),
-        XSLT("XSLT");
-        
-        private String name;
-
-        private FileType(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }                
-    }
+    
 }

@@ -4,7 +4,6 @@
  */
 package vn.mobileid.id.paperless.objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Date;
-import jdk.nashorn.internal.ir.annotations.Ignore;
+import vn.mobileid.id.general.annotation.AnnotationORM;
 import vn.mobileid.id.paperless.serializer.CustomWorkflowActivitySerializer;
 
 /**
@@ -23,7 +22,7 @@ import vn.mobileid.id.paperless.serializer.CustomWorkflowActivitySerializer;
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 @JsonSerialize(using = CustomWorkflowActivitySerializer.class)
 public class WorkflowActivity {
-
+    
     private int id;
     private String status;    
     private String enterprise_name;

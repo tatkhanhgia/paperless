@@ -16,10 +16,10 @@ import vn.mobileid.id.general.annotation.AnnotationORM;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QRSize {
-    @AnnotationORM(nameInDb="QR_SIZE_NAME")
+    @AnnotationORM(columnName="QR_SIZE_NAME")
     private String qr_size_name;
     
-    @AnnotationORM(nameInDb="SIZE_VALUE")
+    @AnnotationORM(columnName="SIZE_VALUE")
     private int size;
 
     public QRSize(String qr_size_name, int size) {
