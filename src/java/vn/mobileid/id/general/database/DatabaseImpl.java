@@ -1907,7 +1907,7 @@ public class DatabaseImpl implements Database {
         CallableStatement cals = null;
         String debugString = transactionID + "\n";
         try {
-            String str = "{ call USP_LOGIN(?,?,?,?) }";
+            String str = "{ call USP_LOGIN(?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
@@ -1916,6 +1916,7 @@ public class DatabaseImpl implements Database {
 
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pSTATUS_NAME", java.sql.Types.VARCHAR);
+            cals.registerOutParameter("pPASSWORD_EXPIRED_AT", java.sql.Types.TIMESTAMP);
 
 //                    
             debugString += "\t[SQL] " + cals.toString();
@@ -1934,6 +1935,7 @@ public class DatabaseImpl implements Database {
                 user.setMobile(rs.getString("MOBILE_NUMBER"));
                 user.setId(rs.getInt("ID"));
                 user.setName(rs.getString("USER_NAME"));
+                user.setPasswordExpiredAt(new Date(cals.getTimestamp("pPASSWORD_EXPIRED_AT").getTime()));
                 response.setObject(user);
                 response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }

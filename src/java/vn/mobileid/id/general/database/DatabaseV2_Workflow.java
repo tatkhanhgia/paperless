@@ -20,4 +20,31 @@ public interface DatabaseV2_Workflow {
             String pCREATED_BY,
             String transactionId
     )throws Exception;
+    
+    public DatabaseResponse getWorkflow(
+            long pWORKFLOW_ID,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getRowCountOfWorkflow(
+            String pUSER_EMAIL,
+            long pENTERPRISE_ID,
+            String pWORKFLOW_STATUS,
+            String pLIST_TYPE,
+            boolean pUSE_META_DATA,
+            String pMETA_DATA,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getListOfWorkflow(
+            String pUSER_EMAIL,
+            long pENTERPRISE_ID,
+            String pWORKFLOW_STATUS,
+            String pLIST_TYPE,
+            boolean pUSE_META_DATA,
+            String pMETA_DATA,
+            int pOFFSET,
+            int pROW_COUNT,
+            String transactionId
+    )throws Exception;
 }

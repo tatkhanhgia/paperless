@@ -244,7 +244,7 @@ class CreateConnection {
         if (field.getType() == Date.class) {
             if (data instanceof LocalDateTime) {
                 LocalDateTime local = (LocalDateTime) data;
-                return new Date(local.toInstant(ZoneOffset.UTC).getEpochSecond());
+                return new Date(local.toInstant(ZoneOffset.ofHours(7)).toEpochMilli());
             }
             if (data instanceof Date) {
                 return data;
@@ -283,6 +283,9 @@ class CreateConnection {
                     }                    
                 }
             }
+        }
+        if(field.getType() == Object.class){
+            return data;
         }
         if (!getWrapperTypes().contains(field.getClass())) {
             Class<?> clazz = field.getClass();

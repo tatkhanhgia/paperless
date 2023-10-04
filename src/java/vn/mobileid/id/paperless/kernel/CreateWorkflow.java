@@ -6,7 +6,6 @@ package vn.mobileid.id.paperless.kernel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
@@ -25,6 +24,7 @@ import vn.mobileid.id.utils.Utils;
  *
  * @author GiaTK
  */
+@Deprecated
 public class CreateWorkflow {
 
     /**
@@ -65,6 +65,7 @@ public class CreateWorkflow {
                         null));
     }
 
+    @Deprecated
     /**
      * Create a new Workflow
      *

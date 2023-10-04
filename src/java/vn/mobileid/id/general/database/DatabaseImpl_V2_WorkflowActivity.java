@@ -11,6 +11,7 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.object.enumration.DownloadLinkType;
+import vn.mobileid.id.paperless.object.enumration.WorkflowActivityProductType;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 
 /**
@@ -28,7 +29,7 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
             String pDOWNLOAD_LINK,
             DownloadLinkType pDOWNLOAD_LINK_TYPE,
             String pREMARK,
-            int pPRODUCTION_TYPE,
+            WorkflowActivityProductType pPRODUCTION_TYPE,
             int pWORKFLOW_TYPE,
             String pREQUEST_DATA,
             String pHMAC,
@@ -44,7 +45,7 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
         input.put("pDOWNLOAD_LINK", pDOWNLOAD_LINK);
         input.put("pDOWNLOAD_LINK_TYPE", pDOWNLOAD_LINK_TYPE.getType());
         input.put("pREMARK", pREMARK);
-        input.put("pPRODUCTION_TYPE", pPRODUCTION_TYPE);
+        input.put("pPRODUCTION_TYPE", pPRODUCTION_TYPE.getId());
         input.put("pWORKFLOW_TYPE", pWORKFLOW_TYPE);
         input.put("pREQUEST_DATA", pREQUEST_DATA);
         input.put("pHMAC", pHMAC);

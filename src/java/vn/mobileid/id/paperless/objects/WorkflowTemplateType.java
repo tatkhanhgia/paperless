@@ -7,8 +7,11 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import vn.mobileid.id.general.Resources;
 
 /**
  *
@@ -164,27 +167,6 @@ public class WorkflowTemplateType {
         this.modified_at = modified_at;
     }
 
-    public void appendData(String a, Integer b) {
-        if (enableObjectMap == null) {
-            enableObjectMap = new HashMap<>();
-        }
-        this.enableObjectMap.put(a, b);
-    }
-
-    public WorkflowDetail_Option convertToWLDetail_Option(){
-        WorkflowDetail_Option result = new WorkflowDetail_Option();
-        enableObjectMap.forEach((key, value) -> {
-            String temp_key = key.replace("ENABLE_", "");
-            String temp_value = String.valueOf(value); 
-            try{
-                result.set(temp_key, temp_value);            
-            }catch(Exception e){
-                
-            }
-        });
-        return result;
-    }
-
     public String getMetadata_template() {
         return metadata_template;
     }
@@ -208,4 +190,44 @@ public class WorkflowTemplateType {
     public void setRemark(String remark) {
         this.remark = remark;
     }        
+    
+    public void appendData(String a, Integer b) {
+        if (enableObjectMap == null) {
+            enableObjectMap = new HashMap<>();
+        }
+        this.enableObjectMap.put(a, b);
+    }
+
+    public WorkflowDetail_Option convertToWLDetail_Option(){
+        WorkflowDetail_Option result = new WorkflowDetail_Option();
+        enableObjectMap.forEach((key, value) -> {
+            String temp_key = key.replace("ENABLE_", "");
+            String temp_value = String.valueOf(value); 
+            try{
+                result.set(temp_key, temp_value);            
+            }catch(Exception e){
+                
+            }
+        });
+        return result;
+    }
+    
+    public List<WorkflowAttributeType> convertToWorkflowAttributeType(List<WorkflowAttributeType> src){
+        List<String> temp = new ArrayList<>();
+        for(WorkflowAttributeType type : src){
+            temp.add(type.getName());
+        }
+        for(String key : enableObjectMap.keySet()){
+            String temp_key = key.replace("_ENABLED", "");
+            temp_key = temp_key.toLowerCase();
+            WorkflowAttributeType attributeParent = Resources.getListWorkflowAttributeType().get(temp_key);
+            if(attributeParent != null && (enableObjectMap.get(key) == 1) && !temp.contains(temp_key)){
+                WorkflowAttributeType attribute = (WorkflowAttributeType) attributeParent.clone();
+                attribute.setValue(true);
+                src.add(attribute);
+                temp.add(temp_key);
+            } 
+        }        
+        return src;
+    }
 }

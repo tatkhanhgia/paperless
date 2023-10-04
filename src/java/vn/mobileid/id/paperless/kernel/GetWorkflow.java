@@ -18,6 +18,7 @@ import vn.mobileid.id.paperless.objects.Workflow;
  *
  * @author GiaTK
  */
+@Deprecated
 public class GetWorkflow {
 
     /**

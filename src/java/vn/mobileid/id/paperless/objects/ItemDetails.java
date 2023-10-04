@@ -21,7 +21,12 @@ public class ItemDetails {
     private Object value;
     private String file_field;
     private String file_format;
+    private String remark;
 
+    //Remark language
+    private String remark_language;
+    private String remark_language_en;
+    
     public ItemDetails() {
     }
 
@@ -78,6 +83,36 @@ public class ItemDetails {
     public void setValue(Object value) {
         this.value = value;
     }
+
+    @JsonProperty("remark")
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    @JsonProperty("remark_language")
+    public String getRemark_language() {
+        return remark_language;
+    }
+
+    public void setRemark_language(String remark_language) {
+        this.remark_language = remark_language;
+    }
+
+    @JsonProperty("remark_language_en")
+    public String getRemark_language_en() {
+        return remark_language_en;
+    }
+
+    public void setRemark_language_en(String remark_language_en) {
+        this.remark_language_en = remark_language_en;
+    }
+    
+    
+    
 
     public static Object checkType(int i){
         if(i == 1)

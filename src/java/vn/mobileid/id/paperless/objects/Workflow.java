@@ -18,37 +18,66 @@ import vn.mobileid.id.general.annotation.AnnotationORM;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class Workflow {
-        
+
+    @AnnotationORM(columnName = "ID")
     private int workflow_id;
+
+    @AnnotationORM(columnName = "STATUS")
     private int status; //0 - inactive  1 - active    
+
+    @AnnotationORM(columnName = "TEMPLATE_TYPE")
     private int template_type;
+
+    @AnnotationORM(columnName = "TEMPLATE_TYPE_NAME")
     private String template_type_name;
+
+    @AnnotationORM(columnName = "TEMPLATE_TYPE_NAME_EN")
+    private String template_type_name_en;
+
+    @AnnotationORM(columnName = "LABEL")
     private String label;
+
+    @AnnotationORM(columnName = "WORKFLOW_TYPE")
     private int workflow_type;
+
+    @AnnotationORM(columnName = "WORKFLOW_TYPE_NAME")
     private String workflow_type_name;
+
+    @AnnotationORM(columnName = "WORKFLOW_TYPE_NAME_EN")
+    private String workflow_type_name_en;
+
     private String note;
+    
+    @AnnotationORM(columnName = "CREATED_BY")
     private String created_by;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss a XXX")
+    @AnnotationORM(columnName = "CREATED_AT")
     private Date created_at;
+    
+    @AnnotationORM(columnName = "LAST_MODIFIED_BY")
     private String last_modified_by;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss a XXX")
+    
+    @AnnotationORM(columnName = "LAST_MODIFIED_AT")
     private Date last_modified_at;
     private String metadata;
+
+    @AnnotationORM(columnName = "INITIATOR_ID")
     private int initiator_id;
 
-    public Workflow(int workflow_id, int status, int template_type, String label, int workflow_type, String created_by, Date created_at, String last_modified_by, Date last_modified_at ) {
+    public Workflow(int workflow_id, int status, int template_type, String label, int workflow_type, String created_by, Date created_at, String last_modified_by, Date last_modified_at) {
         this.workflow_id = workflow_id;
-        this.status = status;        
+        this.status = status;
         this.template_type = template_type;
         this.label = label;
         this.workflow_type = workflow_type;
         this.created_by = created_by;
         this.created_at = created_at;
         this.last_modified_by = last_modified_by;
-        this.last_modified_at = last_modified_at;        
+        this.last_modified_at = last_modified_at;
     }
 
-    public Workflow() {    
+    public Workflow() {
     }
 
     @JsonProperty("workflow_id")
@@ -175,8 +204,24 @@ public class Workflow {
 
     public void setInitiator_id(int initiator_id) {
         this.initiator_id = initiator_id;
+    }  
+    
+    public String getWorkflowTemplate_type_name_en() {
+        return template_type_name_en;
+    }
+
+    public void setWorkflowTemplate_type_name_en(String template_type_name_en) {
+        this.template_type_name_en = template_type_name_en;
+    }
+
+    public String getWorkflow_type_name_en() {
+        return workflow_type_name_en;
+    }
+
+    public void setWorkflow_type_name_en(String workflow_type_name_en) {
+        this.workflow_type_name_en = workflow_type_name_en;
     }
     
     
-    
+
 }

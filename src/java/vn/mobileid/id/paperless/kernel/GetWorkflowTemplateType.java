@@ -51,8 +51,7 @@ public class GetWorkflowTemplateType {
                 );
             }
 
-            WorkflowTemplateType templateType = (WorkflowTemplateType) callDB.getObject();
-
+            WorkflowTemplateType templateType = (WorkflowTemplateType) callDB.getObject();            
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     templateType);

@@ -40,6 +40,7 @@ public class PolicySystemConfiguration  extends Attributes{
 
         private int default_row_count;
         private TokenConfiguration tokenConfig;
+        private String dateFormat;
 
         @JsonProperty("defaultRowCount")
         public int getDefault_row_count() {
@@ -58,6 +59,17 @@ public class PolicySystemConfiguration  extends Attributes{
         public void setTokenConfig(TokenConfiguration tokenConfig) {
             this.tokenConfig = tokenConfig;
         }
+
+        @JsonProperty("dateFormat")
+        public String getDateFormat() {
+            return dateFormat;
+        }
+
+        public void setDateFormat(String dateFormat) {
+            this.dateFormat = dateFormat;
+        }
+        
+        
 
     }
 

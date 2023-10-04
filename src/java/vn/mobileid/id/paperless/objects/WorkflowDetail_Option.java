@@ -4,7 +4,6 @@
  */
 package vn.mobileid.id.paperless.objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.paperless.serializer.CustomWorkflowDetailSerializer;
 
 /**

@@ -14,6 +14,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import vn.mobileid.id.paperless.objects.Workflow;
+import vn.mobileid.id.utils.PolicyConfiguration;
 
 /**
  *
@@ -37,23 +38,24 @@ public class CustomListWorkflowSerializer implements JsonSerializable {
         jg.writeStartObject();
         jg.writeFieldName("workflows");
         jg.writeStartArray();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa XXX");
+        DateFormat dateFormat = new SimpleDateFormat(PolicyConfiguration.getInstant().getSystemConfig().getAttributes().get(0).getDateFormat());
         for (Workflow workflow : listWo) {
             jg.writeStartObject();
             jg.writeNumberField("workflow_id", workflow.getWorkflow_id());            
             jg.writeStringField("workflow_label", workflow.getLabel());
             jg.writeStringField("workflow_type_name", workflow.getWorkflow_type_name());   
             jg.writeStringField("workflow_template_type_name", workflow.getWorkflowTemplate_type_name());   
+            jg.writeStringField("workflow_template_type_name_en", workflow.getWorkflowTemplate_type_name_en());   
             jg.writeNumberField("workflow_template_type_id", workflow.getWorkflowTemplate_type());
             jg.writeStringField("status", (workflow.getStatus()==1?"ACTIVE":"INACTIVE"));                       
             jg.writeStringField("note",workflow.getNote());
             jg.writeStringField("metadata", workflow.getMetadata());
             jg.writeStringField("created_at", dateFormat.format(workflow.getCreated_at()));
-//            jg.writeStringField("created_by", workflow.getCreated_by());
-//            if (workflow.getLast_modified_at() != null) {
-//                jg.writeStringField("modified_at", dateFormat.format(workflow.getLast_modified_at()));
-//                jg.writeStringField("modified_by", workflow.getLast_modified_by());
-//            }
+            jg.writeStringField("created_by", workflow.getCreated_by());
+            if (workflow.getLast_modified_at() != null) {
+                jg.writeStringField("modified_at", dateFormat.format(workflow.getLast_modified_at()));
+                jg.writeStringField("modified_by", workflow.getLast_modified_by());
+            }
             jg.writeEndObject();
         }
         jg.writeEndArray();

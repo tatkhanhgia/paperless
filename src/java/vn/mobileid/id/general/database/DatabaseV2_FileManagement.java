@@ -12,13 +12,12 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
  */
 public interface  DatabaseV2_FileManagement {
     public DatabaseResponse createFileManagement(
-            String UUID,
             String name,
             int pages,
             int size,
             float width,
             float height,
-            int uuid,
+            String uuid,
             String HMAC,
             String created_by,
             String DBMS,

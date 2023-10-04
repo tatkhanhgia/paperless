@@ -7,6 +7,7 @@ package vn.mobileid.id.general.database;
 import java.util.Date;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.object.enumration.DownloadLinkType;
+import vn.mobileid.id.paperless.object.enumration.WorkflowActivityProductType;
 
 /**
  *
@@ -22,7 +23,7 @@ public interface DatabaseV2_WorkflowActivity {
             String pDOWNLOAD_LINK,
             DownloadLinkType pDOWNLOAD_LINK_TYPE,
             String pREMARK,
-            int pPRODUCTION_TYPE,
+            WorkflowActivityProductType pPRODUCTION_TYPE,
             int pWORKFLOW_TYPE,
             String pREQUEST_DATA,
             String pHMAC,

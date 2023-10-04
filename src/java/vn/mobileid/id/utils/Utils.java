@@ -1180,4 +1180,29 @@ public class Utils {
             return null;
         }
     }
+    
+    public static Object getFromJson_(String name, String json) {
+        try {
+            JsonNode node = new ObjectMapper().readTree(json);
+            JsonNode childnode = node.findValue(name);
+            if(childnode.isBoolean()){
+                return childnode.asBoolean();
+            }
+            if(childnode.isTextual()){
+                return childnode.asText();
+            }
+            if(childnode.isInt()){
+                return childnode.asInt();
+            }
+            if(childnode.isLong()){
+                return childnode.asLong();
+            }
+            if(childnode.isBinary()){
+                return childnode.asToken().asByteArray();
+            }
+            return null;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
 }

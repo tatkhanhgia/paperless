@@ -533,6 +533,5 @@ public interface Database {
             String toDate,
             String languageName,
             String transactionId
-           
     )throws Exception;
 }

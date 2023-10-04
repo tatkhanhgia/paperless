@@ -28,7 +28,7 @@ public class CreateTransaction {
      * @param pHMAC
      * @param pCREATED_BY
      * @param transactionId
-     * @return long TransactionId
+     * @return String TransactionId
      * @throws Exception 
      */
     public static InternalResponse createTransaction(

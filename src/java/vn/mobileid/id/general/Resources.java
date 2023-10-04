@@ -13,10 +13,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
+import vn.mobileid.id.general.database.DatabaseImpl_V2;
+import vn.mobileid.id.general.database.DatabaseImpl_V2_WorkflowDetails;
+import vn.mobileid.id.general.database.DatabaseV2;
+import vn.mobileid.id.general.database.DatabaseV2_WorkflowDetails;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.EventAction;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
+import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
 
 /**
@@ -27,13 +33,32 @@ public class Resources extends HttpServlet {
 
     private static volatile Logger LOG = LogManager.getLogger(Resources.class);
 
+    //Save response code
     private static volatile HashMap<String, ResponseCode> responseCodes = new HashMap<>();
-    private static volatile HashMap<String, WorkflowActivity> ListWorkflowActivity = new HashMap<>(100, 1f);
+
+    //Save temporal Workflow Activity
+    private static volatile HashMap<String, WorkflowActivity> listWorkflowActivity = new HashMap<>(100, 1f);
+
+    //Save  Workflow Template Type Name
     private static volatile HashMap<Integer, String> listWorkflowTemplateTypeName = new HashMap<>();
+
+    //Save  AssetType
     private static volatile HashMap<String, Integer> listAssetType = new HashMap();
+
+    //Save Workflow Template Type
     private static volatile HashMap<String, WorkflowTemplateType> listWoTemplateType = new HashMap<>();
+
+    //Save AuthorizeCode when user has been created
     private static volatile HashMap<String, String> queueAuthorizeCode = new HashMap();
+
+    //Save ForgotPassword when user using API "Forgot Password"
     private static volatile HashMap<String, String> queueForgotPassword = new HashMap<>();
+
+    //Save Workflow Detail Attribute Type in DB <=> mapping with Workflow Detail
+    private static volatile HashMap<String, WorkflowAttributeType> listWorkflowDetailAttributeType = new HashMap<>();
+
+    //Save Event Action in DB <=> Mapping with Action, API 
+    private static volatile HashMap<Integer, EventAction> listEventAction = new HashMap<>();
 
     @Override
     public void init() {
@@ -56,12 +81,9 @@ public class Resources extends HttpServlet {
             }
         }
 
-        if (ListWorkflowActivity.isEmpty()) {
-            List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
-            for (WorkflowActivity workflowAc : listOfWA) {
-                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
-            }
-        }
+        reloadListWorkflowDetailAttributeTypes();
+
+        reloadListEventAction();
 
         LOG.info("Service is started up and ready to use!");
         System.out.println("\tTime init:" + (System.currentTimeMillis() - start));
@@ -77,21 +99,7 @@ public class Resources extends HttpServlet {
         }
     }
 
-    public static void reloadListWorkflowActivity() throws Exception {
-        Database db = new DatabaseImpl();
-        if (ListWorkflowActivity.isEmpty() || ListWorkflowActivity == null) {
-            ListWorkflowActivity = new HashMap();
-        }
-        List<WorkflowActivity> listOfWA = db.getListWorkflowActivity();
-        for (WorkflowActivity workflowAc : listOfWA) {
-            if (!ListWorkflowActivity.containsKey(String.valueOf(workflowAc.getId()))) {
-                ListWorkflowActivity.put(String.valueOf(workflowAc.getId()), workflowAc);
-            }
-        }
-    }
-
     public static void main(String[] args) throws Exception {
-        Resources.reloadListWorkflowActivity();
     }
 
     public static void reloadListWorkflowTemplateTypeName() throws Exception {
@@ -100,6 +108,19 @@ public class Resources extends HttpServlet {
         DatabaseResponse res = db.getHashMapWorkflowTemplateType();
         if (res != null) {
             listWorkflowTemplateTypeName = (HashMap<Integer, String>) res.getObject();
+        }
+    }
+
+    public static void reloadListEventAction() throws Exception {
+        DatabaseV2 db = new DatabaseImpl_V2();
+        listEventAction = new HashMap<>();
+        DatabaseResponse response = db.getEventActions();
+        if (response != null) {
+            List<EventAction> list = (List<EventAction>) response.getObject();
+            for (EventAction element : list) {
+                Long temp = element.getId();
+                listEventAction.put(temp.intValue(), element);
+            }
         }
     }
 
@@ -124,33 +145,46 @@ public class Resources extends HttpServlet {
         }
     }
 
+    public static void reloadListWorkflowDetailAttributeTypes() throws Exception {
+        DatabaseV2_WorkflowDetails callDb = new DatabaseImpl_V2_WorkflowDetails();
+        DatabaseResponse response = callDb.getWorkflowDetailAttributeTypes();
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            throw new Exception("Cannot load list Workflow Detail Attribute Types!!");
+        }
+        List<WorkflowAttributeType> temps = (List<WorkflowAttributeType>) response.getObject();
+        listWorkflowDetailAttributeType.clear();
+        for (WorkflowAttributeType temp : temps) {
+            listWorkflowDetailAttributeType.put(temp.getName(), temp);
+        }
+    }
+
     public static HashMap<String, ResponseCode> getResponseCodes() {
         return responseCodes;
     }
 
     public static HashMap<String, WorkflowActivity> getListWorkflowActivity() {
-        return ListWorkflowActivity;
+        return listWorkflowActivity;
     }
-        
+
     public static WorkflowActivity getWorkflowActivity(String key) {
-        return ListWorkflowActivity.get(key);
+        return listWorkflowActivity.get(key);
     }
 
     public static void putIntoRAM(String key, WorkflowActivity woAc) {
-        if (ListWorkflowActivity.size() == 100) {
+        if (listWorkflowActivity.size() == 100) {
             Thread clear75PercentageOfRam = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    for (String temp : ListWorkflowActivity.keySet()) {
-                        ListWorkflowActivity.remove(temp);
-                        if (ListWorkflowActivity.size() >= 75) {
+                    for (String temp : listWorkflowActivity.keySet()) {
+                        listWorkflowActivity.remove(temp);
+                        if (listWorkflowActivity.size() >= 75) {
                             break;
                         }
                     }
                 }
             });
-          clear75PercentageOfRam.start();
-          ListWorkflowActivity.put(key, woAc);
+            clear75PercentageOfRam.start();
+            listWorkflowActivity.put(key, woAc);
         }
     }
 
@@ -182,4 +216,11 @@ public class Resources extends HttpServlet {
         Resources.queueForgotPassword = queue;
     }
 
+    public static HashMap<String, WorkflowAttributeType> getListWorkflowAttributeType() {
+        return listWorkflowDetailAttributeType;
+    }
+
+    public static HashMap<Integer, EventAction> getListEventAction() {
+        return listEventAction;
+    }
 }

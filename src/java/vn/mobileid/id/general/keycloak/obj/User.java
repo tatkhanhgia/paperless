@@ -7,6 +7,7 @@ package vn.mobileid.id.general.keycloak.obj;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 
 /**
  *
@@ -41,6 +42,9 @@ public class User {
     private int id;
 
     private int aid; //authorized party ID
+    
+    //Internal 
+    private Date passwordExpiredAt;
     
     @JsonProperty("exp")
     public long getExp() {
@@ -249,7 +253,12 @@ public class User {
     public void setId(int id) {
         this.id = id;
     }
-    
-    
-    
+
+    public Date getPasswordExpiredAt() {
+        return passwordExpiredAt;
+    }
+
+    public void setPasswordExpiredAt(Date passwordExpiredAt) {
+        this.passwordExpiredAt = passwordExpiredAt;
+    }
 }

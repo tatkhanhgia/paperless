@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -91,35 +88,6 @@ public class GetWorkflowActivity {
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 (WorkflowActivity) res.getObject());
-    }
-
-    /**
-     * Get a list of workflow activity
-     *
-     * @param aid - Enterprise id
-     * @param email - Email of User
-     * @param transactionID
-     * @return List of Workflow Activity
-     * @throws Exception
-     */
-    public static List<WorkflowActivity> getListWorkflowActivity(
-            int aid,
-            String email,
-            String transactionID
-    ) throws Exception {
-//        HashMap<String, WorkflowActivity> hashMapWoAc = Resources.getListWorkflowActivity();
-        List<WorkflowActivity> listWoAc = new ArrayList<>();
-        HashMap<String, WorkflowActivity> hashMapWoAc = null;
-        if (hashMapWoAc == null || hashMapWoAc.isEmpty()) {
-            Resources.reloadListWorkflowActivity();
-            hashMapWoAc = Resources.getListWorkflowActivity();
-        }
-        for (WorkflowActivity woAc : hashMapWoAc.values()) {
-            if (woAc.getEnterprise_id() == aid && woAc.getUser_email().equals(email)) {
-                listWoAc.add(woAc);
-            }
-        }
-        return listWoAc;
     }
 
     //Plan2 get from DB

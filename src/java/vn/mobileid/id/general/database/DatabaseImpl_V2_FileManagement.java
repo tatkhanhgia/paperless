@@ -18,13 +18,12 @@ import vn.mobileid.id.paperless.objects.FileManagement;
 public class DatabaseImpl_V2_FileManagement implements DatabaseV2_FileManagement{
     
     public DatabaseResponse createFileManagement(
-            String UUID,
             String name,
             int pages,
             int size,
             float width,
             float height,
-            int uuid,
+            String uuid,
             String HMAC,
             String created_by,
             String DBMS,
@@ -36,7 +35,7 @@ public class DatabaseImpl_V2_FileManagement implements DatabaseV2_FileManagement
         String nameStore = "{ CALL USP_FILE_MANAGEMENT_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
         
         HashMap<String, Object> input = new HashMap<>();
-        input.put("pUUID", UUID);
+        input.put("pUUID", uuid);
         input.put("pDMS_PROPERTY", DBMS);
         input.put("pNAME", name);
         input.put("PAGES", pages);

@@ -91,13 +91,6 @@ public class PaperlessConstant {
 
     //Template Type
     final public static int NUMBER_WORKFLOW_TEMPLATE_TYPE = 8;
-//    final public static int TEMPLATE_TYPE_ID_CARD_SECURE_QR_TEMPLATE = 1;
-//    final public static int TEMPLATE_TYPE_SECURE_QR_TEMPLATE = 2;
-//    final public static int TEMPLATE_TYPE_COURSE_CERTIFICATE_PDF_TEMPLATE = 3;
-//    final public static int TEMPLATE_TYPE_SIMPLE_PDF_STAMPING_TEMPLATE = 4;
-//    final public static int TEMPLATE_TYPE_PDF_STAMPING_TEMPLATE = 5;
-//    final public static int TEMPLATE_TYPE_FILE_sTAMPING_TEMPLATE = 6;
-//    final public static int TEMPLATE_TYPE_EIDCONTRACT = 7;
 
     //Internal - HTTP CODE
     final public static int HTTP_CODE_SUCCESS = 200;
@@ -155,6 +148,7 @@ public class PaperlessConstant {
     final public static int SUBCODE_MISSING_USER_EMAIL = 17;
     final public static int SUBCODE_MISSING_AUTHORIZATION_CODE = 18;
     final public static int SUBCODE_USER_ALREADY_VERIFIED = 19;
+    final public static int SUBCODE_USER_NEED_TO_CHANGE_PASSWORD = 20;
 
     //SUBCODE INVALID WORKFLOW - 5001
     final public static int SUBCODE_MISSING_WORKFLOW_LABEL = 2;

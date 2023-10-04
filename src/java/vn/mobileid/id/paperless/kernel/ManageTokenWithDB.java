@@ -66,6 +66,7 @@ public class ManageTokenWithDB {
 
     private static long now;
 
+    //<editor-fold defaultstate="collapsed" desc="Process Login">
     /**
      * Processing Login
      *
@@ -147,7 +148,9 @@ public class ManageTokenWithDB {
                         "en",
                         null));
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Process Login with URL Encode">
     /**
      * Processing Login with type URLEncode
      *
@@ -178,7 +181,9 @@ public class ManageTokenWithDB {
                 Boolean.valueOf(map.get("remember_me_enabled")),
                 transactionID);
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Process Verify">
     public static InternalResponse processVerify(
             final HttpServletRequest request,
             String transactionID,
@@ -201,7 +206,9 @@ public class ManageTokenWithDB {
                 ? verifyAdminMode(token, transactionID)
                 : verify(token, transactionID, false);
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="ProcessRevoke">
     public static InternalResponse processRevoke(
             final HttpServletRequest request,
             String payload,
@@ -261,7 +268,9 @@ public class ManageTokenWithDB {
                 object.getRefreshToken(),
                 transactionID);
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Process Login with SSO">
     public static InternalResponse processLoginSSO(
             String payload,
             String transactionID
@@ -288,8 +297,11 @@ public class ManageTokenWithDB {
         //Login         
         return loginSSO(jwtdata, transactionID);
     }
-
-    //====================INTERNAL FUNCTION==========
+    //</editor-fold>
+    
+    //==============================INTERNAL MIDDLE METHOD=============================
+    
+    //<editor-fold defaultstate="collapsed" desc="Login">
     private static InternalResponse login(
             String email,
             String pass,
@@ -311,6 +323,18 @@ public class ManageTokenWithDB {
         }
 
         User info = (User) res.getObject();
+        
+        //Check if User need to change password because of the policy 
+        if(info.getPasswordExpiredAt().compareTo(Date.from(Instant.now()))<=0){
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                    PaperlessConstant.SUBCODE_USER_NEED_TO_CHANGE_PASSWORD,
+                    "en",
+                    null)
+            );
+        }
 
         InternalResponse res2 = GetEnterpriseInfo.getEnterpriseInfo(
                 info.getEmail(),
@@ -359,7 +383,9 @@ public class ManageTokenWithDB {
             throw new Exception("Cannot create token!", e);
         }
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Verify">
     private static InternalResponse verify(
             String token,
             String transactionID,
@@ -462,7 +488,9 @@ public class ManageTokenWithDB {
                         null));
 
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Verify Admin Mode">
     private static InternalResponse verifyAdminMode(
             String token,
             String transactionID) throws Exception {
@@ -524,7 +552,9 @@ public class ManageTokenWithDB {
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 ent);
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Revoke">
     private static InternalResponse revoke(
             String token,
             String transactionID) throws Exception {
@@ -577,7 +607,9 @@ public class ManageTokenWithDB {
 
         return ManageRefreshToken.remove(data.getSid(), transactionID);
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Recreate Token">
     private static InternalResponse reCreate(
             String token,
             String transactionID) throws Exception {
@@ -672,7 +704,9 @@ public class ManageTokenWithDB {
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 new ObjectMapper().writeValueAsString(response));
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Login SSO">
     private static InternalResponse loginSSO(
             JWT_Request request,
             String transactionID) throws Exception {
@@ -762,15 +796,20 @@ public class ManageTokenWithDB {
         }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, response);
     }
-
+    //</editor-fold>
+    
+    //==============================INTERNAL LOWER METHOD=============================
+    
+    //<editor-fold defaultstate="collapsed" desc="Check Access Token">
     private static InternalResponse checkAccessToken(
             String email,
             String sessionID,
             String transactionID) throws Exception {
         return ManageRefreshToken.check(email, sessionID, transactionID);
     }
-
-    //===============INTERNAL METHOD===========================
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Create Header of JWT">
     private static String createHeader() {
         String temp = "{";
         temp += "\"alg\":" + "\"" + "RS256" + "\",";
@@ -778,7 +817,9 @@ public class ManageTokenWithDB {
         temp += "}";
         return temp;
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Create Payload of JWT">
     private static String createPayload(User user) {
         try {
             return new ObjectMapper().writeValueAsString(user);
@@ -791,7 +832,9 @@ public class ManageTokenWithDB {
             return null;
         }
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Create Basic User Data of JWT">
     private static User createBasicUserData(
             User user,
             Enterprise enterprise
@@ -822,7 +865,9 @@ public class ManageTokenWithDB {
 //        temp.setMobile(user.getMobile());
         return temp;
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Create AccessToken + Refresh Token">
     /**
      * Create an Access Token + RefreshToke + SessionID + Time Position of
      * parameter [0] : accessToken [1] : refreshToken [2] : sessionID [3] : Iat
@@ -857,7 +902,9 @@ public class ManageTokenWithDB {
         result[4] = String.valueOf(temps.toInstant().plusSeconds(PaperlessConstant.refresh_token_expired_in).toEpochMilli());
         return result;
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Create Refresh Token">
     private static String createRefreshToken(
             User user) throws JsonProcessingException, IOException, GeneralSecurityException, Exception {
         //Create Data
@@ -878,7 +925,9 @@ public class ManageTokenWithDB {
                 PaperlessConstant.alg);
         return header + "." + payload + "." + signature;
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Hmac SHA256">
     private static String hmacSha256(String data, String secret) {
         try {
             byte[] hash = secret.getBytes(StandardCharsets.UTF_8);
@@ -898,7 +947,9 @@ public class ManageTokenWithDB {
             return null;
         }
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get Private Key">
     private static String getPrivateKey() throws IOException, GeneralSecurityException {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         InputStream input = loader.getResourceAsStream("resources/config/key.key");
@@ -906,7 +957,9 @@ public class ManageTokenWithDB {
         PrivateKey pri = Crypto.getPrivateKeyFromString(file, "base64");
         return Base64.getEncoder().encodeToString(pri.getEncoded());
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get PublicKey">
     private static PublicKey getPublicKey() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         InputStream input = loader.getResourceAsStream("resources/config/key.pub");
@@ -921,7 +974,9 @@ public class ManageTokenWithDB {
 //        return Base64.getEncoder().encodeToString(kf.generatePublic(spec).getEncoded());
         return kf.generatePublic(spec);
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Verify token by OAUTH">
     private static InternalResponse verifyTokenByOAUTH(
             String token,
             PublicKey publicKey) {
@@ -965,7 +1020,9 @@ public class ManageTokenWithDB {
                             null));
         }
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Verify token by Code">
     private static boolean verifyTokenByCode(String data, String signature, PublicKey pub) throws Exception {
         try {
             Security.addProvider(new BouncyCastleProvider());
@@ -981,7 +1038,9 @@ public class ManageTokenWithDB {
             throw new Exception("SignatureException!", ex);
         }
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Check payload is contain login data?">
     private static boolean checkPayload(String payload) {
         if (!payload.contains("username") || !payload.contains("password")) {
             return false;
@@ -993,6 +1052,7 @@ public class ManageTokenWithDB {
         }
         return true;
     }
+    //</editor-fold>
 
     public static void main(String[] args) throws NoSuchAlgorithmException, FileNotFoundException, IOException, GeneralSecurityException, Exception {
 //        System.out.println(createHeader());

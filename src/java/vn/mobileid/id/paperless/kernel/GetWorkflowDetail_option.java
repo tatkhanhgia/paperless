@@ -16,6 +16,7 @@ import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
  *
  * @author GiaTK
  */
+@Deprecated
 public class GetWorkflowDetail_option {
 
     /**
