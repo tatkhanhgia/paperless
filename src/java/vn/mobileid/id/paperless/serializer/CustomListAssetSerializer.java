@@ -5,20 +5,12 @@
 package vn.mobileid.id.paperless.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializable;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import vn.mobileid.id.paperless.objects.Asset;
 
@@ -51,7 +43,7 @@ public class CustomListAssetSerializer implements JsonSerializable {
             jg.writeStringField("asset_name", asset.getName());
             jg.writeNumberField("asset_size", asset.getSize());
             jg.writeStringField("asset_type", asset.getType_name());
-            jg.writeStringField("workflow_use", "null");            
+            jg.writeStringField("workflow_use", asset.getUsed_by());            
             jg.writeStringField("created_at", dateFormat.format(asset.getCreated_at()));
             jg.writeStringField("created_by", asset.getCreated_by());
             if (asset.getModified_at() != null) {

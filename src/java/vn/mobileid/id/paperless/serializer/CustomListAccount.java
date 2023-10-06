@@ -47,6 +47,7 @@ public class CustomListAccount implements JsonSerializable {
             jg.writeStringField("job_title", account.getJob_title()==null?"user":account.getJob_title());
             jg.writeStringField("enterprise_name", account.getEnterprise_name());
             jg.writeStringField("role", account.getRole());            
+            jg.writeStringField("role_vn", account.getRole_vn());            
             jg.writeEndObject();
         }
         jg.writeEndArray();

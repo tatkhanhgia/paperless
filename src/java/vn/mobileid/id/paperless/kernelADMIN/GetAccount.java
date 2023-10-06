@@ -5,18 +5,15 @@
 package vn.mobileid.id.paperless.kernelADMIN;
 
 import java.util.List;
-import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.database.Database;
-import vn.mobileid.id.general.database.DatabaseImpl;
+import vn.mobileid.id.general.database.DatabaseImpl_V2_User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.kernel.GetEnterpriseInfo;
-import vn.mobileid.id.paperless.kernel.GetUser;
+import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
+import vn.mobileid.id.paperless.kernel_v2.GetUser;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
-import vn.mobileid.id.utils.Utils;
 
 /**
  *
@@ -24,6 +21,7 @@ import vn.mobileid.id.utils.Utils;
  */
 public class GetAccount {
 
+    //<editor-fold defaultstate="collapsed" desc="Get Account">
     /**
      * Get về Account 
      * @param email
@@ -95,7 +93,9 @@ public class GetAccount {
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 account);
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get Accounts">
     /**
      * Get về toàn bộ accoun thuộc về enterprise nào đó
      * @param enterprise_name
@@ -107,14 +107,12 @@ public class GetAccount {
      * @throws Exception 
      */
     public static InternalResponse getAccounts(
-            String enterprise_name,
             int enterprise_id,
             int offset,
             int rowCount,
             String transactionId
     ) throws Exception {
-        DatabaseResponse response = new DatabaseImpl().getListUser(
-                enterprise_name,
+        DatabaseResponse response = new DatabaseImpl_V2_User().getListUser(
                 enterprise_id,
                 offset,
                 rowCount,
@@ -138,19 +136,20 @@ public class GetAccount {
                 response.getObject()
         );
     }
-
+    //</editor-fold>
+    
     public static void main(String[] agrs) throws Exception{
-        InternalResponse res = GetAccount.getAccounts(
-                "",
-                3, 
-                1,
-                3, 
-                "transactionId");
-        
-        if(res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
-            System.out.println("Error");
-        } else {
-            List<Account> accounts = (List<Account>) res.getData();
-        }
+//        InternalResponse res = GetAccount.getAccounts(
+//                "",
+//                3, 
+//                1,
+//                3, 
+//                "transactionId");
+//        
+//        if(res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+//            System.out.println("Error");
+//        } else {
+//            List<Account> accounts = (List<Account>) res.getData();
+//        }
     }    
 }

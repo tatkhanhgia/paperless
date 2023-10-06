@@ -30,20 +30,49 @@
     <servlet>
         <servlet-name>adminServlet</servlet-name>
         <servlet-class>vn.mobileid.id.general.api.AdminServicesController</servlet-class>
-        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
         <servlet-name>assetServlet</servlet-name>
         <servlet-class>vn.mobileid.id.general.api.AssetServiceController</servlet-class>
-        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet>
+        <servlet-name>accountServlet</servlet-name>
+        <servlet-class>vn.mobileid.id.general.api.AccountServiceController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>userServlet</servlet-name>
+        <servlet-class>vn.mobileid.id.general.api.UserServiceController_V2</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>enterpriseServlet</servlet-name>
+        <servlet-class>vn.mobileid.id.general.api.EnterpriseServiceController_V2</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>workflowActivityServlet</servlet-name>
+        <servlet-class>vn.mobileid.id.general.api.WorkflowActivityServiceController_V2</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>resourcesLoad</servlet-name>
         <servlet-class>vn.mobileid.id.general.Resources</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
-    
-    
+    <servlet-mapping>
+        <servlet-name>accountServlet</servlet-name>
+        <url-pattern>/v2/account/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>workflowActivityServlet</servlet-name>
+        <url-pattern>/v1/workflowactivity/*</url-pattern>
+        <url-pattern>/v2/workflowactivity/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>enterpriseServlet</servlet-name>
+        <url-pattern>/v2/enterprise/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>userServlet</servlet-name>
+        <url-pattern>/v2/settings/*</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>adminServlet</servlet-name>
         <url-pattern>/*</url-pattern>

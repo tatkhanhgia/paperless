@@ -11,19 +11,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.Base64;
-import java.util.Enumeration;
-import java.util.Map;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
@@ -84,7 +76,7 @@ public class AssetServiceController extends HttpServlet {
         String getDetail_Regex = "/[0-9]+/details";
         String download_Regex = "/[0-9]+";
         String downloadBase64_Regex = "/[0-9]+/base64";
-        String upload_Regex = "";
+        String upload_Regex = "";        
         String uploadBase64_Regex = "/base64";
         String getList_Regex = "^/(ALL|INACTIVE|ACTIVE)[0-9/]*$";
         String getTotal_Regex = "^/gettotal/(ALL|INACTIVE|ACTIVE)[0-9/]*$";
@@ -125,8 +117,7 @@ public class AssetServiceController extends HttpServlet {
                 if (pathInfo.matches(getList_Regex)) {
                     response = this.getListAsset(req);
                     break;
-                } 
-                
+                }                 
                 break;
             }
             case "DELETE": {
@@ -150,12 +141,21 @@ public class AssetServiceController extends HttpServlet {
                 }
                 break;
             }
+            case "PUT":{
+                if(pathInfo != null && pathInfo.matches("/[0-9]+")){
+                    response = this.updateAsset(req);
+                    break;
+                }
+                if(pathInfo != null && pathInfo.matches("/[0-9]+/base64")){
+                    response = this.updateAssetBase64(req);
+                    break;
+                }
+            }
         }
         res = populateHttpServletResponse(response, res);       
     }
 
-//    @DELETE
-//    @Path("/v1/asset/{id}")
+    //<editor-fold defaultstate="collapsed" desc="Delete Asset">
     public Response deleteAsset(
             @Context final HttpServletRequest request,
             @PathParam("id") int id) {
@@ -198,9 +198,9 @@ public class AssetServiceController extends HttpServlet {
                 .entity("{Internal Server Error}")
                 .build();
     }
-
-//    @GET
-//    @Path("/v1/asset/{id}/template")
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get Asset Template">
     public Response getAssetTemplate(
             @Context final HttpServletRequest request,
             @PathParam("id") int id) {
@@ -245,9 +245,9 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-
-//    @GET
-//    @Path("/v1/asset/{id}/details")
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="get Asset Details">
     public Response getAssetDetails(
             @Context final HttpServletRequest request,
             @PathParam("id") int id) {
@@ -292,9 +292,9 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
+    //</editor-fold>
 
-//    @GET
-//    @Path("/v1/asset/{id}")
+    //<editor-fold defaultstate="collapsed" desc="Download ">
     public Response downloadAsset(
             @Context final HttpServletRequest request,
             @PathParam("id") int id) {
@@ -339,9 +339,9 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-
-//    @GET
-//    @Path("/v1/asset/{id}/base64")
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Download Base64">
     public Response downloadAssetBase64(
             @Context final HttpServletRequest request,
             @PathParam("id") int id) {
@@ -386,9 +386,9 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-
-//    @POST
-//    @Path("/v1/asset")
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Upload Asset">
     public Response uploadAsset(
             @Context final HttpServletRequest request) {
         String transactionID = "";
@@ -431,9 +431,9 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-
-//    @POST
-//    @Path("/v1/asset/base64")
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Upload Base64">
     public Response uploadAssetBase64(
             @Context final HttpServletRequest request,
             String payload) {
@@ -477,7 +477,9 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-
+    //</editor-fold>
+        
+    //<editor-fold defaultstate="collapsed" desc="Update Asset">
     public Response updateAsset(
         @Context final HttpServletRequest request) {
         String transactionID = "";
@@ -490,9 +492,7 @@ public class AssetServiceController extends HttpServlet {
                     null,
                     0);
 
-            response = PaperlessService.uploadAsset(
-                    request,
-                    transactionID);
+            response = PaperlessService.updateAsset(request, transactionID);
 
             debugResponseLOG("UpdateAsset", response);
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -512,7 +512,7 @@ public class AssetServiceController extends HttpServlet {
             LogHandler.error(
                     this.getClass(),
                     transactionID,
-                    "Error while uploading asset",
+                    "Error while updating asset",
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
@@ -520,9 +520,52 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
+    //</editor-fold>
     
-//    @GET
-//    @Path("/v1/asset/{document_status}{var:.*}")
+    //<editor-fold defaultstate="collapsed" desc="Update Asset Base64">
+    public Response updateAssetBase64(
+        @Context final HttpServletRequest request) {
+        String transactionID = "";
+        try {
+            InternalResponse response;
+
+            transactionID = debugRequestLOG(
+                    "Update Asset",
+                    request,
+                    null,
+                    0);
+
+            response = PaperlessService.updateAssetBase64(request, transactionID);
+
+            debugResponseLOG("UpdateAsset", response);
+            if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return Response
+                        .status(response.getStatus())
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(response.getMessage())
+                        .build();
+            } else {
+                return Response
+                        .status(response.getStatus())
+                        .entity(response.getMessage())
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .build();
+            }
+        } catch (Exception e) {
+            LogHandler.error(
+                    this.getClass(),
+                    transactionID,
+                    "Error while updating asset",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
+        }
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get List Asset">
     public Response getListAsset(
             @Context final HttpServletRequest request) {
         String transactionID = "";
@@ -542,7 +585,7 @@ public class AssetServiceController extends HttpServlet {
             debugResponseLOG("GetListAsset", response);
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return Response
-                        .status(response.getStatus())
+                        .status(response.getStatus())                        
                         .type(MediaType.APPLICATION_JSON)
                         .entity(response.getMessage())
                         .build();
@@ -550,7 +593,7 @@ public class AssetServiceController extends HttpServlet {
                 return Response
                         .status(response.getStatus())
                         .entity(response.getMessage())
-                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .type(MediaType.APPLICATION_JSON)
                         .build();
             }
         } catch (Exception e) {
@@ -565,9 +608,9 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-
-//    @GET
-//    @Path("/v1/asset/gettotal/{document_status}{var:.*}")
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get Record of Asset">
     public Response getTotalRecordsAsset(
             @Context final HttpServletRequest request) {
         String transactionID = "";
@@ -610,9 +653,9 @@ public class AssetServiceController extends HttpServlet {
                     .build();
         }
     }
-
-//    @GET
-//    @Path("/v1/settings/templates/asset")
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get Asset Template Type">
     public Response getAssetTemplateType(
             @Context final HttpServletRequest request) {
         String transactionID = "";
@@ -651,7 +694,8 @@ public class AssetServiceController extends HttpServlet {
                     .entity("{Internal Server Error}").build();
         }
     }
-
+    //</editor-fold>
+    
     //========================INTERNAL METHOD==========================
     private static String debugRequestLOG(
             String function,
@@ -764,8 +808,16 @@ public class AssetServiceController extends HttpServlet {
             headers.forEach((key, value) -> {
                 res.setHeader(key, String.valueOf(value));
             });
-            res.setStatus(response.getStatus());
-            res.getWriter().write((String) response.getEntity());
+            res.setStatus(response.getStatus());  
+            MediaType type = response.getMediaType();           
+            res.setContentType(type.getType() +"/" +type.getSubtype());
+            if(response.getEntity() instanceof String){
+                res.getWriter().write((String) response.getEntity());
+                return res;
+            }
+            if(response.getEntity() instanceof byte[]){
+                res.getOutputStream().write((byte[])response.getEntity());
+            }
             return res;
         } else {
             res.sendError(404);

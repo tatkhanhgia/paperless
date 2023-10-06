@@ -6,9 +6,11 @@ package vn.mobileid.id.paperless.kernel_v2;
 
 import vn.mobileid.id.general.database.DatabaseImpl_V2_Asset;
 import vn.mobileid.id.general.database.DatabaseV2_Asset;
+import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 
 /**
@@ -16,7 +18,7 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  * @author GiaTK
  */
 public class UpdateAsset {
-    //<editor-fold defaultstate="collapsed" desc="Update Asset">
+    //<editor-fold defaultstate="collapsed" desc="Update Asset (Constructor - All data of Asset)">
     /**
      * Cập nhật thông tin Asset
      * @param assetId
@@ -40,7 +42,7 @@ public class UpdateAsset {
            String userEmail,
            String fileName,
            int assetType,
-           int size,
+           long size,
            String usedBy,
            String uuid,
            String dms,
@@ -79,6 +81,29 @@ public class UpdateAsset {
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, "");
    } 
    //</editor-fold>
+   
+    //<editor-fold defaultstate="collapsed" desc="Update Asset (Constructor - Asset + User + transactionId)">
+   public static InternalResponse updateAsset(
+            Asset asset,
+            User user,
+            String transactionID
+    ) throws Exception{
+       return updateAsset(
+               asset.getId(),
+               user.getEmail(),
+               asset.getName(),
+               asset.getType(), 
+               asset.getSize(),
+               asset.getUsed_by(),
+               asset.getFile_uuid(), 
+               asset.getDbms(), 
+               asset.getMetadata(), 
+               asset.getBinaryData(), 
+               asset.getHmac(), 
+               user.getName() == null ? user.getEmail() : user.getName(), 
+               transactionID);
+   }
+    //</editor-fold>
    
     public static void main(String[] args)throws Exception {
         InternalResponse response = UpdateAsset.updateAsset(

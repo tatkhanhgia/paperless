@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
-import vn.mobileid.id.utils.PolicyConfiguration;
+import vn.mobileid.id.general.PolicyConfiguration;
 
 /**
  *

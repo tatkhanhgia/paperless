@@ -17,4 +17,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.TYPE, ElementType.PARAMETER})
 public @interface AnnotationORM {
     String columnName();
+    String aliasName() default "";
 }

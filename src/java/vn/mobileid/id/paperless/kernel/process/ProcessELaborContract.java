@@ -19,10 +19,6 @@ import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.SigningService;
-import vn.mobileid.id.paperless.kernel.GetAsset;
-import vn.mobileid.id.paperless.kernel.GetWorkflowDetail_option;
-import vn.mobileid.id.paperless.kernel.UpdateFileManagement;
-import vn.mobileid.id.paperless.kernel.UpdateWorkflowActivity;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.FileDataDetails;
 import vn.mobileid.id.paperless.objects.FileManagement;
@@ -33,7 +29,13 @@ import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.general.annotation.AnnotationJWT;
+import vn.mobileid.id.general.objects.InternalResponse;
+import vn.mobileid.id.paperless.kernel_v2.GetAsset;
+import vn.mobileid.id.paperless.kernel_v2.GetWorkflowDetails;
+import vn.mobileid.id.paperless.kernel_v2.UpdateFileManagement;
+import vn.mobileid.id.paperless.kernel_v2.UpdateWorkflowActivity;
 import vn.mobileid.id.paperless.object.enumration.FileType;
+import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 import vn.mobileid.id.utils.PDFAnalyzer;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
 
@@ -176,7 +178,7 @@ public class ProcessELaborContract {
         Database DB = new DatabaseImpl();
 
         //Get Workflow Detail to get Asset
-        InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(
+        InternalResponse response = GetWorkflowDetails.getWorkflowDetail(
                 woAc.getWorkflow_id(),
                 transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -184,8 +186,25 @@ public class ProcessELaborContract {
         }
 
         //Get Asset template file from DB        
+        List<WorkflowAttributeType> list = (List<WorkflowAttributeType>)response.getData();
+        WorkflowAttributeType q = new WorkflowAttributeType();
+        for(WorkflowAttributeType a : list){
+            if(a.getId() == 1) //Asset Template{
+            {
+                q = a;
+                break;
+            }
+        }
+        int assetId = 0;
+        if(q.getValue() instanceof String){
+            assetId = Integer.parseInt((String)q.getValue());
+        }
+        if(q.getValue() instanceof Integer){
+            assetId = (int)q.getValue();
+        }
+        
         InternalResponse temp = GetAsset.getAsset(
-                ((WorkflowDetail_Option) response.getData()).getAsset_Template(),
+                assetId,
                 transactionID);
 
         if (temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -213,13 +232,12 @@ public class ProcessELaborContract {
         response = UpdateFileManagement.updateFileManagement(
                 woAc.getFile().getID(),
                 null,
-                null,
                 file_name,
-                0,
-                0,
-                0,
-                0,
-                0,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
                 null,
                 null,
                 user.getEmail(),
@@ -311,24 +329,23 @@ public class ProcessELaborContract {
         name = AnnotationJWT.replaceWithJWT(name, jwt);
 
         //Write into DB
-        file = PDFAnalyzer.analysisPDF(result2.get(0));
+        FileManagement file_ = PDFAnalyzer.analysisPDF(result2.get(0));
         InternalResponse res = UpdateFileManagement.updateFileManagement(
                 file.getID(),
                 null,
-                null,
                 name,
-                file.getPages(),
-                file.getSize(),
-                file.getWidth(),
-                file.getHeight(),
+                file_.getPages(),
+                file_.getSize(),
+                file_.getWidth(),
+                file_.getHeight(),
                 0,
                 null,
                 null,
                 user.getEmail(),
                 result2.get(0),
                 true,
-                null,
-                null,
+                FileType.PDF.getName(),
+                new ObjectMapper().writeValueAsString(signing),
                 null,
                 transactionID);
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {

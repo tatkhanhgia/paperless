@@ -37,19 +37,17 @@ import vn.mobileid.exsig.ImageProfile;
 import vn.mobileid.exsig.PdfForm;
 import vn.mobileid.exsig.PdfProfile;
 import vn.mobileid.exsig.PdfProfileCMS;
-import vn.mobileid.exsig.Profile;
 import vn.mobileid.exsig.TextAlignment;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
-import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.policy.object.SignatureProperties;
-import vn.mobileid.id.paperless.kernel.GetEnterpriseInfo;
 import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.general.annotation.AnnotationJWT;
-import vn.mobileid.id.utils.PolicyConfiguration;
+import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
+import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -167,6 +165,8 @@ public class SigningService {
             String boxCoordinate = null;
             String keyword = null;
             String page = null;
+            String reason = null;
+            String location = null;
             try {
                 Enterprise ent = (Enterprise) GetEnterpriseInfo.getEnterprise(
                         null,
@@ -184,6 +184,8 @@ public class SigningService {
                 boxCoordinate = frame.getBoxCoordinate();
                 keyword = frame.getKeyword();
                 page = frame.getPage();
+                reason = frame.getReason();
+                location = frame.getLocation();
             } catch (Exception ex) {
                 agreement = "OW06742145068696660080";
                 credential = "0d8535f8-e54a-43f0-acbf-d88c8ae02cbc";
@@ -191,12 +193,13 @@ public class SigningService {
                 boxCoordinate = "-20,-130,160,110";
                 keyword = "NGƯỜI SỬ DỤNG LAO ĐỘNG";
                 page = "LAST";
+                reason = "Ky hop dong";
+                location = "Quan 2";
             }            
-//            String imageBackground = "D:\\NetBean\\qrypto\\file\\file\\MobileID-Signature.png";
-//            String font_Sign = "D:\\NetBean\\qrypto\\file\\file\\verdana.ttf";
-//            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
+
             PdfProfile profile = signFile.getProfile();
-//            profile.setReason("Ký hợp đồng điện tử");
+            profile.setReason(reason == null ? "Ky hop dong" : reason);
+            profile.setLocation(location == null ? "Quan 2" : location);
             profile.setTextContent("");
             profile.setVisibleSignature(
                     page,
@@ -251,76 +254,6 @@ public class SigningService {
         }
     }
 
-//    public List<byte[]> signHashBussiness(byte[] content) {
-//        try {
-//            IPdfSignFile signFile = new SignFileFactory().createPdfSignFile_SyncFlow(SignFileFactory.SignType.PAdES, Algorithm.SHA256, PdfForm.B);
-//
-//            //Read file in server
-//            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-//            InputStream input = loader.getResourceAsStream("resources/MobileID-Signature.png");
-//            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-//            int nRead;
-//            byte[] data = new byte[4];
-//            while ((nRead = input.read(data, 0, data.length)) != -1) {
-//                buffer.write(data, 0, nRead);
-//            }
-//            buffer.flush();
-//            byte[] imageBackground = buffer.toByteArray();
-//
-//            loader = Thread.currentThread().getContextClassLoader();
-//            input = loader.getResourceAsStream("resources/MobileID-Signature.png");
-//            buffer = new ByteArrayOutputStream();
-//            data = new byte[4];
-//            while ((nRead = input.read(data, 0, data.length)) != -1) {
-//                buffer.write(data, 0, nRead);
-//            }
-//            buffer.flush();
-//            byte[] font = buffer.toByteArray();
-//
-////            String imageBackground = "D:\\NetBean\\qrypto\\file\\file\\MobileID-Signature.png";
-////            String font_Sign = "D:\\NetBean\\qrypto\\file\\file\\verdana.ttf";
-////            byte[] font = IOUtils.toByteArray(new FileInputStream(font_Sign));
-//            PdfProfile profile = signFile.getProfile();
-////            profile.setReason("Ký hợp đồng điện tử");
-//            profile.setTextContent("");
-//            profile.setVisibleSignature("LAST", "-20,-130", "160,110", "NGƯỜI SỬ DỤNG LAO ĐỘNG");
-//            profile.setCheckText(false);
-//            profile.setCheckMark(false);
-////            profile.setSigningTime(Calendar.getInstance(), "dd-MM-yyyy hh:mm:ss aa");
-//            profile.setFont(font, BaseFont.IDENTITY_H, true, 8, 0, TextAlignment.ALIGN_LEFT, Color.BLACK);
-////            profile.setBorder(Color.RED);
-//            profile.setBackground(imageBackground);
-//
-//            List<byte[]> src = new ArrayList<>();
-//            src.add(content);
-//
-//            //Signing
-//            String agreementUUIDBussiness = "OW06742145068696660080";
-//            String credentialIDBussiness = "0d8535f8-e54a-43f0-acbf-d88c8ae02cbc";
-//            List<byte[]> results = signFile.sign(agreementUUIDBussiness, credentialIDBussiness, "12345678", src, this.session);
-//
-//            int i = 0;
-//            List<byte[]> temp = new ArrayList<>();
-//            for (byte[] result : results) {
-//                temp.add(result);
-//            }
-//            return temp;
-//        } catch (APIException ex) {
-//            LogHandler.error(
-//                    SigningService.class,
-//                    "",
-//                    "Error While Signing !",
-//                    ex);
-//            return null;
-//        } catch (Exception ex) {
-//            LogHandler.error(
-//                    SigningService.class,
-//                    "",
-//                    "Error While Signing !",
-//                    ex);
-//            return null;
-//        }
-//    }
     public List<byte[]> signHashWitness(
             String fullNameWitness,
             String base64Evidence,

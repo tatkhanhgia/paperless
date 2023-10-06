@@ -6,7 +6,7 @@
 package vn.mobileid.id.general.database;
 
 import org.apache.commons.dbcp2.BasicDataSource;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 
 /**
  *

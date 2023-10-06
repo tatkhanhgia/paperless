@@ -184,7 +184,7 @@ public class DatabaseImpl_V2_Asset implements DatabaseV2_Asset {
             String pUSER_EMAIL,
             String pFILE_NAME, 
             int pASSET_TYPE, 
-            int pSIZE,
+            long pSIZE,
             String pUSED_BY,
             String pUUID, 
             String pDMS_PROPERTY, 

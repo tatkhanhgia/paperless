@@ -8,9 +8,6 @@ import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.paperless.objects.FileManagement;
 
 /**
@@ -31,11 +28,7 @@ public class PDFAnalyzer {
             temp.setPages(page);
             temp.setWidth(width);
             temp.setHeight(height);
-            temp.setSize(reader.getFileLength());
-            System.out.println("Page:"+page);
-            System.out.println("WIDTH:"+width);
-            System.out.println("heitgh:"+height);
-            System.out.println("size:"+reader.getFileLength());
+            temp.setSize(reader.getFileLength());            
             return temp;
         } catch (IOException ex) {
             return null;

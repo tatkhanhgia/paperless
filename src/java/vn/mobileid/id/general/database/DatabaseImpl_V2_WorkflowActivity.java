@@ -23,7 +23,7 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
     @Override
     public DatabaseResponse createWorkflowActivity(
             int pENTERPRISE_ID,
-            int pWORKFLOW_ID,
+            long pWORKFLOW_ID,
             String pUSER_EMAIL,
             String pTRANSACTION_ID,
             String pDOWNLOAD_LINK,
@@ -110,8 +110,8 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
             String W_A_STATUS,
             String pPRODUCTION_TYPE_LIST,
             boolean IS_CUSTOM_RANGE,
-            String FROM_DATE,
-            String TO_DATE,
+            Date FROM_DATE,
+            Date TO_DATE,
             int pOFFSET,
             int pROW_COUNT,
             String transactionId) throws Exception {
@@ -191,6 +191,10 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
+        if(response.getStatus() == PaperlessConstant.CODE_SUCCESS){
+            response.setObject(CreateConnection.convertObjectToList(response.getObject()));
+        }
+        
         return response;
     }
 

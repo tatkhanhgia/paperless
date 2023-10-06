@@ -38,8 +38,8 @@ public class WorkflowActivity {
     @AnnotationORM(columnName = "ENTERPRISE_ID")
     private int enterprise_id;
     
-    @AnnotationORM(columnName = "WORFLOW_ID")
-    private int workflow_id;
+    @AnnotationORM(columnName = "WORKFLOW_ID")
+    private long workflow_id;
     
     @AnnotationORM(columnName = "WORKFLOW_LABEL")
     private String workflow_label;
@@ -62,9 +62,16 @@ public class WorkflowActivity {
     public  boolean update_enable;  //PENDING
     private boolean is_production;  //PENDING
     
+    @AnnotationORM(columnName = "CREATED_BY")
     private String created_by;
+    
+    @AnnotationORM(columnName = "CREATED_AT")
     private Date created_at;
+    
+    @AnnotationORM(columnName = "LAST_MODIFIED_BY")
     private String modified_by;
+    
+    @AnnotationORM(columnName = "LAST_MODIFIED_AT")
     private Date modified_at;
     private FileManagement file; //Pending
     private String CSV_id; //pending        
@@ -76,6 +83,7 @@ public class WorkflowActivity {
     @AnnotationORM(columnName = "DOWNLOAD_LINK_TYPE")
     private DownloadLinkType download_link_type = DownloadLinkType.PDF;
        
+    private String workflow_template_type_name;
 
     public WorkflowActivity() {
         enterprise_name = null;
@@ -116,7 +124,7 @@ public class WorkflowActivity {
     }
 
     @JsonProperty("workflow_id")
-    public int getWorkflow_id() {
+    public long getWorkflow_id() {
         return workflow_id;
     }
 
@@ -309,6 +317,14 @@ public class WorkflowActivity {
 
     public void setDownload_link_type(DownloadLinkType download_link_type) {
         this.download_link_type = download_link_type;
+    }
+
+    public String getWorkflow_template_type_name() {
+        return workflow_template_type_name;
+    }
+
+    public void setWorkflow_template_type_name(String workflow_template_type_name) {
+        this.workflow_template_type_name = workflow_template_type_name;
     }
     
     

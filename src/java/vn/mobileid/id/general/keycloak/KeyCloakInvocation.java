@@ -40,7 +40,7 @@ import vn.mobileid.id.general.gateway.p2p.objects.P2PFunction;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 import vn.mobileid.id.utils.Utils;
 
 /**

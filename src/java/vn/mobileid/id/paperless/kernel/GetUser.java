@@ -18,6 +18,7 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  *
  * @author GiaTK
  */
+@Deprecated
 public class GetUser {
 
     /**

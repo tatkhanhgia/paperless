@@ -7,11 +7,13 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import vn.mobileid.id.general.Resources;
+import vn.mobileid.id.general.annotation.AnnotationORM;
 
 /**
  *
@@ -21,9 +23,16 @@ import vn.mobileid.id.general.Resources;
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class WorkflowTemplateType {
 
+    @AnnotationORM(columnName = "ID")
     private int id;
+    
+    @AnnotationORM(columnName = "TYPE_NAME")
     private String name;
+    
+    @AnnotationORM(columnName = "STATUS")
     private int status;
+    
+    @AnnotationORM(columnName = "WORKFLOW_TYPE")
     private int workflowType;
     private int ordinary;
     private String code;
@@ -37,6 +46,11 @@ public class WorkflowTemplateType {
     private Date modified_at;
     private String metadata_template;
     private String metadata_detail;   
+    
+    @AnnotationORM(columnName = "REMARK")
+    private String remark_vn;
+    
+    @AnnotationORM(columnName = "REMARK_EN")
     private String remark;
 
     public WorkflowTemplateType(int id, String name, int status, int workflowType, int ordinary, String code, HashMap<String, Integer> enableObjectMap, String HMAC, String created_by, Date created_at, String modified_by, Date modified_at) {
@@ -183,13 +197,21 @@ public class WorkflowTemplateType {
         this.metadata_detail = metadata_detail;
     }
 
+    public String getRemark_vn() {
+        return remark_vn;
+    }
+
+    public void setRemark_vn(String remark) {
+        this.remark_vn = remark;
+    }        
+
     public String getRemark() {
         return remark;
     }
 
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }        
+    public void setRemark(String remark_en) {
+        this.remark = remark_en;
+    }
     
     public void appendData(String a, Integer b) {
         if (enableObjectMap == null) {

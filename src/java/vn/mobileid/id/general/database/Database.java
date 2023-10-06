@@ -318,7 +318,7 @@ public interface Database {
             String created_user_name,
             int enterprise_id,
             String role_name,
-            long pass_expired_at,
+            Date pass_expired_at,
             int business_type,
             String org_web,
             String hmac,

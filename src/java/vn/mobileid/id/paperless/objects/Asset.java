@@ -20,7 +20,7 @@ import vn.mobileid.id.general.annotation.AnnotationORM;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 @JsonRootName("Assets")
-public class Asset {
+public class Asset extends DatabaseDefaultObject{
         
     @AnnotationORM(columnName="ID")
     private int id;
@@ -31,6 +31,7 @@ public class Asset {
     @AnnotationORM(columnName="TYPE")
     private int type;
     
+    @AnnotationORM(columnName="ASSET_TYPE_NAME_EN")
     private String type_name;
     
     @AnnotationORM(columnName="SIZE")
@@ -38,20 +39,6 @@ public class Asset {
     
     @AnnotationORM(columnName="UUID")
     private String file_uuid;
-    
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
-    @AnnotationORM(columnName="CREATED_AT")
-    private Date created_at;
-    
-    @AnnotationORM(columnName="CREATED_BY")
-    private String created_by;
-    
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
-    @AnnotationORM(columnName="LAST_MODIFIED_AT")
-    private Date modified_at;
-    
-    @AnnotationORM(columnName="LAST_MODIFIED_BY")
-    private String modified_by;
     
     @AnnotationORM(columnName="USED_BY")
     private String used_by;
@@ -80,10 +67,10 @@ public class Asset {
         this.type = type;
         this.size = size;
         this.file_uuid = file_uuid;
-        this.created_at = created_at;
-        this.created_by = created_by;
-        this.modified_at = modified_at;
-        this.modified_by = modified_by;
+        super.setCreated_at(created_at);
+        super.setCreated_by(created_by);
+        super.setModified_at(modified_at);
+        super.setModified_by(modified_by);        
         this.used_by = used_by;
     }   
 
@@ -93,10 +80,10 @@ public class Asset {
         this.type = type;
         this.size = size;
         this.file_uuid = file_uuid;
-        this.created_at = created_at;
-        this.created_by = created_by;
-        this.modified_at = modified_at;
-        this.modified_by = modified_by;
+        super.setCreated_at(created_at);
+        super.setCreated_by(created_by);
+        super.setModified_at(modified_at);
+        super.setModified_by(modified_by);
         this.used_by = used_by;
         this.binaryData = data;
         this.metadata = metadata;
@@ -125,27 +112,7 @@ public class Asset {
 //    @JsonProperty("file_uuid")
     public String getFile_uuid() {
         return file_uuid;
-    }
-
-    @JsonProperty("created_at")
-    public Date getCreated_at() {
-        return created_at;
-    }
-
-    @JsonProperty("created_by")
-    public String getCreated_by() {
-        return created_by;
-    }
-
-    @JsonProperty("modified_at")
-    public Date getModified_at() {
-        return modified_at;
-    }
-
-    @JsonProperty("modified_by")
-    public String getModified_by() {
-        return modified_by;
-    }
+    }  
 
     @JsonProperty("used_by")
     public String getUsed_by() {
@@ -202,23 +169,7 @@ public class Asset {
 
     public void setFile_uuid(String file_uuid) {
         this.file_uuid = file_uuid;
-    }
-
-    public void setCreated_at(Date created_at) {
-        this.created_at = created_at;
-    }
-
-    public void setCreated_by(String created_by) {
-        this.created_by = created_by;
-    }
-
-    public void setModified_at(Date modified_at) {
-        this.modified_at = modified_at;
-    }
-
-    public void setModified_by(String modified_by) {
-        this.modified_by = modified_by;
-    }
+    }  
 
     public void setUsed_by(String used_by) {
         this.used_by = used_by;

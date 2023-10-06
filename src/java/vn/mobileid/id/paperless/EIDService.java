@@ -20,7 +20,7 @@ import vn.mobileid.id.everification.object.DataGetChallenge;
 import vn.mobileid.id.everification.object.GetChallengeResponse;
 import vn.mobileid.id.eid.object.RequireBiometricEvidence;
 import vn.mobileid.id.eid.object.TokenResponse;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 import vn.mobileid.id.utils.Utils;
 //import vn.mobileid.id.general.WS.WebSocketEndpoint;
 import vn.mobileid.id.eid.object.InterfaceCommunicationEID;

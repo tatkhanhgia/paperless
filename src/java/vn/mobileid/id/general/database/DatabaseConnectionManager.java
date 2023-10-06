@@ -12,7 +12,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 
 /**
  *

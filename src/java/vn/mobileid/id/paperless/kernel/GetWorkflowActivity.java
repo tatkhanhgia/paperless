@@ -22,6 +22,7 @@ import vn.mobileid.id.paperless.objects.WorkflowActivity;
  *
  * @author GiaTK
  */
+@Deprecated
 public class GetWorkflowActivity {
 
     /**

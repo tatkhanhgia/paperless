@@ -22,13 +22,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jersey.repackaged.com.google.common.collect.Lists;
 import org.apache.commons.lang3.ClassUtils;
 import vn.mobileid.id.general.annotation.AnnotationORM;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.DatabaseDefaultObject;
 
 /**
  *
@@ -167,10 +166,9 @@ class CreateConnection {
             }
             response.setRows(rows);
 
-            //
             if (rows.size() == 1 && rows.get(0).size() == 1) {
                 response.setObject(cast(classType, rows.get(0)));
-            } else {                
+            } else {
                 List<Object> objects = new ArrayList<>();
                 for (int i = 0; i < rows.size(); i++) {
                     Object result = classType.newInstance();
@@ -180,14 +178,35 @@ class CreateConnection {
                         field.setAccessible(true);
                         AnnotationORM temp = field.getDeclaredAnnotation(AnnotationORM.class);
                         String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::columnName).orElse(null);
+                        String aliasName = Optional.ofNullable(temp).map(AnnotationORM::aliasName).orElse(null);
                         if (nameInDb != null && rows.get(i).get(nameInDb) != null) {
                             Object datas = cast(field, rows.get(i).get(nameInDb));
                             field.set(result, datas);
+                        } else {
+                            if (aliasName != null && rows.get(i).get(aliasName) != null) {
+                                Object datas = cast(field, rows.get(i).get(aliasName));
+                                field.set(result, datas);
+                            } 
+//                            else {
+//                                    field.set(result, test(field, rows.get(i)));
+//                            }
+                        }
+                    }
+                    if (clazz.getSuperclass() == DatabaseDefaultObject.class) {
+                        Field[] fields_ = clazz.getSuperclass().getDeclaredFields();
+                        for (Field field : fields_) {
+                            field.setAccessible(true);
+                            AnnotationORM temp = field.getDeclaredAnnotation(AnnotationORM.class);
+                            String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::columnName).orElse(null);
+                            if (nameInDb != null && rows.get(i).get(nameInDb) != null) {
+                                Object datas = cast(field, rows.get(i).get(nameInDb));
+                                field.set(result, datas);
+                            }
                         }
                     }
                     objects.add(result);
                 }
-                if(objects.size() == 1){
+                if (objects.size() == 1) {
                     response.setObject(objects.get(0));
                 } else {
                     response.setObject(objects);
@@ -215,6 +234,18 @@ class CreateConnection {
             if (nameInDb != null && row.get(nameInDb) != null) {
                 Object datas = cast(field, row.get(nameInDb));
                 field.set(result, datas);
+            }
+        }
+        if (clazz.getSuperclass() == DatabaseDefaultObject.class) {
+            Field[] fields_ = clazz.getSuperclass().getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                AnnotationORM temp = field.getDeclaredAnnotation(AnnotationORM.class);
+                String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::columnName).orElse(null);
+                if (nameInDb != null && row.get(nameInDb) != null) {
+                    Object datas = cast(field, row.get(nameInDb));
+                    field.set(result, datas);
+                }
             }
         }
         return result;
@@ -265,26 +296,23 @@ class CreateConnection {
             }
             return null;
         }
-        if(field.getType().isEnum()){
+        if (field.getType().isEnum()) {
             Class<?> clazz = field.getType();
             Method[] methods = clazz.getMethods();
-            for(Method method :methods){
-                if(method.getReturnType() == clazz && method.getParameterCount()==1){
+            for (Method method : methods) {
+                if (method.getReturnType() == clazz && method.getParameterCount() == 1) {
                     try {
                         return method.invoke(clazz, data);
                     } catch (IllegalArgumentException ex) {
-                        System.out.println("Data:"+data);
-                        System.out.println("Field:"+field);
-                        Logger.getLogger(CreateConnection.class.getName()).log(Level.SEVERE, null, ex);
-                        return null;
+                        continue;
                     } catch (InvocationTargetException ex) {
-                        Logger.getLogger(CreateConnection.class.getName()).log(Level.SEVERE, null, ex);
-                        return null;
-                    }                    
+                        continue;
+                    }
                 }
             }
+            return null;
         }
-        if(field.getType() == Object.class){
+        if (field.getType() == Object.class) {
             return data;
         }
         if (!getWrapperTypes().contains(field.getClass())) {
@@ -325,5 +353,37 @@ class CreateConnection {
             list = Lists.newArrayList(obj);
         }
         return list;
+    }
+
+    //test
+    private static Object test(Field fieldss,  HashMap<String, Object> data){
+        try{
+        Class<?> a = fieldss.getDeclaringClass();
+        if(a.isPrimitive()){
+            return null;
+        }
+        Object result = a.newInstance();
+        Field[] fields = a.getDeclaredFields();
+        for (Field child_field : fields) {
+            child_field.setAccessible(true);
+            AnnotationORM temp = child_field.getDeclaredAnnotation(AnnotationORM.class);
+            String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::columnName).orElse(null);
+            String aliasName = Optional.ofNullable(temp).map(AnnotationORM::aliasName).orElse(null);
+            if (nameInDb != null && data.get(nameInDb) != null) {
+                Object datas = cast(child_field, data);
+                child_field.set(result, datas);
+            } else {
+                if (aliasName != null && data.get(aliasName) != null) {
+                    Object datas = cast(child_field, data);
+                    child_field.set(result, datas);
+                } else {
+                    child_field.set(result, test(child_field, data));
+                }
+            }
+        }
+        return result;
+        }catch (Exception ex){
+            return null;
+        }
     }
 }

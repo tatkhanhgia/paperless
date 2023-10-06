@@ -14,7 +14,7 @@ import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.object.enumration.FileType;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 
 /**
  *

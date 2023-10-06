@@ -4,7 +4,9 @@
  */
 package vn.mobileid.id.general.database;
 
+import java.util.List;
 import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 
 /**
  *
@@ -47,4 +49,16 @@ public interface DatabaseV2_Workflow {
             int pROW_COUNT,
             String transactionId
     )throws Exception;
+    
+    public DatabaseResponse updateWorkflow(
+            String pUSER_EMAIL,
+            long pENTERPRISE_ID,
+            long pWORKFLOW_ID,
+            String pLABEL,
+            String pHMAC,
+            String pLAST_MODIFIED_BY,
+            String transactionId
+    )throws Exception;
+    
+    
 }

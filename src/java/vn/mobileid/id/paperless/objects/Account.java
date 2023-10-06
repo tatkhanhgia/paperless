@@ -6,18 +6,30 @@ package vn.mobileid.id.paperless.objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import vn.mobileid.id.general.annotation.AnnotationORM;
+import vn.mobileid.id.paperless.object.enumration.BusinessType;
+import vn.mobileid.id.paperless.serializer.CustomAccountSerializer;
 
 /**
  *
  * @author GiaTK
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonSerialize(using = CustomAccountSerializer.class)
 public class Account {
+
+    //SigningHub Attribute
+    @AnnotationORM(columnName = "USER_NAME")
     private String user_name;
+
+    @AnnotationORM(columnName = "EMAIL")
     private String user_email;
+
+    @AnnotationORM(columnName = "MOBILE_NUMBER")
     private String mobile_number;
+
     private String job_title;
     private String company;
     private String service_plan;
@@ -27,16 +39,54 @@ public class Account {
     private String security_answer;
     private String notification;
     private String service_agreement;
-    private String authorization_code;   
-    private int status_id;
-    private String status_name;     
+    private String authorization_code;
+
+    @AnnotationORM(columnName = "VERIFIED_ENABLED")
     private boolean verified;
+
+    //Database
+    @AnnotationORM(columnName = "ID")
+    private int id;
+
+    @AnnotationORM(columnName = "ROLE_NAME_EN")
     private String role;
+
+    @AnnotationORM(columnName = "ROLE_NAME")
+    private String role_vn;
+    
+    @AnnotationORM(columnName = "BUSINESS_TYPE")
+    private BusinessType businessType;
+
+    @AnnotationORM(columnName = "ORGANIZATION_WEBSITE")
+    private String organizationWebsite;
+
+//    private StatusOfAccount status ;
+    @AnnotationORM(columnName = "STATUS")
+    private int status_id;
+    
+    private String status_name_vn;
+    
+    private String status_name;
 
     public Account() {
     }
 
-    @JsonProperty("user_name")
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getRole_vn() {
+        return role;
+    }
+
+    public void setRole_vn(String role_vn) {
+        this.role = role_vn;
+    }
+
     public String getUser_name() {
         return user_name;
     }
@@ -45,7 +95,6 @@ public class Account {
         this.user_name = user_name;
     }
 
-    @JsonProperty("user_email")
     public String getUser_email() {
         return user_email;
     }
@@ -54,7 +103,6 @@ public class Account {
         this.user_email = user_email;
     }
 
-    @JsonProperty("mobile_number")
     public String getMobile_number() {
         return mobile_number;
     }
@@ -63,7 +111,6 @@ public class Account {
         this.mobile_number = mobile_number;
     }
 
-    @JsonProperty("job_title")
     public String getJob_title() {
         return job_title;
     }
@@ -72,7 +119,6 @@ public class Account {
         this.job_title = job_title;
     }
 
-    @JsonProperty("company")
     public String getCompany() {
         return company;
     }
@@ -81,7 +127,6 @@ public class Account {
         this.company = company;
     }
 
-    @JsonProperty("service_plan")
     public String getService_plan() {
         return service_plan;
     }
@@ -90,7 +135,6 @@ public class Account {
         this.service_plan = service_plan;
     }
 
-    @JsonProperty("enterprise_name")
     public String getEnterprise_name() {
         return enterprise_name;
     }
@@ -99,7 +143,6 @@ public class Account {
         this.enterprise_name = enterprise_name;
     }
 
-    @JsonProperty("user_password")
     public String getUser_password() {
         return user_password;
     }
@@ -108,7 +151,6 @@ public class Account {
         this.user_password = user_password;
     }
 
-    @JsonProperty("security_question")
     public String getSecurity_question() {
         return security_question;
     }
@@ -117,7 +159,6 @@ public class Account {
         this.security_question = security_question;
     }
 
-    @JsonProperty("security_answer")
     public String getSecurity_answer() {
         return security_answer;
     }
@@ -126,7 +167,6 @@ public class Account {
         this.security_answer = security_answer;
     }
 
-    @JsonProperty("notification")
     public String getNotification() {
         return notification;
     }
@@ -135,7 +175,6 @@ public class Account {
         this.notification = notification;
     }
 
-    @JsonProperty("service_agreement")
     public String getService_agreement() {
         return service_agreement;
     }
@@ -144,7 +183,6 @@ public class Account {
         this.service_agreement = service_agreement;
     }
 
-    @JsonProperty("authorization_code")
     public String getAuthorization_code() {
         return authorization_code;
     }
@@ -153,7 +191,6 @@ public class Account {
         this.authorization_code = authorization_code;
     }
 
-    @JsonProperty("status_id")
     public int getStatus_id() {
         return status_id;
     }
@@ -162,7 +199,6 @@ public class Account {
         this.status_id = status_id;
     }
 
-    @JsonProperty("status_name")
     public String getStatus_name() {
         return status_name;
     }
@@ -171,23 +207,46 @@ public class Account {
         this.status_name = status_name;
     }
 
-    @JsonProperty("verified")
+    public String getStatus_name_vn() {
+        return status_name_vn;
+    }
+
+    public void setStatus_name_vn(String status_name_vn) {
+        this.status_name_vn = status_name_vn;
+    }
+
+    
+
     public boolean isVerified() {
         return verified;
     }
 
     public void setVerified(boolean verified) {
         this.verified = verified;
-    }        
-
-    @JsonProperty("role")
-    public String getRole() {
-        return role;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setId(int id) {
+        this.id = id;
     }
-    
-    
+
+    public void setBusinessType(BusinessType businessType) {
+        this.businessType = businessType;
+    }
+
+    public void setOrganizationWebsite(String organizationWebsite) {
+        this.organizationWebsite = organizationWebsite;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public BusinessType getBusinessType() {
+        return businessType;
+    }
+
+    public String getOrganizationWebsite() {
+        return organizationWebsite;
+    }
+
 }

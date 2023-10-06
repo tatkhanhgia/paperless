@@ -5,6 +5,7 @@
  */
 package vn.mobileid.id.utils;
 
+import vn.mobileid.id.general.Configuration;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -58,6 +59,8 @@ import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import com.google.gson.Gson;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -69,6 +72,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
 import restful.sdk.API.Property;
 
 /**
@@ -81,6 +86,52 @@ public class Utils {
 
     private static final Gson gson = new Gson();
 
+    public static void sendMessage(
+            HttpServletResponse response,
+            int status,
+            String contentType,
+            Object message) throws IOException {
+        switch (contentType) {
+            case "application/json": {
+                if (Utils.isNullOrEmpty((String) message)) {
+                    if (status != 200) {
+                        response.sendError(status);
+                    } else {
+                        response.setStatus(status);
+                    }
+                } else {
+                    response.setStatus(status);
+                    response.addHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
+                    response.getOutputStream()
+                            .write(((String) message).getBytes());
+                }
+                return;
+            }
+            case "application/octet-stream": {
+                if (Utils.isNullOrEmpty((byte[]) message)) {
+                    response.sendError(status);
+                } else {
+                    response.setStatus(status);
+                    response.addHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
+                    response.getOutputStream()
+                            .write((byte[]) message);
+                }
+                return;
+            }
+            default: {
+                if (Utils.isNullOrEmpty((String) message)) {
+                    response.sendError(status);
+                } else {
+                    response.setStatus(status);
+                    response.addHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
+                    response.getOutputStream()
+                            .write(((String) message).getBytes());
+                }
+                return;
+            }
+        }
+    }
+    
     public static boolean isNullOrEmpty(String value) {
         if (value == null) {
             return true;
@@ -1184,25 +1235,61 @@ public class Utils {
     public static Object getFromJson_(String name, String json) {
         try {
             JsonNode node = new ObjectMapper().readTree(json);
-            JsonNode childnode = node.findValue(name);
-            if(childnode.isBoolean()){
-                return childnode.asBoolean();
+            JsonNode childNode = node.findValue(name);
+            if(childNode.isBoolean()){
+                return childNode.asBoolean();
             }
-            if(childnode.isTextual()){
-                return childnode.asText();
+            if(childNode.isFloat()){
+                return childNode.asDouble();
             }
-            if(childnode.isInt()){
-                return childnode.asInt();
+            if(childNode.isLong()){
+                return childNode.asLong();
             }
-            if(childnode.isLong()){
-                return childnode.asLong();
+            if(childNode.isInt()){
+                return childNode.asInt();
             }
-            if(childnode.isBinary()){
-                return childnode.asToken().asByteArray();
+            if(childNode.isTextual()){
+                return childNode.asText();
             }
-            return null;
+            if(childNode.isArray()){
+                return childNode.asToken().asByteArray();
+            }
         } catch (Exception ex) {
             return null;
         }
+        return null;
+    }
+    
+    public static String getPayload(HttpServletRequest request) throws IOException {
+        String body = null;
+        StringBuilder stringBuilder = new StringBuilder();
+        BufferedReader bufferedReader = null;
+
+        try {
+            InputStream inputStream = request.getInputStream();
+            if (inputStream != null) {
+                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                char[] charBuffer = new char[128];
+                int bytesRead = -1;
+                while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
+                    stringBuilder.append(charBuffer, 0, bytesRead);
+                }
+            } else {
+                stringBuilder.append("");
+            }
+        } catch (IOException ex) {
+            throw ex;
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException ex) {
+                    throw ex;
+                }
+            }
+        }
+
+        body = stringBuilder.toString();
+        return body;
     }
 }

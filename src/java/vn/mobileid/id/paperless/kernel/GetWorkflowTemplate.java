@@ -16,6 +16,7 @@ import vn.mobileid.id.paperless.objects.WorkflowTemplate;
  *
  * @author GiaTK
  */
+@Deprecated
 public class GetWorkflowTemplate {
 
     /**

@@ -59,11 +59,11 @@ public interface DatabaseV2_Asset {
     ) throws Exception;
 
     public DatabaseResponse updateAsset(
-            int pASSET_ID,
+        int pASSET_ID,
 	String pUSER_EMAIL,
 	String pFILE_NAME ,
 	int pASSET_TYPE,
-	int pSIZE,
+	long pSIZE,
 	String pUSED_BY,
 	String pUUID,
 	String pDMS_PROPERTY,

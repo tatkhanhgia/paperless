@@ -22,6 +22,7 @@ import vn.mobileid.id.utils.XSLT_PDF_Processing;
  *
  * @author GiaTK
  */
+@Deprecated
 public class UploadAsset {
 
     /**

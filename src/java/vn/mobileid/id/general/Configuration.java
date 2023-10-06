@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package vn.mobileid.id.utils;
+package vn.mobileid.id.general;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -11,6 +11,7 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.email.SMTPProperties;
+import vn.mobileid.id.utils.Utils;
 
 /**
  *

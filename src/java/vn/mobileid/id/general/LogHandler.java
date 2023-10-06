@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Level;
-import vn.mobileid.id.utils.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.database.Database;
@@ -282,12 +281,13 @@ public class LogHandler {
             String message
     ){
         if(isShowFatalLog()){
-            String messageTemp = "\n\t";
-            messageTemp += "Fatal in class " + object.getName();
-            messageTemp += "\n\tTransactionID:" + transactionID;
-            messageTemp += "\n\tError:" + message;
             Logger LOG = LogManager.getLogger(object);
-            LOG.fatal(message);
+            StringBuilder sb = new StringBuilder();
+            sb.append("Fatal Error:").append(message);
+            sb.append("\n\t");
+            sb.append("TransactionID:").append(transactionID);
+            LOG.fatal(sb.toString());
+            System.out.println(sb.toString()); 
         }
     }
     
@@ -314,10 +314,10 @@ public class LogHandler {
                     log.getCreated_by(),
                     transaction_id);
             if(res.getStatus() != PaperlessConstant.CODE_SUCCESS){
-                LogHandler.fatal(
-                        LogHandler.class,
-                        "Cannot append Log API!!!",
-                        transaction_id);
+//                LogHandler.fatal(
+//                        LogHandler.class,
+//                        "Cannot append Log API!!!",
+//                        transaction_id);
             }
         } catch (Exception ex){
             

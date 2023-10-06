@@ -12,33 +12,24 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
-import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.QryptoService;
-import vn.mobileid.id.paperless.SigningService;
 import vn.mobileid.id.paperless.kernel.GetQRSize;
 import vn.mobileid.id.paperless.kernel.GetTransaction;
-import vn.mobileid.id.paperless.kernel.GetWorkflowDetail_option;
-import vn.mobileid.id.paperless.kernel.UpdateFileManagement;
-import vn.mobileid.id.paperless.kernel.UpdateQR;
+import vn.mobileid.id.paperless.kernel_v2.GetWorkflowDetails;
+import vn.mobileid.id.paperless.kernel_v2.UpdateQR;
 import vn.mobileid.id.paperless.objects.FileDataDetails;
-import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.ItemDetails;
-import vn.mobileid.id.paperless.objects.KYC;
-import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.QRSize;
-import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
 import vn.mobileid.id.paperless.objects.Transaction;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
+import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.qrypto.object.Configuration;
 import vn.mobileid.id.qrypto.object.QRSchema;
@@ -64,7 +55,7 @@ public class ProcessSecureQRTemplate {
         Database DB = new DatabaseImpl();
 
         //Get Workflow Detail 
-        InternalResponse response = GetWorkflowDetail_option.getWorkflowDetail(
+        InternalResponse response = GetWorkflowDetails.getWorkflowDetail(
                 woAc.getWorkflow_id(),
                 transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -75,7 +66,7 @@ public class ProcessSecureQRTemplate {
         Configuration configure = null;
         QRSchema QR = null;
         try {
-            configure = appendWorkflowDetail_into_Configure((WorkflowDetail_Option) response.getData(), transactionID);
+            configure = appendWorkflowAttributeType_into_Configure((List<WorkflowAttributeType>) response.getData(), transactionID);
             QR = appendData_into_QRScheme(fileData, fileItem, transactionID);
 
             if (configure == null || QR == null) {
@@ -125,8 +116,8 @@ public class ProcessSecureQRTemplate {
     }
 
 //=====================INTERNAL METHOD =======================    
-    private static Configuration appendWorkflowDetail_into_Configure(
-            WorkflowDetail_Option detail,
+    private static Configuration appendWorkflowAttributeType_into_Configure(
+            List<WorkflowAttributeType> details,
             String transactionID) throws Exception {
         Configuration config = new Configuration();
         config.setContextIdentifier("QC1:");
@@ -142,7 +133,15 @@ public class ProcessSecureQRTemplate {
 
         config.setQryptoEffectiveDate(effectiveDate);
 
-        InternalResponse call = GetQRSize.getQRSize(String.valueOf(detail.getQr_size()), transactionID);
+        WorkflowAttributeType qrSize = new WorkflowAttributeType();
+        for(WorkflowAttributeType temp : details){
+            if(temp.getId() == 7) //QR Size
+            {
+                qrSize = temp;
+                break;
+            }
+        }
+        InternalResponse call = GetQRSize.getQRSize(String.valueOf(qrSize.getValue()), transactionID);
 
         int size = 0;
         if (call.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {

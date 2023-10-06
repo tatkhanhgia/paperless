@@ -17,7 +17,7 @@ import vn.mobileid.id.general.keycloak.obj.KeycloakReq;
 import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 import vn.mobileid.id.utils.Utils;
 
 /**

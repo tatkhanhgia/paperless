@@ -18,7 +18,7 @@ import vn.mobileid.id.qrypto.process.SessionFactory;
 import vn.mobileid.id.qrypto.request.ClaimRequest;
 import vn.mobileid.id.qrypto.response.ClaimResponse;
 import vn.mobileid.id.qrypto.response.IssueQryptoWithFileAttachResponse;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 
 /**
  *

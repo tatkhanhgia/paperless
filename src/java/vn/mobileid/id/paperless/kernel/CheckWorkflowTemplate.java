@@ -152,6 +152,15 @@ public class CheckWorkflowTemplate {
         InternalResponse result;
 
         //Check file details
+        if(listFile == null){
+            return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                        PaperlessConstant.SUBCODE_MISSING_VALUE_OF_FILE_DATA,
+                        "en",
+                        null));
+        }
         for (FileDataDetails obj : listFile) {
             result = checkFile_type(obj);
             if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {

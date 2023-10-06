@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.crypto.tls.HashAlgorithm;
 import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 
 /**
  *

@@ -6,17 +6,28 @@ package vn.mobileid.id.paperless.objects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
+import vn.mobileid.id.general.annotation.AnnotationORM;
 
 /**
  *
  * @author GiaTK
  */
 public class WorkflowTemplate {
+    @AnnotationORM(columnName = "WORKFLOW_ID")
     private int workflow_id;
+    
+    @AnnotationORM(columnName = "META_DATA_TEMPLATE")
     private String meta_data_template;
+    
     private Item_JSNObject meta_data;
+    
+    @AnnotationORM(columnName = "TEMPLATE_TYPE_EN")
     private String type_name;
+    
+    @AnnotationORM(columnName = "TYPE_ID")
     private int type_id;
+    
+    @AnnotationORM(columnName = "STATUS")
     private int status;
     private String hmac;
     private String created_by;

@@ -61,4 +61,35 @@ public interface DatabaseV2_User {
             String pLAST_MODIFIED_BY,
             String transactionId
     )throws Exception;
+    
+    public DatabaseResponse updateRole(
+            String U_EMAIL,
+            long pENTERPRISE_ID,
+            String pROLE_NAME,
+            String transactionId
+    )throws Exception;
+       
+    public DatabaseResponse getUser(
+            String pUSER_EMAIL,
+            long pUSER_ID,
+            long pENTERPRISE_ID,
+            Class clazz,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getStatusUser(
+            String pUSER_EMAIL,
+            String transactionID
+    )throws Exception;
+    
+    public DatabaseResponse getTypeOfStatus()throws Exception;
+    
+    public DatabaseResponse getListUser(
+            long pENTERPRISE_ID,
+            int pOFFSET,
+            int pROW_COUNT,
+            String transactionId
+    )throws Exception;
+    
+    
 }

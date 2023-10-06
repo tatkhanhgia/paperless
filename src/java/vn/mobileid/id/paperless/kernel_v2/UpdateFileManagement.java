@@ -11,7 +11,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 
 /**
  *
@@ -21,7 +21,6 @@ public class UpdateFileManagement {
 
     public static InternalResponse updateFileManagement(
             long id,
-//            String UUID,
             String DBMS,
             String name,
             int pages,

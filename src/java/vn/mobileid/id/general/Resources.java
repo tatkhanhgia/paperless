@@ -14,13 +14,16 @@ import org.apache.logging.log4j.Logger;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.database.DatabaseImpl_V2;
+import vn.mobileid.id.general.database.DatabaseImpl_V2_User;
 import vn.mobileid.id.general.database.DatabaseImpl_V2_WorkflowDetails;
 import vn.mobileid.id.general.database.DatabaseV2;
+import vn.mobileid.id.general.database.DatabaseV2_User;
 import vn.mobileid.id.general.database.DatabaseV2_WorkflowDetails;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.EventAction;
+import vn.mobileid.id.paperless.objects.StatusOfAccount;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
@@ -37,16 +40,13 @@ public class Resources extends HttpServlet {
     private static volatile HashMap<String, ResponseCode> responseCodes = new HashMap<>();
 
     //Save temporal Workflow Activity
-    private static volatile HashMap<String, WorkflowActivity> listWorkflowActivity = new HashMap<>(100, 1f);
-
-    //Save  Workflow Template Type Name
-    private static volatile HashMap<Integer, String> listWorkflowTemplateTypeName = new HashMap<>();
+    private static volatile HashMap<String, WorkflowActivity> listWorkflowActivity = new HashMap<>(100, 1f);   
 
     //Save  AssetType
     private static volatile HashMap<String, Integer> listAssetType = new HashMap();
 
     //Save Workflow Template Type
-    private static volatile HashMap<String, WorkflowTemplateType> listWoTemplateType = new HashMap<>();
+    private static volatile HashMap<Integer, WorkflowTemplateType> listWoTemplateType = new HashMap<>();
 
     //Save AuthorizeCode when user has been created
     private static volatile HashMap<String, String> queueAuthorizeCode = new HashMap();
@@ -59,6 +59,9 @@ public class Resources extends HttpServlet {
 
     //Save Event Action in DB <=> Mapping with Action, API 
     private static volatile HashMap<Integer, EventAction> listEventAction = new HashMap<>();
+    
+    //Save User Status in DB
+    private static volatile HashMap<Integer, StatusOfAccount> listStatusOfAccount = new HashMap<>();
 
     @Override
     public void init() {
@@ -84,6 +87,8 @@ public class Resources extends HttpServlet {
         reloadListWorkflowDetailAttributeTypes();
 
         reloadListEventAction();
+        
+        reloadListTypeOfStatusAccount();
 
         LOG.info("Service is started up and ready to use!");
         System.out.println("\tTime init:" + (System.currentTimeMillis() - start));
@@ -100,16 +105,7 @@ public class Resources extends HttpServlet {
     }
 
     public static void main(String[] args) throws Exception {
-    }
-
-    public static void reloadListWorkflowTemplateTypeName() throws Exception {
-        Database db = new DatabaseImpl();
-        listWorkflowTemplateTypeName = new HashMap();
-        DatabaseResponse res = db.getHashMapWorkflowTemplateType();
-        if (res != null) {
-            listWorkflowTemplateTypeName = (HashMap<Integer, String>) res.getObject();
-        }
-    }
+    } 
 
     public static void reloadListEventAction() throws Exception {
         DatabaseV2 db = new DatabaseImpl_V2();
@@ -132,15 +128,27 @@ public class Resources extends HttpServlet {
             listAssetType = (HashMap<String, Integer>) res.getObject();
         }
     }
+    
+    public static void reloadListTypeOfStatusAccount()throws Exception{
+        DatabaseV2_User db = new DatabaseImpl_V2_User();
+        DatabaseResponse res = db.getTypeOfStatus();
+        listStatusOfAccount = new HashMap<>();
+        if(res.getStatus() == PaperlessConstant.CODE_SUCCESS){
+            List<StatusOfAccount> status = (List<StatusOfAccount>)res.getObject();
+            for(StatusOfAccount temp : status){
+                listStatusOfAccount.put(temp.getId(), temp);
+            }
+        }
+    }
 
     public static void reloadListWorkflowTemplateType() throws Exception {
         Database db = new DatabaseImpl();
         listWoTemplateType = new HashMap();
         DatabaseResponse res = db.getListWorkflowTemplateType();
-        if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+        if (res.getStatus() == PaperlessConstant.CODE_SUCCESS) {
             List<WorkflowTemplateType> list = (List<WorkflowTemplateType>) res.getObject();
             for (WorkflowTemplateType temp : list) {
-                listWoTemplateType.put(String.valueOf(temp.getId()), temp);
+                listWoTemplateType.put(temp.getId(), temp);
             }
         }
     }
@@ -188,15 +196,11 @@ public class Resources extends HttpServlet {
         }
     }
 
-    public static HashMap<Integer, String> getListWorkflowTemplateTypeName() {
-        return listWorkflowTemplateTypeName;
-    }
-
     public static HashMap<String, Integer> getListAssetType() {
         return listAssetType;
     }
 
-    public static HashMap<String, WorkflowTemplateType> getListWorkflowTemplateType() {
+    public static HashMap<Integer, WorkflowTemplateType> getListWorkflowTemplateType() {
         return listWoTemplateType;
     }
 
@@ -222,5 +226,9 @@ public class Resources extends HttpServlet {
 
     public static HashMap<Integer, EventAction> getListEventAction() {
         return listEventAction;
+    }
+    
+    public static HashMap<Integer, StatusOfAccount> getListStatusOfAccount(){
+        return listStatusOfAccount;
     }
 }

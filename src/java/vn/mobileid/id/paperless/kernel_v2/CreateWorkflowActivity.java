@@ -130,7 +130,7 @@ public class CreateWorkflowActivity {
         long logID = -1;
         long fileManagementID = -1;
         String transactionID = null;
-        int QRUUID = -1;
+        long QRUUID = -1;
 
         InternalResponse response = null;
 
@@ -183,7 +183,7 @@ public class CreateWorkflowActivity {
                 if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                     return response;
                 }
-                QRUUID = Integer.parseInt(response.getMessage());
+                QRUUID = (long)response.getData();
                 break;
             }
             case 2: {
@@ -198,7 +198,7 @@ public class CreateWorkflowActivity {
                 if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                     return response;
                 }
-                QRUUID = Integer.parseInt(response.getMessage());
+                QRUUID = (long)response.getData();
                 break;
             }
             case 7:
@@ -284,6 +284,7 @@ public class CreateWorkflowActivity {
     }
 
     //</editor-fold>
+   
     public static void main(String[] args) throws Exception {
         InternalResponse response = CreateWorkflowActivity.createWorkflowActivity(
                 3,

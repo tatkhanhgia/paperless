@@ -56,8 +56,8 @@ public class GetWorkflowActivity {
             String W_A_STATUS,
             String pPRODUCTION_TYPE_LIST,
             boolean IS_CUSTOM_RANGE,
-            String FROM_DATE,
-            String TO_DATE,
+            Date FROM_DATE,
+            Date TO_DATE,
             int pOFFSET,
             int pROW_COUNT,
             String transactionId

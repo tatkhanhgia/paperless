@@ -20,7 +20,7 @@ import java.util.List;
 import javax.sql.rowset.serial.SerialBlob;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.policy.object.PolicyResponse;
@@ -1562,7 +1562,7 @@ public class DatabaseImpl implements Database {
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse databaseResponse = new DatabaseResponse();
-        HashMap<Integer, String> list = new HashMap<>();
+        HashMap<Integer, WorkflowTemplateType> list = new HashMap<>();
         int numOfRetry = retryTimes;
         String debugString = "\n";
         while (numOfRetry > 0) {
@@ -1571,14 +1571,19 @@ public class DatabaseImpl implements Database {
                 conn = DatabaseConnectionManager.getInstance().openWriteOnlyConnection();
                 cals = conn.prepareCall(str);
 
-//                    
                 debugString += "\t[SQL] " + cals.toString();
 
                 rs = cals.executeQuery();
 
                 if (rs != null) {
                     while (rs.next()) {
-                        list.put(rs.getInt("ID"), rs.getString("TYPE_NAME"));
+                        WorkflowTemplateType type = new WorkflowTemplateType();
+                        type.setId(rs.getInt("ID"));
+                        type.setName(rs.getString("TYPE_NAME"));
+                        type.setWorkflowType(rs.getInt("WORKFLOW_TYPE"));
+                        type.setRemark_vn(rs.getString("REMARK"));
+                        type.setRemark(rs.getString("REMARK_EN"));
+                        list.put(rs.getInt("ID"), type);
                     }
                     databaseResponse.setObject(list);
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -2121,6 +2126,8 @@ public class DatabaseImpl implements Database {
                     WorkflowTemplateType data = new WorkflowTemplateType();
                     data.setId(rs.getInt("ID"));
                     data.setName(rs.getString("TYPE_NAME"));
+                    data.setRemark_vn(rs.getString("REMARK"));
+                    data.setRemark(rs.getString("REMARK_EN"));
                     list.add(data);
                 }
                 response.setObject(list);
@@ -2657,7 +2664,7 @@ public class DatabaseImpl implements Database {
             String created_user_name,
             int enterprise_id,
             String role_name,
-            long pass_expired_at,
+            Date pass_expired_at,
             int business_type,
             String org_web,
             String hmac,
@@ -2680,7 +2687,7 @@ public class DatabaseImpl implements Database {
             cals.setString("pCREATED_USER_NAME", created_user_name);
             cals.setInt("pENTERPRISE_ID", enterprise_id);
             cals.setString("pROLE_NAME", role_name);
-            cals.setTimestamp("pPASSWORD_EXPIRED_AT", new Timestamp(pass_expired_at));
+            cals.setTimestamp("pPASSWORD_EXPIRED_AT", new Timestamp(pass_expired_at.getTime()));
             cals.setInt("pBUSINESS_TYPE", business_type);
             cals.setString("pORG_WEB", org_web);
             cals.setString("pHMAC", hmac);
@@ -3222,7 +3229,7 @@ public class DatabaseImpl implements Database {
                 Account account = new Account();
                 account.setUser_email(rs.getString("EMAIL"));
                 account.setUser_name(rs.getString("USER_NAME"));
-                account.setStatus_name(rs.getString("STATUS_NAME"));
+//                account.setStatus(StatusOfAccount.valueOf(rs.getString("STATUS_NAME")));
                 res.setObject(account);
                 res.setStatus(PaperlessConstant.CODE_SUCCESS);
             } else {

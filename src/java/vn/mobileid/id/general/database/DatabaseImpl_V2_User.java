@@ -10,6 +10,8 @@ import java.util.List;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.Account;
+import vn.mobileid.id.paperless.objects.StatusOfAccount;
 
 /**
  *
@@ -180,6 +182,120 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
                 input,
                 null,
                 "Update User");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+       return response;
+    }
+
+    @Override
+    public DatabaseResponse updateRole(
+            String U_EMAIL, 
+            long pENTERPRISE_ID, 
+            String pROLE_NAME,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_USER_UPDATE_ROLE(?,?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("U_EMAIL", U_EMAIL);
+        input.put("pENTERPRISE_ID", pENTERPRISE_ID);
+        input.put("pROLE_NAME", pROLE_NAME);        
+             
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                nameStore,
+                input,
+                null,
+                "Update Role User");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+       return response;
+    }
+
+    @Override
+    public DatabaseResponse getUser(
+            String pUSER_EMAIL, 
+            long pUSER_ID, 
+            long pENTERPRISE_ID,
+            Class clazz,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_USER_GET(?,?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pUSER_EMAIL", pUSER_EMAIL);
+        input.put("pUSER_ID", pUSER_ID);
+        input.put("pENTERPRISE_ID", pENTERPRISE_ID);
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                clazz,
+                nameStore,
+                input,
+                null,
+                "Get User");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+       return response;
+    }
+
+    @Override
+    public DatabaseResponse getStatusUser(
+            String pUSER_EMAIL,
+            String transactionID) throws Exception {
+        String nameStore = "{ CALL USP_USER_GET_STATUS(?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pUSER_EMAIL", pUSER_EMAIL);        
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                Account.class,
+                nameStore,
+                input,
+                null,
+                "Get Status of User");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+       return response;
+    }
+
+    @Override
+    public DatabaseResponse getTypeOfStatus() throws Exception {
+        String nameStore = "{ CALL USP_USER_STATUS_LIST()}";
+      
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                StatusOfAccount.class,
+                nameStore,
+                null,
+                null,
+                "Get All type Status of User");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+       return response;
+    }
+
+    @Override
+    public DatabaseResponse getListUser(
+            long pENTERPRISE_ID,
+            int pOFFSET,
+            int pROW_COUNT,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_USER_LIST(?,?,?,?)}";
+      
+         HashMap<String, Object> input = new HashMap<>();
+        input.put("pENTERPRISE_ID", pENTERPRISE_ID);     
+        input.put("pOFFSET", pOFFSET);     
+        input.put("pROW_COUNT", pROW_COUNT);     
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                Account.class,
+                nameStore,
+                input,
+                null,
+                "Get All Account belongs to User");
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 

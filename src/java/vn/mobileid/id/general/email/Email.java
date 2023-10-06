@@ -31,7 +31,7 @@ import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.Attachment;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.utils.Configuration;
+import vn.mobileid.id.general.Configuration;
 import vn.mobileid.id.utils.Utils;
 //import org.apache.log4j.Logger;
 //import vn.mobileid.esigncloud.dao.Attachment;

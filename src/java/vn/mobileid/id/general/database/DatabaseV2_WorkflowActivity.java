@@ -17,7 +17,7 @@ public interface DatabaseV2_WorkflowActivity {
 
     public DatabaseResponse createWorkflowActivity(
             int pENTERPRISE_ID,
-            int pWORKFLOW_ID,
+            long pWORKFLOW_ID,
             String pUSER_EMAIL,
             String pTRANSACTION_ID,
             String pDOWNLOAD_LINK,
@@ -45,8 +45,8 @@ public interface DatabaseV2_WorkflowActivity {
             String W_A_STATUS,
             String pPRODUCTION_TYPE_LIST,
             boolean isCustomRange,
-            String FROM_DATE,
-            String TO_DATE,
+            Date FROM_DATE,
+            Date TO_DATE,
             int pOFFSET,
             int pROW_COUNT,
             String transactionId

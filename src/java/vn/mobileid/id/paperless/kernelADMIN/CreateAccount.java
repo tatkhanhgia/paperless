@@ -4,6 +4,7 @@
  */
 package vn.mobileid.id.paperless.kernelADMIN;
 
+import java.util.Date;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
@@ -28,6 +29,7 @@ import vn.mobileid.id.utils.Utils;
  */
 public class CreateAccount {
 
+    //<editor-fold defaultstate="collapsed" desc="Check Data Account">
     /**
      * Kiểm tra thông tin của Account
      * @param account
@@ -78,7 +80,10 @@ public class CreateAccount {
                         null));
 
     }
+    //</editor-fold>
+    
 
+    //<editor-fold defaultstate="collapsed" desc="Create Account">
     /**
      * Tạo mới một Account - User
      * @param email
@@ -105,7 +110,7 @@ public class CreateAccount {
             int enterprise_id,
             String enteprise_name,
             String role_name,
-            int password_expired_at,
+            Date password_expired_at,
             int business_type,
             String org_web,
             String transactionID
@@ -213,6 +218,8 @@ public class CreateAccount {
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 "");
     }
+    //</editor-fold>
+    
 
     public static class CreateUser {
 
@@ -224,7 +231,7 @@ public class CreateAccount {
                 String created_user_name,
                 int enterprise_id,
                 String role_name,
-                long pass_expired_at,
+                Date pass_expired_at,
                 int business_type,
                 String org_web,
                 String hmac,

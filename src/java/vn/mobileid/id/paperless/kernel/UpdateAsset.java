@@ -17,6 +17,7 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  *
  * @author GiaTK
  */
+@Deprecated
 public class UpdateAsset {
     public static InternalResponse updateAsset(
             int id,

@@ -10,6 +10,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
+import vn.mobileid.id.paperless.objects.Transaction;
 
 /**
  *
@@ -46,5 +47,11 @@ public class GetTransaction {
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 responseDB.getObject());
+    }
+    
+    public static void main(String[] args) throws Exception{
+        InternalResponse response = GetTransaction.getTransaction("680-662", "");
+        Transaction transaction = (Transaction)response.getData();
+        String temp = "";
     }
 }

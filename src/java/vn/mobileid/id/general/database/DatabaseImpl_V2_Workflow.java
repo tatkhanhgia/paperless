@@ -10,6 +10,7 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Workflow;
+import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 
 /**
  *
@@ -151,7 +152,43 @@ public class DatabaseImpl_V2_Workflow implements DatabaseV2_Workflow {
 
         LogHandler.debug(this.getClass(), response.getDebugString());
         
+        if(response.getStatus() == PaperlessConstant.CODE_SUCCESS){
+            response.setObject(CreateConnection.convertObjectToList(response.getObject()));
+        }
+        
         return response;
     }
+
+    @Override
+    public DatabaseResponse updateWorkflow(
+            String pUSER_EMAIL, 
+            long pENTERPRISE_ID, 
+            long pWORKFLOW_ID, 
+            String pLABEL,
+            String pHMAC, 
+            String pLAST_MODIFIED_BY,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_WORKFLOW_UPDATE(?,?,?,?,?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pUSER_EMAIL", pUSER_EMAIL);
+        input.put("pENTERPRISE_ID", pENTERPRISE_ID);
+        input.put("pWORKFLOW_ID", pWORKFLOW_ID);
+        input.put("pLABEL", pLABEL);
+        input.put("pHMAC", pHMAC);
+        input.put("pLAST_MODIFIED_BY", pLAST_MODIFIED_BY);
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                nameStore,
+                input,
+                null,
+                "Update Workflow");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        return response;
+    }
+
+    
 
 }

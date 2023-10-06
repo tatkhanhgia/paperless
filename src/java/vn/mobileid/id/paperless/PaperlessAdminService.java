@@ -9,7 +9,9 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.time.Instant;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -158,6 +160,7 @@ public class PaperlessAdminService {
                                 PaperlessMessageResponse.getLangFromJson(payload),
                                 null));
             }
+            Date now = Date.from(Instant.now().plusSeconds(PaperlessConstant.password_expired_at));            
             return CreateAccount.createAccount(
                     jwtdata.getEmail(),
                     account.getUser_password(),
@@ -167,13 +170,14 @@ public class PaperlessAdminService {
                     ent.getId(), //int Enterprise_id
                     ent.getName(), //enterprise_name or id
                     "OWNER",
-                    (int) PaperlessConstant.password_expired_at, //int 
+                    now, //Date when expired
                     PaperlessConstant.BUSINESSTYPE_BUSINESS, //int - businessType
                     "https://paperless.mobile-id.vn",
                     transactionID);
         }
 
-        //FLOW CREATE ACCOUNT BASE ON PAYLOAD        
+        //FLOW CREATE ACCOUNT BASE ON PAYLOAD    
+        Date now = Date.from(Instant.now().plusSeconds(PaperlessConstant.password_expired_at));            
         return CreateAccount.createAccount(
                 account.getUser_email(),
                 account.getUser_password(),
@@ -183,7 +187,7 @@ public class PaperlessAdminService {
                 ent.getId(), //int Enterprise_id
                 ent.getName(), //enterprise_name or id
                 "OWNER",
-                (int) PaperlessConstant.password_expired_at, //int 
+                now, //int 
                 PaperlessConstant.BUSINESSTYPE_BUSINESS, //int - businessType
                 "https://paperless.mobile-id.vn",
                 transactionID);
@@ -363,7 +367,6 @@ public class PaperlessAdminService {
         } else {
             //Get về hàng loạt
             InternalResponse res = GetAccount.getAccounts(
-                    ent == null ? user_info.getAzp() : ent.getName(),
                     ent == null ? user_info.getAid() : ent.getId(),
                     (page_no <= 1) ? 0 : (page_no - 1) * record, //offset
                     record == 0 ? numberOfRecords : record,

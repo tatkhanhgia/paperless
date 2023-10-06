@@ -4,7 +4,7 @@
  */
 package vn.mobileid.id.paperless;
 
-import vn.mobileid.id.utils.PolicyConfiguration;
+import vn.mobileid.id.general.PolicyConfiguration;
 
 /**
  *
@@ -99,6 +99,7 @@ public class PaperlessConstant {
     final public static int HTTP_CODE_BAD_REQUEST = 400;
     final public static int HTTP_CODE_NOT_FOUND = 404;
     final public static int HTTP_CODE_500 = 500;
+    final public static int HTTP_CODE_METHOD_NOT_ALLOWED = 405;
 
     //Code
     final public static int CODE_SUCCESS = 0;
@@ -187,4 +188,6 @@ public class PaperlessConstant {
     //SUBCODE INVALID FMS - 5006
     final public static int SUBCODE_ERROR_WHILE_UPLOADING_TO_FMS = 2;
     final public static int SUBCODE_FMS_REJECT_UPLOAD = 3;
+    final public static int SUBCODE_ERROR_WHILE_DOWNLOADING_FROM_FMS = 4;
+    final public static int SUBCODE_FMS_REJECT_DOWNLOAD = 5;
 }
