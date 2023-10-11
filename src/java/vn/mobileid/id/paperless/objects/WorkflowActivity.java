@@ -33,6 +33,9 @@ public class WorkflowActivity {
     @AnnotationORM(columnName = "STATUS_NAME_EN")
     private String status_name;
     
+    @AnnotationORM(columnName = "STATUS_NAME")
+    private String status_name_vn;
+    
     private String enterprise_name;
     
     @AnnotationORM(columnName = "ENTERPRISE_ID")
@@ -73,18 +76,30 @@ public class WorkflowActivity {
     
     @AnnotationORM(columnName = "LAST_MODIFIED_AT")
     private Date modified_at;
-    private FileManagement file; //Pending
-    private String CSV_id; //pending        
+    
     private int generation_type;
+    
+    @AnnotationORM(columnName = "GENERATION_TYPE_NAME_EN")
+    private String generation_type_name;
+    
+    @AnnotationORM(columnName = "GENERATION_TYPE_NAME")
+    private String generation_type_name_vn;
     
     @AnnotationORM(columnName = "DOWNLOAD_LINK")
     private String dowload_link;
     
     @AnnotationORM(columnName = "DOWNLOAD_LINK_TYPE")
     private DownloadLinkType download_link_type = DownloadLinkType.PDF;
-       
+    
+    @AnnotationORM(columnName = "WORKFLOW_TEMPLATE_TYPE_NAME_EN")
     private String workflow_template_type_name;
+    
+    @AnnotationORM(columnName = "WORKFLOW_TEMPLATE_TYPE_NAME")
+    private String workflow_template_type_name_vn;
 
+    private FileManagement file; 
+    private String CSV_id;     
+    
     public WorkflowActivity() {
         enterprise_name = null;
         enterprise_id = 0;
@@ -244,11 +259,11 @@ public class WorkflowActivity {
     }
 
     @JsonProperty("generation_type")
-    public int getGeneration_type() {
+    public int getGeneration_type_vn() {
         return generation_type;
     }
 
-    public void setGeneration_type(int Generation_type) {
+    public void setGeneration_type_vn(int Generation_type) {
         this.generation_type = Generation_type;
     }
     
@@ -259,16 +274,7 @@ public class WorkflowActivity {
     public void setRequestData(String requestData) {
         this.requestData = requestData;
     }
-
-    @JsonProperty("status")
-    public String getStatus() {
-        return status_name;
-    }
-
-    public void setStatus(String status) {
-        this.status_name = status;
-    }       
-
+   
     public Date getCreated_at() {
         return created_at;
     }
@@ -326,7 +332,54 @@ public class WorkflowActivity {
     public void setWorkflow_template_type_name(String workflow_template_type_name) {
         this.workflow_template_type_name = workflow_template_type_name;
     }
-    
+
+    public String getStatus_name() {
+        return status_name;
+    }
+
+    public void setStatus_name(String status_name) {
+        this.status_name = status_name;
+    }
+
+    public String getStatus_name_vn() {
+        return status_name_vn;
+    }
+
+    public void setStatus_name_vn(String status_name_vn) {
+        this.status_name_vn = status_name_vn;
+    }
+
+    public String getGeneration_type_name() {
+        return generation_type_name;
+    }
+
+    public void setGeneration_type_name(String generation_type_name) {
+        this.generation_type_name = generation_type_name;
+    }
+
+    public String getWorkflow_template_type_name_vn() {
+        return workflow_template_type_name_vn;
+    }
+
+    public void setWorkflow_template_type_name_vn(String workflow_template_type_name_vn) {
+        this.workflow_template_type_name_vn = workflow_template_type_name_vn;
+    }
+
+    public int getGeneration_type() {
+        return generation_type;
+    }
+
+    public void setGeneration_type(int generation_type) {
+        this.generation_type = generation_type;
+    }
+
+    public String getGeneration_type_name_vn() {
+        return generation_type_name_vn;
+    }
+
+    public void setGeneration_type_name_vn(String generation_type_name_vn) {
+        this.generation_type_name_vn = generation_type_name_vn;
+    }
     
     
     public static void main(String[] args) throws JsonProcessingException {

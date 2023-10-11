@@ -34,4 +34,9 @@ public interface DatabaseV2_QR {
             String pLAST_MODIFIED_BY,
             String transactionId
     )throws Exception;
+    
+    public DatabaseResponse getQR(
+            long pQR_ID,
+            String transactionId
+    )throws Exception;
 }

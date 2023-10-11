@@ -26,7 +26,6 @@ import vn.mobileid.id.paperless.objects.KYC;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
-import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.general.annotation.AnnotationJWT;
 import vn.mobileid.id.paperless.kernel_v2.GetAsset;
 import vn.mobileid.id.paperless.kernel_v2.GetWorkflowDetails;

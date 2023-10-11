@@ -20,7 +20,10 @@ public class GetTransaction {
 
     /**
      * Get Transaction with ID of that Transaction     
+     * @param id
+     * @param transactionID
      * @return
+     * @throws java.lang.Exception
      */
     public static InternalResponse getTransaction(
             String id,

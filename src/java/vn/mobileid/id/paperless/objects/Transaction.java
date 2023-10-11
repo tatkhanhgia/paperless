@@ -67,10 +67,7 @@ public class Transaction {
     }
     
     public void setObject_type(int object_type) {
-        if(this.object_type == null){
-            this.object_type = ObjectType.PDF;
-        }
-        this.object_type.setNumber(object_type);
+        this.object_type = ObjectType.valuesOf(object_type);
     }
 
     public int getUser_id() {

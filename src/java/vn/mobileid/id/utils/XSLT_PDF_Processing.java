@@ -4,15 +4,16 @@
  */
 package vn.mobileid.id.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
-import com.itextpdf.io.font.FontProgram;
-import com.itextpdf.io.font.FontProgramFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.pdf.xobject.PdfFormXObject;
+import com.itextpdf.kernel.utils.PdfMerger;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.font.FontProvider;
 import java.io.ByteArrayInputStream;
@@ -23,13 +24,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -39,7 +40,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.paperless.objects.ItemDetails;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
@@ -53,6 +53,7 @@ public class XSLT_PDF_Processing {
 
     final private static Logger LOG = LogManager.getLogger(XSLT_PDF_Processing.class);
 
+    //<editor-fold defaultstate="collapsed" desc="Gen Schema">
     public static void genSchema(Object ob) throws JAXBException, IOException {
         JAXBContext jc = JAXBContext.newInstance(ob.getClass());
         jc.generateSchema(new SchemaOutputResolver() {
@@ -67,7 +68,16 @@ public class XSLT_PDF_Processing {
 
         });
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="append Data">
+    /**
+     * Append data in Object into file XSLT
+     *
+     * @param ob
+     * @param xslt
+     * @return
+     */
     public static byte[] appendData(Object ob, byte[] xslt) {
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(xslt);
@@ -83,7 +93,7 @@ public class XSLT_PDF_Processing {
             try ( InputStream is = new ByteArrayInputStream(out.toByteArray())) {
                 DocumentBuilder db = dbf.newDocumentBuilder();
 
-                ByteArrayOutputStream output = new ByteArrayOutputStream(); //chua thay fileResult
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
                 TransformerFactory tf = TransformerFactory.newInstance();
                 Transformer transformer = tf.newTransformer(
                         new StreamSource(inputStream));
@@ -102,20 +112,22 @@ public class XSLT_PDF_Processing {
         }
         return null;
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Convert HTML to PDF">
     public static byte[] convertHTMLtoPDF(byte[] contentHTML) {
         try {
-            String temp = new String(contentHTML, StandardCharsets.UTF_8);            
+            String temp = new String(contentHTML, StandardCharsets.UTF_8);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             PdfWriter writer = new PdfWriter(outputStream);
             ConverterProperties converter = new ConverterProperties();
 
-            FontProvider fontProvider = loadFont(); 
+            FontProvider fontProvider = loadFont();
             converter.setFontProvider(fontProvider);
             PdfDocument pdfDoc = new PdfDocument(writer);
             pdfDoc.setDefaultPageSize(new PageSize(PageSize.A3));
 
-            Document document = HtmlConverter.convertToDocument(temp, pdfDoc, converter);
+            com.itextpdf.layout.Document document = HtmlConverter.convertToDocument(temp, pdfDoc, converter);
             document.close();
 
             return outputStream.toByteArray();
@@ -127,7 +139,9 @@ public class XSLT_PDF_Processing {
         }
         return null;
     }
+    //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get Value in XSLT">
     public static Item_JSNObject getValueFromXSLT(byte[] xslt) {
         try {
             ByteArrayInputStream inputStream = new ByteArrayInputStream(xslt);
@@ -149,15 +163,17 @@ public class XSLT_PDF_Processing {
                 item.appendData(detail);
             }
             return item;
-        } catch (Exception ex) {            
-           LogHandler.error(
-                   XSLT_PDF_Processing.class,
-                   "Cannot parse Data XSLT to object",
-                   ex);
-        } 
+        } catch (Exception ex) {
+            LogHandler.error(
+                    XSLT_PDF_Processing.class,
+                    "Cannot parse Data XSLT to object",
+                    ex);
+        }
         return null;
     }
+    //</editor-fold>   
 
+    //<editor-fold defaultstate="collapsed" desc="Load Font">
     public static FontProvider loadFont() {
         try {
             FontProvider fontProvider = new DefaultFontProvider(false, false, false);
@@ -184,7 +200,7 @@ public class XSLT_PDF_Processing {
             }
             buffer.flush();
             byte[] font2 = buffer.toByteArray();
-            
+
             //Read Font 3
             input = loader.getResourceAsStream("resources/verdana-bold-italic.ttf");
             buffer = new ByteArrayOutputStream();
@@ -195,7 +211,7 @@ public class XSLT_PDF_Processing {
             }
             buffer.flush();
             byte[] font3 = buffer.toByteArray();
-            
+
             fontProvider.addFont(font1);
             fontProvider.addFont(font2);
             fontProvider.addFont(font3);
@@ -207,15 +223,48 @@ public class XSLT_PDF_Processing {
             return null;
         }
     }
+    //</editor-fold>
 
-    
-    
     public static void main(String[] arhs) throws IOException {
-        byte[] html = XSLT_PDF_Processing.appendData(new KYC(), Files.readAllBytes(new File("D:\\NetBean\\qrypto\\file\\result.xslt").toPath()));
+        //==========Append Background + QR Image into XSLT==============================
+        FileOutputStream os = new FileOutputStream("C:\\Users\\Admin\\Downloads\\temp.tmp");
+        os.write(Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Desktop\\BG\\329247033_3020219851607214_1964181824628587693_n.jpg")));
+        os.close();
+        KYC temp = new KYC();
+        temp.setFullName("Châu Trần Anh Thư");
+        temp.setIssuanceDate("1234");
+        temp.setBackground("C:\\Users\\Admin\\Downloads\\hello.bmp");
+        temp.setQR("C:\\Users\\Admin\\Downloads\\1.jpg");
+        temp.setWidth(10);
+        temp.setHeight(10);
+        byte[] html = XSLT_PDF_Processing.appendData(temp,
+                Files.readAllBytes(new File("C:\\Users\\Admin\\Downloads\\test.xslt").toPath()));
         byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
-        try ( FileOutputStream fileOuputStream = new FileOutputStream("D:\\NetBean\\qrypto\\file\\result2.pdf")) {
+        try ( FileOutputStream fileOuputStream = new FileOutputStream("C:\\Users\\Admin\\Downloads\\afterappend.pdf")) {
             fileOuputStream.write(pdf);
         }
+
+        //Append pdf into final file
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PdfDocument pdfDocument = new PdfDocument(new PdfWriter(bos));
+        PdfMerger merger = new PdfMerger(pdfDocument);
+
+        PdfDocument pdfDocument_original = new PdfDocument(new PdfReader(new ByteArrayInputStream(pdf)));
+        merger.merge(pdfDocument_original, 1, pdfDocument_original.getNumberOfPages());
+        
+        PdfDocument pdfDocument_append = new PdfDocument(new PdfReader("C:\\Users\\Admin\\Downloads\\result.pdf"));
+        merger.merge(pdfDocument_append, 1, pdfDocument_append.getNumberOfPages());
+        
+        pdfDocument_original.close();
+        pdfDocument_append.close();
+        pdfDocument.close();
+        
+        try ( FileOutputStream fileOuputStream = new FileOutputStream("C:\\Users\\Admin\\Downloads\\afterappendnewPdf.pdf")) {
+            fileOuputStream.write(bos.toByteArray());
+        }
+
+        //Delete temporal file
+        Files.delete(Paths.get("C:\\Users\\Admin\\Downloads\\temp.tmp"));
 
         //Get data from XSLT
 //        Item_JSNObject item = XSLT_PDF_Processing.getValueFromXSLT(Files.readAllBytes(new File("D:\\NetBean\\qrypto\\file\\test.xslt").toPath()));

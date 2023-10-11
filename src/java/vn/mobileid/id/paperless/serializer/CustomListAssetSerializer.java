@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.paperless.objects.Asset;
 
 /**
@@ -36,7 +37,7 @@ public class CustomListAssetSerializer implements JsonSerializable {
         jg.writeStartObject();
         jg.writeFieldName("assets");
         jg.writeStartArray();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa XXX");
+        DateFormat dateFormat = new SimpleDateFormat(PolicyConfiguration.getInstant().getSystemConfig().getAttributes().get(0).getDateFormat());
         for (Asset asset : listAsset) {
             jg.writeStartObject();
             jg.writeNumberField("asset_id", asset.getId());

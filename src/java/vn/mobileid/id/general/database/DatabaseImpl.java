@@ -1124,7 +1124,7 @@ public class DatabaseImpl implements Database {
                         wa.setRequestData(rs.getString("REQUEST_DATA"));
                         wa.setCSV_id(rs.getString("CSV"));
                         wa.setRemark(rs.getString("REMARK"));
-                        wa.setStatus(rs.getString("STATUS_NAME"));
+                        wa.setStatus_name(rs.getString("STATUS_NAME"));
                         wa.setCreated_at(new Date(rs.getTimestamp("DATE").getTime()));
                         list.add(wa);
                     }
@@ -2011,7 +2011,7 @@ public class DatabaseImpl implements Database {
                     wa.setFile(file);
                     wa.setCSV_id(rs.getString("CSV"));
                     wa.setRemark(rs.getString("REMARK"));
-                    wa.setStatus(rs.getString("STATUS_NAME"));
+                    wa.setStatus_name(rs.getString("STATUS_NAME"));
                     wa.setCreated_by(rs.getString("CREATED_BY"));
                     wa.setModified_at(new Date(rs.getTimestamp("LAST_MODIFIED_AT").getTime()));
                     wa.setModified_by(rs.getString("LAST_MODIFIED_BY"));
@@ -3128,7 +3128,7 @@ public class DatabaseImpl implements Database {
 
                         wa.setCSV_id(rs.getString("CSV"));
                         wa.setRemark(rs.getString("REMARK"));
-                        wa.setStatus(rs.getString("STATUS_NAME"));
+                        wa.setStatus_name(rs.getString("STATUS_NAME"));
                         wa.setCreated_at(new Date(rs.getTimestamp("DATE").getTime()));
                         list.add(wa);
 

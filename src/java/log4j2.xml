@@ -21,6 +21,18 @@
 			</Policies>
 		</RollingFile> 
 		
+		<RollingFile name="LogToInfofile" fileName="/opt/wildfly/paperless/log/info/paperless-INFO.log"
+                    filePattern="/opt/wildfly/paperless/log/info/paperless-INFO.%d{yyyy-MM-dd-HH}.log">
+			<LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+			<PatternLayout>
+				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+		</RollingFile> 
+		
 		<RollingFile name="LogToFatalfile" fileName="/opt/wildfly/paperless/log/fatal/paperless-FATAL.log"
                     filePattern="/opt/wildfly/paperless/log/fatal/paperless-FATAL.%d{yyyy-MM-dd-HH}.log">
 			<LevelRangeFilter minLevel="FATAL" maxLevel="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
@@ -76,7 +88,8 @@
 			<AppenderRef ref="LogToDEBUGfile"/>
 			<AppenderRef ref="LogToERRORfile"/>		
 			<AppenderRef ref="LogToRequestfile"/>	
-			<AppenderRef ref="LogToFatalfile"/>				
+			<AppenderRef ref="LogToFatalfile"/>	
+			<AppenderRef ref="LogToInfofile"/>				
         </Logger>
 		
 		<Logger name="RestfulFactory" additivity="false" level="ALL">
@@ -93,7 +106,8 @@
 			<AppenderRef ref="LogToDEBUGfile"/>
 			<AppenderRef ref="LogToERRORfile"/>		
 			<AppenderRef ref="LogToRequestfile"/>	
-			<AppenderRef ref="LogToFatalfile"/>				
+			<AppenderRef ref="LogToFatalfile"/>	
+			<AppenderRef ref="LogToInfofile"/>				
         </Logger>
 		
 		<Logger name="vn.mobileid.id.general.api" additivity="false" level="ALL">            
@@ -101,6 +115,7 @@
 			<AppenderRef ref="LogToERRORfile"/>		
 			<AppenderRef ref="LogToRequestfile"/>					
 			<AppenderRef ref="LogToFatalfile"/>	
+			<AppenderRef ref="LogToInfofile"/>	
         </Logger>			
 		
         <Root level="ALL">            

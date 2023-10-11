@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 
@@ -37,7 +38,7 @@ public class CustomListAccount implements JsonSerializable {
         jg.writeStartObject();
         jg.writeFieldName("users");
         jg.writeStartArray();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa XXX");
+        DateFormat dateFormat = new SimpleDateFormat(PolicyConfiguration.getInstant().getSystemConfig().getAttributes().get(0).getDateFormat());
         for (Account account : listAccount) {
             jg.writeStartObject();
             jg.writeStringField("user_name", account.getUser_name());

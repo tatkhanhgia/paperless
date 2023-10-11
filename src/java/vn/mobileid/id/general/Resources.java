@@ -23,10 +23,12 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.EventAction;
+import vn.mobileid.id.paperless.objects.GenerationType;
 import vn.mobileid.id.paperless.objects.StatusOfAccount;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 import vn.mobileid.id.paperless.objects.WorkflowTemplateType;
+import vn.mobileid.id.paperless.objects.WorkflowType;
 
 /**
  *
@@ -55,13 +57,19 @@ public class Resources extends HttpServlet {
     private static volatile HashMap<String, String> queueForgotPassword = new HashMap<>();
 
     //Save Workflow Detail Attribute Type in DB <=> mapping with Workflow Detail
-    private static volatile HashMap<String, WorkflowAttributeType> listWorkflowDetailAttributeType = new HashMap<>();
+    private static volatile HashMap<String, WorkflowAttributeType> listWorkflowAttributeType = new HashMap<>();
 
     //Save Event Action in DB <=> Mapping with Action, API 
     private static volatile HashMap<Integer, EventAction> listEventAction = new HashMap<>();
     
     //Save User Status in DB
     private static volatile HashMap<Integer, StatusOfAccount> listStatusOfAccount = new HashMap<>();
+    
+    //Save Workflow Type
+    private static volatile HashMap<Integer, WorkflowType> listWorkflowType = new HashMap<>();
+    
+    //Save GenerationType
+    private static volatile HashMap<Integer, GenerationType> listGenerationType = new HashMap<>();
 
     @Override
     public void init() {
@@ -89,6 +97,10 @@ public class Resources extends HttpServlet {
         reloadListEventAction();
         
         reloadListTypeOfStatusAccount();
+        
+        reloadListGenerationType();
+        
+        reloadListWorkflowType();
 
         LOG.info("Service is started up and ready to use!");
         System.out.println("\tTime init:" + (System.currentTimeMillis() - start));
@@ -160,9 +172,35 @@ public class Resources extends HttpServlet {
             throw new Exception("Cannot load list Workflow Detail Attribute Types!!");
         }
         List<WorkflowAttributeType> temps = (List<WorkflowAttributeType>) response.getObject();
-        listWorkflowDetailAttributeType.clear();
+        listWorkflowAttributeType.clear();
         for (WorkflowAttributeType temp : temps) {
-            listWorkflowDetailAttributeType.put(temp.getName(), temp);
+            listWorkflowAttributeType.put(temp.getName(), temp);
+        }
+    }
+    
+    public static void reloadListWorkflowType() throws Exception{
+        DatabaseV2 callDb = new DatabaseImpl_V2();
+        DatabaseResponse response = callDb.getWorkflowType();
+        if(response.getStatus() != PaperlessConstant.CODE_SUCCESS){
+            throw new Exception("Cannot load list Wofklow Type!");
+        }
+        List<WorkflowType> temps = (List<WorkflowType>)response.getObject();
+        listWorkflowType.clear();
+        for(WorkflowType data : temps){
+            listWorkflowType.put(data.getId(), data);
+        }
+    }
+    
+    public static void reloadListGenerationType() throws Exception{
+        DatabaseV2 callDb = new DatabaseImpl_V2();
+        DatabaseResponse response = callDb.getGenerationType();
+        if(response.getStatus() != PaperlessConstant.CODE_SUCCESS){
+            throw new Exception("Cannot load list Generation Type!");
+        }
+        List<GenerationType> temps = (List<GenerationType>)response.getObject();
+        listGenerationType.clear();
+        for(GenerationType data : temps){
+            listGenerationType.put(data.getId(), data);
         }
     }
 
@@ -221,7 +259,7 @@ public class Resources extends HttpServlet {
     }
 
     public static HashMap<String, WorkflowAttributeType> getListWorkflowAttributeType() {
-        return listWorkflowDetailAttributeType;
+        return listWorkflowAttributeType;
     }
 
     public static HashMap<Integer, EventAction> getListEventAction() {
@@ -230,5 +268,13 @@ public class Resources extends HttpServlet {
     
     public static HashMap<Integer, StatusOfAccount> getListStatusOfAccount(){
         return listStatusOfAccount;
+    }
+
+    public static HashMap<Integer, WorkflowType> getListWorkflowType() {
+        return listWorkflowType;
+    }
+
+    public static HashMap<Integer, GenerationType> getListGenerationType() {
+        return listGenerationType;
     }
 }

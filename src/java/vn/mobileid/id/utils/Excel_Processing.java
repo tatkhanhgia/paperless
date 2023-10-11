@@ -100,7 +100,7 @@ public class Excel_Processing {
             cell.setCellStyle(style);
 
             cell = row.createCell(3);
-            cell.setCellValue(listObject.get(i).getStatus());
+            cell.setCellValue(listObject.get(i).getStatus_name());
             cell.setCellStyle(style);
 
             cell = row.createCell(4);
@@ -125,7 +125,7 @@ public class Excel_Processing {
         temp1.setWorkflow_template_type(1);
         temp1.setWorkflow_template_type_name("TemplateType1");
         temp1.setWorkflow_label("Workflow Label 1");
-        temp1.setStatus("Status1");
+        temp1.setStatus_name("Status1");
         temp1.setCreated_by("GiaTK1");
 
         WorkflowActivity temp2 = new WorkflowActivity();
@@ -133,7 +133,7 @@ public class Excel_Processing {
         temp2.setWorkflow_template_type(2);
         temp2.setWorkflow_template_type_name("TemplateType2");
         temp2.setWorkflow_label("Workflow Label 2");
-        temp2.setStatus("Status2");
+        temp2.setStatus_name("Status2");
         temp2.setCreated_by("GiaTK2");
 
         list.add(temp1);

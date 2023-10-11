@@ -16,7 +16,6 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.SigningService;
 import vn.mobileid.id.paperless.objects.Asset;
@@ -27,7 +26,6 @@ import vn.mobileid.id.paperless.objects.KYC;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.FrameSignatureProperties;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
-import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.general.annotation.AnnotationJWT;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.kernel_v2.GetAsset;
@@ -229,12 +227,13 @@ public class ProcessELaborContract {
         }
 
         //Write into DB
+        System.out.println("Begin write into DB");
         response = UpdateFileManagement.updateFileManagement(
                 woAc.getFile().getID(),
                 null,
                 file_name,
                 -1,
-                -1,
+                xsltC.length,
                 -1,
                 -1,
                 -1,
@@ -463,8 +462,8 @@ public class ProcessELaborContract {
     }
 
 //=====================INTERNAL METHOD =======================
-    //Function Assign All value in Item into KYC Object
-    private static KYC assignAllItem(List<ItemDetails> listItem) {
+    //<editor-fold defaultstate="collapsed" desc="Assign All Item into KYC Object">
+    public  static KYC assignAllItem(List<ItemDetails> listItem) {
         KYC kyc = new KYC();
         for (ItemDetails details : listItem) {
             String field = details.getField();
@@ -485,8 +484,9 @@ public class ProcessELaborContract {
         }
         return kyc;
     }
-
-    //Assign data into KYC Object
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Assign Data into KYC Field">
     private static KYC assignIntoKYC(KYC oldValue, String field, Object value) {
         Field[] fields = KYC.getHashMapFieldName();
         for (Field temp : fields) {
@@ -511,7 +511,8 @@ public class ProcessELaborContract {
         }
         return oldValue;
     }
-
+    //</editor-fold>
+    
     //backup
 //    public static InternalResponse processELaborContractWithAuthen(
 //            User user,

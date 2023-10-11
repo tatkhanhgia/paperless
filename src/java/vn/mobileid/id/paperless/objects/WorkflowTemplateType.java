@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.annotation.AnnotationORM;
+import vn.mobileid.id.paperless.PaperlessConstant;
 
 /**
  *
@@ -25,13 +26,13 @@ public class WorkflowTemplateType {
 
     @AnnotationORM(columnName = "ID")
     private int id;
-    
+
     @AnnotationORM(columnName = "TYPE_NAME")
     private String name;
-    
+
     @AnnotationORM(columnName = "STATUS")
     private int status;
-    
+
     @AnnotationORM(columnName = "WORKFLOW_TYPE")
     private int workflowType;
     private int ordinary;
@@ -45,11 +46,11 @@ public class WorkflowTemplateType {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
     private Date modified_at;
     private String metadata_template;
-    private String metadata_detail;   
-    
+    private String metadata_detail;
+
     @AnnotationORM(columnName = "REMARK")
     private String remark_vn;
-    
+
     @AnnotationORM(columnName = "REMARK_EN")
     private String remark;
 
@@ -203,7 +204,7 @@ public class WorkflowTemplateType {
 
     public void setRemark_vn(String remark) {
         this.remark_vn = remark;
-    }        
+    }
 
     public String getRemark() {
         return remark;
@@ -212,7 +213,7 @@ public class WorkflowTemplateType {
     public void setRemark(String remark_en) {
         this.remark = remark_en;
     }
-    
+
     public void appendData(String a, Integer b) {
         if (enableObjectMap == null) {
             enableObjectMap = new HashMap<>();
@@ -220,36 +221,48 @@ public class WorkflowTemplateType {
         this.enableObjectMap.put(a, b);
     }
 
-    public WorkflowDetail_Option convertToWLDetail_Option(){
+    public WorkflowDetail_Option convertToWLDetail_Option() {
         WorkflowDetail_Option result = new WorkflowDetail_Option();
         enableObjectMap.forEach((key, value) -> {
             String temp_key = key.replace("ENABLE_", "");
-            String temp_value = String.valueOf(value); 
-            try{
-                result.set(temp_key, temp_value);            
-            }catch(Exception e){
-                
+            String temp_value = String.valueOf(value);
+            try {
+                result.set(temp_key, temp_value);
+            } catch (Exception e) {
+
             }
         });
         return result;
     }
-    
-    public List<WorkflowAttributeType> convertToWorkflowAttributeType(List<WorkflowAttributeType> src){
+
+    public List<WorkflowAttributeType> convertToWorkflowAttributeType(List<WorkflowAttributeType> src) {
         List<String> temp = new ArrayList<>();
-        for(WorkflowAttributeType type : src){
-            temp.add(type.getName());
+        if (src != null || !src.isEmpty()) {
+            for (WorkflowAttributeType type : src) {                
+                temp.add(type.getName());
+            }
         }
-        for(String key : enableObjectMap.keySet()){
+        for (String key : enableObjectMap.keySet()) {
             String temp_key = key.replace("_ENABLED", "");
             temp_key = temp_key.toLowerCase();
             WorkflowAttributeType attributeParent = Resources.getListWorkflowAttributeType().get(temp_key);
-            if(attributeParent != null && (enableObjectMap.get(key) == 1) && !temp.contains(temp_key)){
+            if (attributeParent != null && (enableObjectMap.get(key) == 1) && !temp.contains(temp_key)) {
                 WorkflowAttributeType attribute = (WorkflowAttributeType) attributeParent.clone();
+                if (attribute.getId() == PaperlessConstant.ASSET_TYPE_APPEND
+                        || attribute.getId() == PaperlessConstant.ASSET_TYPE_BACKGROUND
+                        || attribute.getId() == PaperlessConstant.ASSET_TYPE_TEMPLATE) {
+                    if (!temp.contains(attribute.getName())) {
+                        attribute.setValue(null);
+                        src.add(attribute);
+                        temp.add(temp_key);
+                    }
+                    continue;
+                }
                 attribute.setValue(true);
                 src.add(attribute);
                 temp.add(temp_key);
-            } 
-        }        
+            }
+        }
         return src;
     }
 }

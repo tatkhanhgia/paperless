@@ -20,8 +20,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
@@ -42,7 +40,6 @@ import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.general.Configuration;
 import vn.mobileid.id.general.email.SendMail;
 import vn.mobileid.id.paperless.kernel.CheckWorkflowTemplate;
-import vn.mobileid.id.paperless.kernel.ManageStatusAsset;
 import vn.mobileid.id.paperless.kernel.ManageStatusWorkflow;
 import vn.mobileid.id.paperless.kernel.ProcessTrustManager;
 import vn.mobileid.id.paperless.kernel_v2.CreateWorkflow;
@@ -74,11 +71,15 @@ import vn.mobileid.id.paperless.serializer.CustomWorkflowSerializer;
 import vn.mobileid.id.paperless.serializer.CustomWorkflowTemplateSerializer;
 import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.paperless.kernel.GetTransaction;
+import vn.mobileid.id.paperless.kernel.GetWorkflowTemplateType;
+import vn.mobileid.id.paperless.kernel_v2.DeleteAsset;
 import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
 import vn.mobileid.id.paperless.kernel_v2.GetFileManagement;
 import vn.mobileid.id.paperless.kernel_v2.UpdateAsset;
 import vn.mobileid.id.paperless.kernel_v2.UploadAsset;
+import vn.mobileid.id.paperless.objects.GenerationType;
 import vn.mobileid.id.paperless.objects.Transaction;
+import vn.mobileid.id.paperless.objects.WorkflowType;
 import vn.mobileid.id.utils.TaskV2;
 import vn.mobileid.id.utils.Utils;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
@@ -612,7 +613,24 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        CustomWorkflowDetailsSerializer custom = new CustomWorkflowDetailsSerializer((List<WorkflowAttributeType>) response.getData());
+        List<WorkflowAttributeType> list1 = (List<WorkflowAttributeType>)response.getData();
+        
+        //Get Workflow
+        response = GetWorkflow.getWorkflow(id, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        Workflow workflow = (Workflow)response.getData();
+        
+        //Get WorkflowTemplate Type
+        response = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(workflow.getWorkflow_type(), transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        WorkflowTemplateType templateType = (WorkflowTemplateType)response.getData();
+        List<WorkflowAttributeType> listFinal = templateType.convertToWorkflowAttributeType(list1);
+        
+        CustomWorkflowDetailsSerializer custom = new CustomWorkflowDetailsSerializer(listFinal);
         return new InternalResponse(
                 response.getStatus(),
                 new ObjectMapper()
@@ -768,7 +786,71 @@ public class PaperlessService {
                 node);
     }
     //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get Generation Type">
+    public static InternalResponse getGenerationType(
+            final HttpServletRequest request,
+            String transactionID) throws Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
 
+        User user_info = response.getUser();
+
+        //Processing
+        HashMap<Integer, GenerationType> hashmap = Resources.getListGenerationType();
+        if (hashmap == null || hashmap.isEmpty()) {
+            Resources.reloadListWorkflowTemplateType();
+            hashmap = Resources.getListGenerationType();
+        }
+        ArrayNode node = new ObjectMapper().createArrayNode();
+        hashmap.forEach((key, value) -> {
+            ObjectNode child = new ObjectMapper().createObjectNode();
+            child.put("generation_type_id", key);
+            child.put("generation_type_name", value.getGeneration_type_name());
+            child.put("generation_type_name_vn", value.getRemark_vn());
+            node.add(child);
+        });
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                node);
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Get Workflow Type">
+    public static InternalResponse getWorkflowType(
+            final HttpServletRequest request,
+            String transactionID) throws Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Processing
+        HashMap<Integer, WorkflowType> hashmap = Resources.getListWorkflowType();
+        if (hashmap == null || hashmap.isEmpty()) {
+            Resources.reloadListWorkflowTemplateType();
+            hashmap = Resources.getListWorkflowType();
+        }
+        ArrayNode node = new ObjectMapper().createArrayNode();
+        hashmap.forEach((key, value) -> {
+            ObjectNode child = new ObjectMapper().createObjectNode();
+            child.put("workflow_type_id", key);
+            child.put("workflow_type_name", value.getWorkflow_type_name());
+            child.put("workflow_type_name_vn", value.getRemark_vn());
+            node.add(child);
+        });
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                node);
+    }
+    //</editor-fold>
+    
     //<editor-fold defaultstate="collapsed" desc="Upload Asset">
     public static InternalResponse uploadAsset(
             final HttpServletRequest request,
@@ -784,7 +866,7 @@ public class PaperlessService {
         //Get header         
         String x_file_type = Utils.getRequestHeader(request, "x-file-type");
         String x_file_name = Utils.getRequestHeader(request, "x-file-name");
-        ByteArrayOutputStream outputStream;
+        ByteArrayOutputStream outputStream = null;
         try {
             final ServletInputStream input = request.getInputStream();
 //            int len = request.getContentLength();
@@ -806,6 +888,16 @@ public class PaperlessService {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     "{INVALID FILE}");
+        }
+        //Check null
+        if(outputStream == null || outputStream.toByteArray().length <=0){
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                     PaperlessMessageResponse.getErrorMessage(
+                    PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                    PaperlessConstant.SUBCODE_MISSING_FILE_DATA,
+                    "en",
+                    null));
         }
 
         //Processing        
@@ -2497,8 +2589,9 @@ public class PaperlessService {
         User user_info = response.getUser();
 
         //Processing
-        response = ManageStatusAsset.deleteAsset(
+        response = DeleteAsset.deleteAsset(
                 id,
+                user_info.getEmail(),
                 transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
@@ -2680,7 +2773,7 @@ public class PaperlessService {
         //Processing
         response = UpdateWorkflowActivity.updateStatus(
                 id,
-                WorkflowActivityStatus.valueOf(woAc.getStatus()),
+                WorkflowActivityStatus.valueOf(woAc.getStatus_name()),
                 user_info.getName() == null ? user_info.getEmail() : user_info.getName(),
                 transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {

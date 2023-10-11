@@ -8,13 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import vn.mobileid.id.eid.object.JWT_Authenticate;
 
 /**
  *
@@ -36,6 +31,12 @@ public class KYC {
     private String PreviousDay;
     private String PreviousMonth;
     private String PreviousYear;
+    
+    //For QR
+    private String Background;
+    private float width;
+    private float height;
+    private String QR;
 
 //    public KYC(String FullName, String BirthDate, String Nationality, String PersonalNumber, String IssuanceDate, String PlaceOfResidence, String CurrentDate, String DateAfterOneYear, String PreviousDay, String PreviousMonth, String PreviousYear) {
 //        this.FullName = FullName;
@@ -113,6 +114,30 @@ public class KYC {
         return PreviousYear;
     }   
     
+    @XmlElement(name = "Background")
+    public String getBackground() {
+        return Background;
+    }   
+
+    @XmlElement(name = "width")
+    public float getWidth() {
+        return width;
+    }
+
+    @XmlElement(name = "height")
+    public float getHeight() {
+        return height;
+    }
+
+    @XmlElement(name = "QR")
+    public String getQR() {
+        return QR;
+    }
+
+    public void setQR(String QR) {
+        this.QR = QR;
+    }
+    
     public void set(Field field, Object value) throws IllegalArgumentException, IllegalAccessException {
         field.set(this, value);
     }
@@ -165,5 +190,16 @@ public class KYC {
     public void setPreviousYear(String PreviousYear) {
         this.PreviousYear = PreviousYear;
     }    
-        
+
+    public void setBackground(String Background) {
+        this.Background = Background;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
+    }
 }

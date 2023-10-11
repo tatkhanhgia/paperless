@@ -9,6 +9,8 @@ import java.util.List;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import static vn.mobileid.id.paperless.object.enumration.ObjectType.QR;
+import vn.mobileid.id.paperless.objects.QR;
 import vn.mobileid.id.paperless.objects.QRSize;
 import vn.mobileid.id.paperless.objects.QRType;
 
@@ -118,6 +120,27 @@ public class DatabaseImpl_V2_QR implements DatabaseV2_QR {
                 input,
                 null,
                 "Update QR");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+        
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getQR(
+            long pQR_ID, 
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_QR_GET(?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pQR_ID", pQR_ID);
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                QR.class,
+                nameStore,
+                input,
+                null,
+                "Get QR");
 
         LogHandler.debug(this.getClass(), response.getDebugString());
         

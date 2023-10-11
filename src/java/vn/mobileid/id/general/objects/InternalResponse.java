@@ -37,8 +37,6 @@ public class InternalResponse {
     public InternalResponse(int status, String message) {
         this.status = status;
         this.message = message;
-        this.processId = PaperlessConstant.FEDERAL_ID;
-        this.subjectId = PaperlessConstant.FEDERAL_ID;
     }
 
     public InternalResponse(int status, Object data) {
@@ -65,12 +63,6 @@ public class InternalResponse {
         this.message = message;
     }
 
-    public long getProcessId() {
-        if (this.processId == 0) {
-            this.processId = PaperlessConstant.FEDERAL_ID;
-        }
-        return processId;
-    }
 
     public void setProcessId(long processId) {
         this.processId = processId;
@@ -108,40 +100,14 @@ public class InternalResponse {
         this.clientType = clientType;
     }
 
-    public long getSubjectId() {
-        if (this.subjectId == 0) {
-            this.subjectId = PaperlessConstant.FEDERAL_ID;
-        }
-        return subjectId;
-    }
 
     public void setSubjectId(long subjectId) {
         this.subjectId = subjectId;
     }
-
-    public String getProcessUUID() {
-        if (!Utils.isNullOrEmpty(this.processUUID)) {
-            if (this.processId == 0
-                    || this.processId == PaperlessConstant.FEDERAL_ID) {
-                this.processUUID = null;
-            }
-        }
-        return processUUID;
-    }
-
     public void setProcessUUID(String processUUID) {
         this.processUUID = processUUID;
     }
 
-    public String getSubjectUUID() {
-        if (!Utils.isNullOrEmpty(this.subjectUUID)) {
-            if (this.subjectId == 0
-                    || this.subjectId == PaperlessConstant.FEDERAL_ID) {
-                this.subjectUUID = null;
-            }
-        }
-        return subjectUUID;
-    }
 
     public void setSubjectUUID(String subjectUUID) {
         this.subjectUUID = subjectUUID;

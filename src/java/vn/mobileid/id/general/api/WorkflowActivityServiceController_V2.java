@@ -5,6 +5,8 @@
 package vn.mobileid.id.general.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.util.Base64;
 import javax.servlet.ServletException;
@@ -34,18 +36,17 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
         String transactionId = "";
         try {
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*$")) {
-                transactionId = debugRequestLOG("Download Document", req, null, 0);
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", ""));
+                transactionId = debugRequestLOG("Download Document", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", ""));
                 InternalResponse response = PaperlessService.downloadsDocument(req, id, transactionId);
-                FileManagement file = (FileManagement) response.getData();
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     Utils.sendMessage(
                             res,
                             response.getStatus(),
                             "application/octet-stream",
-                            file.getData());
+                            response.getData());
                 } else {
                     Utils.sendMessage(
                             res,
@@ -57,16 +58,15 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
             }
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/base64$")) {
                 long start = System.currentTimeMillis();
-                transactionId = debugRequestLOG("Download Document", req, null, 0);
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/base64", ""));
+                transactionId = debugRequestLOG("Download Document", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/base64", ""));
                 InternalResponse response = PaperlessService.downloadsDocument(req, id, transactionId);
                 long stop = System.currentTimeMillis();
                 System.out.println("\n\tTime process:" + (stop - start));
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    FileManagement file = (FileManagement) response.getData();
-                    String temp = "{\"file_data\":\"" + Base64.getEncoder().encodeToString(file.getData()) + "\"}";
+                    String temp = "{\"file_data\":\"" + Base64.getEncoder().encodeToString((byte[]) response.getData()) + "\"}";
                     Utils.sendMessage(res,
                             response.getStatus(),
                             "application/json",
@@ -81,10 +81,10 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 return;
             }
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/documentdetails$")) {
-                transactionId = debugRequestLOG("Document Details", req, null, 0);
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/documentdetails", ""));
+                transactionId = debugRequestLOG("Document Details", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/documentdetails", ""));
                 InternalResponse response = PaperlessService.getDocumentDetails(req, id, transactionId);
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     Utils.sendMessage(
@@ -122,12 +122,13 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 return;
             }
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]+/details$")) {
-                transactionId = debugRequestLOG("Get details woAc", req, null, 0);
-                LogHandler.request(WorkflowActivityServiceController_V2.class,
-                        transactionId);
                 String temp = req.getRequestURI().replace("/paperless/v1/workflowactivity/", "");
                 temp = temp.replace("/details", "");
-                InternalResponse response = PaperlessService.getWorkflowAcDetail(req, Integer.parseInt(temp), transactionId);
+                int id = Integer.parseInt(temp);
+                transactionId = debugRequestLOG("Get details woAc", req, null, id);
+                LogHandler.request(WorkflowActivityServiceController_V2.class,
+                        transactionId);
+                InternalResponse response = PaperlessService.getWorkflowAcDetail(req, id, transactionId);
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     Utils.sendMessage(
                             res,
@@ -149,7 +150,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         transactionId);
                 InternalResponse response = PaperlessService_V2.getReportofWorkflowActivity(req, transactionId);
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    String temp = "{\"file_data\":\"" + Base64.getEncoder().encodeToString((byte[])response.getData()) + "\"}";
+                    String temp = "{\"file_data\":\"" + Base64.getEncoder().encodeToString((byte[]) response.getData()) + "\"}";
                     Utils.sendMessage(
                             res,
                             response.getStatus(),
@@ -175,6 +176,30 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                             response.getStatus(),
                             "application/octet-stream",
                             response.getData());
+                } else {
+                    Utils.sendMessage(
+                            res,
+                            response.getStatus(),
+                            "application/json",
+                            response.getMessage());
+                }
+                return;
+            }
+            if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/type$")) {
+                transactionId = debugRequestLOG("Get Generation Type", req, null, 0);
+                LogHandler.request(WorkflowActivityServiceController_V2.class,
+                        transactionId);
+                InternalResponse response = PaperlessService.getGenerationType(req, transactionId);
+                if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    ObjectNode node = mapper.createObjectNode();
+
+                    node.put("generation_types", (ArrayNode) response.getData());
+                    Utils.sendMessage(
+                            res,
+                            response.getStatus(),
+                            "application/json",
+                            mapper.writeValueAsString(node));
                 } else {
                     Utils.sendMessage(
                             res,
@@ -242,10 +267,10 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 return;
             }
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/assign$")) {
-                transactionId = debugRequestLOG("Assign woAc", req, null, 0);
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/assign", ""));
+                transactionId = debugRequestLOG("Assign woAc", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/assign", ""));
                 InternalResponse response = PaperlessService.assignDataIntoWorkflowActivity(req, Utils.getPayload(req), id, transactionId);
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     Utils.sendMessage(
@@ -263,10 +288,11 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 return;
             }
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/hash$")) {
-                transactionId = debugRequestLOG("Get hash", req, null, 0);
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/hash", ""));
+                transactionId = debugRequestLOG("Get hash", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/hash", ""));
+
                 InternalResponse response = PaperlessService.generateHashDocument(req, Utils.getPayload(req), id, transactionId);
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     Utils.sendMessage(
@@ -284,10 +310,10 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 return;
             }
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/processAssign")) {
-                transactionId = debugRequestLOG("Process woAc", req, null, 0);
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/processAssign", ""));
+                transactionId = debugRequestLOG("Process woAc", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/processAssign", ""));
                 InternalResponse response = PaperlessService.processWorkflowActivityWithAuthen(req, Utils.getPayload(req), id, transactionId);
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     Utils.sendMessage(
@@ -305,10 +331,11 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 return;
             }
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/process")) {
-                transactionId = debugRequestLOG("Process woAc", req, null, 0);
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/process", ""));
+                transactionId = debugRequestLOG("Process woAc", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/process", ""));
+
                 InternalResponse response = PaperlessService.processWorkflowActivity(req, Utils.getPayload(req), id, transactionId);
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     Utils.sendMessage(
@@ -348,10 +375,11 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
         String transactionId = "";
         try {
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]+/status$")) {
-                transactionId = debugRequestLOG("Udpate woAc", req, null, 0);
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/status", ""));
+                transactionId = debugRequestLOG("Udpate woAc", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/status", ""));
+
                 InternalResponse response = PaperlessService.updateWorkflowActivity(req, id, Utils.getPayload(req), transactionId);
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     Utils.sendMessage(

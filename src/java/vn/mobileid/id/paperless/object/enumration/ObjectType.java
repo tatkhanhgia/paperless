@@ -7,6 +7,7 @@ package vn.mobileid.id.paperless.object.enumration;
 /**
  *
  * @author GiaTK
+ * In class TransactionID for manageme the type of source inside Transaction
  */
  public enum ObjectType{
         QR(1),
@@ -22,8 +23,13 @@ package vn.mobileid.id.paperless.object.enumration;
         public int getNumber() {
             return number;
         }     
-
-        public void setNumber(int number) {
-            this.number = number;
-        }                
+        
+        public static ObjectType valuesOf(int data){
+            for(ObjectType type : values()){
+                if(type.getNumber() == data){
+                    return type;
+                }
+            }
+            return ObjectType.PDF;
+        }
     }

@@ -13,6 +13,7 @@ import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.paperless.objects.Workflow;
 
 /**
@@ -30,16 +31,18 @@ public class CustomWorkflowSerializer implements JsonSerializable {
     @Override
     public void serialize(JsonGenerator jg, SerializerProvider sp) throws IOException {
 //        String rootname = sp.getConfig().findRootName(Asset.class).getSimpleName();       
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa XXX");
+        DateFormat dateFormat = new SimpleDateFormat(PolicyConfiguration.getInstant().getSystemConfig().getAttributes().get(0).getDateFormat());
         
             jg.writeStartObject();
             jg.writeNumberField("workflow_id", workflow.getWorkflow_id());            
             jg.writeStringField("workflow_label", workflow.getLabel());
             jg.writeStringField("workflow_type_name", workflow.getWorkflow_type_name());   
+            jg.writeStringField("workflow_type_nam_vn", workflow.getWorkflow_type_name_vn());   
             jg.writeStringField("workflow_template_type_name", workflow.getWorkflowTemplate_type_name());   
-            jg.writeStringField("workflow_template_type_name_en", workflow.getWorkflowTemplate_type_name_en());   
+            jg.writeStringField("workflow_template_type_name_vn", workflow.getWorkflowTemplate_type_name_vn());   
             jg.writeNumberField("workflow_template_type_id", workflow.getWorkflowTemplate_type());
             jg.writeStringField("status", (workflow.getStatus()==1?"ACTIVE":"INACTIVE"));  
+            jg.writeStringField("status_vn", (workflow.getStatus()==1?"Kích hoạt":"Ẩn"));  
             jg.writeStringField("note",workflow.getNote());
             jg.writeStringField("metadata", workflow.getMetadata());
             jg.writeStringField("created_at", dateFormat.format(workflow.getCreated_at()));

@@ -12,4 +12,8 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
  */
 public interface  DatabaseV2 {
     public DatabaseResponse getEventActions()throws Exception;
+    
+    public DatabaseResponse getGenerationType() throws Exception;
+    
+    public DatabaseResponse getWorkflowType() throws Exception;
 }

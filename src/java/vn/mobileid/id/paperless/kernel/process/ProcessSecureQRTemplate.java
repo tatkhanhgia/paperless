@@ -30,7 +30,6 @@ import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
 import vn.mobileid.id.paperless.objects.Transaction;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
-import vn.mobileid.id.paperless.objects.WorkflowDetail_Option;
 import vn.mobileid.id.qrypto.object.Configuration;
 import vn.mobileid.id.qrypto.object.QRSchema;
 import vn.mobileid.id.qrypto.object.QRSchema.fieldType;
@@ -44,6 +43,7 @@ import vn.mobileid.id.utils.Utils;
  */
 public class ProcessSecureQRTemplate {
 
+    //<editor-fold defaultstate="collapsed" desc="Process QR Template">
     public static InternalResponse process(
             WorkflowActivity woAc,
             List<FileDataDetails> fileData,
@@ -79,7 +79,10 @@ public class ProcessSecureQRTemplate {
         }
         try {
             IssueQryptoWithFileAttachResponse QRdata = QryptoService.getInstance(1).generateQR(QR, configure, transactionID);
-
+            if(QRdata == null){
+                QryptoService.getInstance(1).login();
+                QRdata = QryptoService.getInstance(1).generateQR(QR, configure, transactionID);
+            }
             //Get Transaction =>get QR Id
             InternalResponse res = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
             if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -90,7 +93,6 @@ public class ProcessSecureQRTemplate {
             test.setFile_data(fileData);
             test.setItem(fileItem);
 
-            //Đang lỗi phần này 
             response = UpdateQR.updateQR(
                     ((Transaction)res.getData()).getObject_id(),
                     new ObjectMapper().writeValueAsString(test),
@@ -114,7 +116,79 @@ public class ProcessSecureQRTemplate {
             );
         }
     }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Process QR Template without UpdateQR">
+    public static InternalResponse process_(
+            WorkflowActivity woAc,
+            List<FileDataDetails> fileData,
+            List<ItemDetails> fileItem,
+            User user,
+            String file_name,
+            String transactionID
+    ) throws IOException, Exception {
+        Database DB = new DatabaseImpl();
 
+        //Get Workflow Detail 
+        InternalResponse response = GetWorkflowDetails.getWorkflowDetail(
+                woAc.getWorkflow_id(),
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+
+        //Get detail and write to Object QR
+        Configuration configure = null;
+        QRSchema QR = null;
+        try {
+            configure = appendWorkflowAttributeType_into_Configure((List<WorkflowAttributeType>) response.getData(), transactionID);
+            QR = appendData_into_QRScheme(fileData, fileItem, transactionID);
+
+            if (configure == null || QR == null) {
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_500,
+                        "Configure hoac QR null"
+                );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            IssueQryptoWithFileAttachResponse QRdata = QryptoService.getInstance(1).generateQR(QR, configure, transactionID);
+            if(QRdata == null){
+                QryptoService.getInstance(1).login();
+                QRdata = QryptoService.getInstance(1).generateQR(QR, configure, transactionID);
+            }
+            
+            //Get Transaction =>get QR Id
+            InternalResponse res = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
+            if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                return res;
+            }
+            //update QR
+            ProcessWorkflowActivity_JSNObject test = new ProcessWorkflowActivity_JSNObject();
+            test.setFile_data(fileData);
+            test.setItem(fileItem);           
+
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
+                    new ObjectMapper().writeValueAsString(QRdata)
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_500,
+                    "{Lỗi trong lúc thực hiện call Qrypto}"
+            );
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_500,
+                    "{Lỗi trong lúc thực hiện call Qrypto}"
+            );
+        }
+    }
+    //</editor-fold>
+    
 //=====================INTERNAL METHOD =======================    
     private static Configuration appendWorkflowAttributeType_into_Configure(
             List<WorkflowAttributeType> details,
@@ -240,9 +314,5 @@ public class ProcessSecureQRTemplate {
         QR.setCi("");
         QR.setHeader(headers);
         return QR;
-    }
-
-    public static void main(String[] args) {
-
     }
 }

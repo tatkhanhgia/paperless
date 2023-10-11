@@ -7,6 +7,7 @@ package vn.mobileid.id.paperless.object.enumration;
 /**
  *
  * author GiaTK
+ * In Workflow Activity to manage the Type of DownloadLink
  */
 public enum DownloadLinkType {
     PDF("PDF"),

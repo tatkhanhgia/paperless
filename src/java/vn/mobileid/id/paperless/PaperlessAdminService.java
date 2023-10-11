@@ -28,6 +28,7 @@ import vn.mobileid.id.paperless.kernelADMIN.CreateAccount;
 import vn.mobileid.id.paperless.kernelADMIN.GetAccount;
 import vn.mobileid.id.paperless.kernelADMIN.ResendActivation;
 import vn.mobileid.id.paperless.kernelADMIN.VerifyEmail;
+import vn.mobileid.id.paperless.object.enumration.BusinessType;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.JWT_Request;
@@ -171,7 +172,7 @@ public class PaperlessAdminService {
                     ent.getName(), //enterprise_name or id
                     "OWNER",
                     now, //Date when expired
-                    PaperlessConstant.BUSINESSTYPE_BUSINESS, //int - businessType
+                    BusinessType.BUSINESS.getType(), //int - businessType
                     "https://paperless.mobile-id.vn",
                     transactionID);
         }
@@ -188,7 +189,7 @@ public class PaperlessAdminService {
                 ent.getName(), //enterprise_name or id
                 "OWNER",
                 now, //int 
-                PaperlessConstant.BUSINESSTYPE_BUSINESS, //int - businessType
+                BusinessType.BUSINESS.getType(), //int - businessType
                 "https://paperless.mobile-id.vn",
                 transactionID);
     }

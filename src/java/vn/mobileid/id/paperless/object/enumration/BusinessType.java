@@ -7,6 +7,7 @@ package vn.mobileid.id.paperless.object.enumration;
 /**
  *
  * @author GiaTK
+ * In Create Account to manage the Type of Account
  */
 public enum BusinessType {
     PERSONAL(1),

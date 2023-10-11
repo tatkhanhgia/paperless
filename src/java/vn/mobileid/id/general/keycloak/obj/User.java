@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
+import vn.mobileid.id.general.annotation.AnnotationORM;
 
 /**
  *
@@ -40,8 +41,11 @@ public class User {
     private String nbf; //Not before time
     
     //DB
+    @AnnotationORM(columnName = "MOBILE_NUMBER")
     private String mobile;
     private int id;
+    
+    @AnnotationORM(columnName = "ROLE_NAME_EN")
     private String role_name;
     private String role_id;
     private int aid; //authorized party ID

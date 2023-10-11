@@ -92,7 +92,6 @@ public class CreateWorkflowActivity {
                 pHMAC,
                 pCREATED_BY,
                 transactionId);
-
         if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
@@ -169,7 +168,7 @@ public class CreateWorkflowActivity {
 
         //<editor-fold defaultstate="collapsed" desc="Create Transaction">
         //Create new Transaction
-        ObjectType type = ObjectType.PDF;
+        ObjectType type = null;
         switch (temp.getWorkflow_type()) {
             case 1: {
                 type = ObjectType.QR;
@@ -183,31 +182,36 @@ public class CreateWorkflowActivity {
                 if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                     return response;
                 }
-                QRUUID = (long)response.getData();
+                QRUUID = (long) response.getData();
                 break;
             }
-            case 2: {
-                type = ObjectType.QR;
-                response = CreateQR.processingCreateQR(
-                        "metaData",
-                        null,
-                        "HMAC",
-                        user.getName(),
-                        transaction);
-
-                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return response;
-                }
-                QRUUID = (long)response.getData();
+            case 2:{
+                type = ObjectType.PDF;
                 break;
             }
-            case 7:
+            case 7: {
+//                System.out.println("Create file");
+                type = ObjectType.PDF;
                 break;
-            case 8:
+            }
+            case 8: {
+//                System.out.println("Create file");
+                type = ObjectType.PDF;
                 break;
-            default:
+            }
+            default: {
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_NOT_FOUND,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                                PaperlessConstant.SUBCODE_THIS_TYPE_OF_WORKFLOW_DOES_NOT_SUPPORT_YET,
+                                "en",
+                                transactionID)
+                );
+            }
         }
-        if (type.equals(ObjectType.PDF)) {
+        if (type.getNumber() == 3) {
+//            System.out.println("Create fileManagement");
             //Create new File Management
             response = CreateFileManagement.processingCreateFileManagement(
                     woAc,
@@ -227,12 +231,13 @@ public class CreateWorkflowActivity {
             if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return response;
             }
-            fileManagementID = (long)response.getData();
+            fileManagementID = (long) response.getData();
         }
+//        System.out.println("ObjectType in Transaction:"+type.name());
         response = CreateTransaction.createTransaction(
                 user.getEmail(),
                 logID,
-                type.equals(ObjectType.PDF) ? fileManagementID : QRUUID,
+                type.getNumber() == 3 ? fileManagementID : QRUUID,
                 type.getNumber(),
                 "IP ADDRESS",
                 "MetaData",
@@ -251,40 +256,37 @@ public class CreateWorkflowActivity {
         //Create new Workflow Activity            
         DatabaseV2_WorkflowActivity callDb = new DatabaseImpl_V2_WorkflowActivity();
         DatabaseResponse callDB = callDb.createWorkflowActivity(
-                user.getAid(), 
-                woAc.getWorkflow_id(), 
-                user.getEmail(), 
-                transaction, 
-                Utils.generateUUID(), 
-                DownloadLinkType.PDF, 
-                woAc.getRemark(), 
-                WorkflowActivityProductType.Production, 
-                temp.getWorkflow_type(), 
-                "created workflow activity", 
-                "hmac", 
-                user.getName() == null ? user.getEmail() : user.getName(), 
+                user.getAid(),
+                woAc.getWorkflow_id(),
+                user.getEmail(),
+                transaction,
+                Utils.generateUUID(),
+                type.getNumber() == 3 ? DownloadLinkType.PDF : DownloadLinkType.IMAGE,
+                woAc.getRemark(),
+                WorkflowActivityProductType.Production,
+                temp.getWorkflow_type(),
+                "created workflow activity",
+                "hmac",
+                user.getName() == null ? user.getEmail() : user.getName(),
                 transactionID);
-        
-        if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(
+
+        if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {           
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(
                     PaperlessConstant.CODE_FAIL,
                     callDB.getStatus(),
                     "en",
-                    null);
-            return new InternalResponse(
-                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    message
+                    null)
             );
         }
-        
 
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
-                "{\"workflow_activity_id\":"+callDB.getObject()+"}");
+                "{\"workflow_activity_id\":" + callDB.getObject() + "}");
     }
 
     //</editor-fold>
-   
     public static void main(String[] args) throws Exception {
         InternalResponse response = CreateWorkflowActivity.createWorkflowActivity(
                 3,

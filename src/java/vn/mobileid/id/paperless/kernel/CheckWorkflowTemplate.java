@@ -233,7 +233,6 @@ public class CheckWorkflowTemplate {
             String transactionID) throws Exception {
 
         Database DB = new DatabaseImpl();
-
         DatabaseResponse createWorkflow = DB.createWorkflowTemplate(
                 workflow_id,
                 new ObjectMapper().writeValueAsString(workflow),

@@ -7,6 +7,7 @@ package vn.mobileid.id.paperless.object.enumration;
 /**
  *
  * @author GiaTK
+ * In FileManagement to manage the Type of File
  */
 public enum FileType {
     PDF("PDF"),

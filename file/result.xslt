@@ -3,6 +3,8 @@
                 xmlns="http://www.w3.org/1999/xhtml" xmlns:js="urn:custom-javascript" 
                 xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
     <xsl:template match="/">
+		<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format"> 
+		<fo:block background-image="C:\Users\Admin\Desktop\BG\amee.jpg" background-repeat="no-repeat">
         <html>
             <head>
                 <meta charset="UTF-8"/>
@@ -484,7 +486,8 @@
                 </div>
             </body>
         </html>
-
+		</fo:block>
+		</fo:root>
     </xsl:template>
 </xsl:stylesheet>
 

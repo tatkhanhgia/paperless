@@ -74,7 +74,7 @@ public class CreateWorkflow {
             return res;
         }
         
-        WorkflowTemplateType template = (WorkflowTemplateType) res.getData();        
+        WorkflowTemplateType template = (WorkflowTemplateType) res.getData();  
         Item_JSNObject object = new ObjectMapper().readValue(template.getMetadata_template(), Item_JSNObject.class);
         res = CheckWorkflowTemplate.processingCreateWorkflowTemplate(
                 workflowId.intValue(),
@@ -102,9 +102,12 @@ public class CreateWorkflow {
         //Update UsedBy in Asset
         for(WorkflowAttributeType attribute : object2){
         //Asset Template
-        if (attribute.getId() == 1) {
+        if (attribute.getId() == PaperlessConstant.ASSET_TYPE_TEMPLATE && attribute.getValue()!=null) {
             InternalResponse temp = GetAsset.getAsset((int)attribute.getValue(), transactionID);
             if(temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+                String message = temp.getMessage();
+                message.replace("{", "{\"error\":\"CANNOT_UPDATE_COLUMN_USED_BY_OF_ASSET\"");
+                temp.setMessage(message);
                 return temp;
             }
             Asset asset = (Asset)temp.getData();
@@ -127,9 +130,12 @@ public class CreateWorkflow {
                     transactionID);
         }
         //Asset Background
-        if (attribute.getId() == 13) {
+        if (attribute.getId() == PaperlessConstant.ASSET_TYPE_BACKGROUND && attribute.getValue()!=null) {
             InternalResponse temp = GetAsset.getAsset((int)attribute.getValue(), transactionID);
             if(temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+                String message = temp.getMessage();
+                message.replace("{", "{\"error\":\"CANNOT_UPDATE_COLUMN_USED_BY_OF_ASSET\"");
+                temp.setMessage(message);
                 return temp;
             }
             Asset asset = (Asset)temp.getData();
@@ -152,9 +158,9 @@ public class CreateWorkflow {
                     transactionID);
         }
         //Asset Append
-        if (attribute.getId() == 14) {
+        if (attribute.getId() == PaperlessConstant.ASSET_TYPE_APPEND && attribute.getValue()!=null) {
             InternalResponse temp = GetAsset.getAsset((int)attribute.getValue(), transactionID);
-            if(temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+            if(temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){               
                 return temp;
             }
             Asset asset = (Asset)temp.getData();

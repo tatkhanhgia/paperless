@@ -13,7 +13,6 @@ import vn.mobileid.id.general.PolicyConfiguration;
 public class PaperlessConstant {
 
     //System
-    final public static long FEDERAL_ID = 0;
     final public static int NUMBER_OF_ACCESS_TOKEN = 63;
     final public static int NUMBER_OF_ITEMS_TYPE = 5;
     final public static int NUMBER_OF_FILE_DATA = 5;
@@ -24,7 +23,6 @@ public class PaperlessConstant {
             .getSystemConfig()
             .getAttributes().get(0)
             .getDefault_row_count();
-//    final public static int DEFAULT_ROW_COUNT = 100;
     
     final public static String TOKEN_TYPE_BEARER = "Bearer";
     final public static String TOKEN_TYPE_BASIC = "Basic";
@@ -37,28 +35,27 @@ public class PaperlessConstant {
     final public static String EMAIL_FORGOT_PASSWORD = "email_forgot_password";
     
     //AccessToken Data
-//    final public static String alg = "SHA256withRSA";
     final public static String alg = PolicyConfiguration
             .getInstant()
             .getSystemConfig()
             .getAttributes().get(0)
             .getTokenConfig()
             .getAlg();
-//    final public static String typ = "JWT";
+    
     final public static String typ = PolicyConfiguration
             .getInstant()
             .getSystemConfig()
             .getAttributes().get(0)
             .getTokenConfig()
             .getTyp();
-//    final public static long expired_in = 3600;
+
     final public static long expired_in = PolicyConfiguration
             .getInstant()
             .getSystemConfig()
             .getAttributes().get(0)
             .getTokenConfig()
             .getAccess_token_expired_in();
-//    final public static long refresh_token_expired_in = 86400;
+
     final public static long refresh_token_expired_in = PolicyConfiguration
             .getInstant()
             .getSystemConfig()
@@ -67,27 +64,16 @@ public class PaperlessConstant {
             .getRefresh_token_expired_in();
 
     //Default data
-//    final public static long password_expired_at = 2592000;
     final public static long password_expired_at = PolicyConfiguration
             .getInstant()
             .getSystemConfig()
             .getAttributes().get(0)
             .getTokenConfig()
-            .getPassword_user_expired_at();
-    final public static int BUSINESSTYPE_PERSONAL = 1;
-    final public static int BUSINESSTYPE_BUSINESS = 2;
+            .getPassword_user_expired_at();    
 
-    final public static int ASSET_TYPE_BACKGROUND = 1;
-    final public static int ASSET_TYPE_APPEND = 2;
-    final public static int ASSET_TYPE_TEMPLATE = 3;
-
-    //Workflow Type    
-    final public static int WORKFLOW_TYPE_QR = 1;
-    final public static int WORKFLOW_TYPE_PDF_GENERATOR = 2;
-    final public static int WORKFLOW_TYPE_SIMPLE_PDF_STAMPING = 3;
-    final public static int WORKFLOW_TYPE_PDF_STAMPING = 4;
-    final public static int WORKFLOW_TYPE_FILE_STAMPING = 5;
-    final public static int WORKFLOW_TYPE_LEI_PDF_STAMPING = 6;
+    final public static int ASSET_TYPE_BACKGROUND = 13;
+    final public static int ASSET_TYPE_APPEND = 14;
+    final public static int ASSET_TYPE_TEMPLATE = 1;   
 
     //Template Type
     final public static int NUMBER_WORKFLOW_TEMPLATE_TYPE = 8;
@@ -173,6 +159,7 @@ public class PaperlessConstant {
     final public static int SUBCODE_MISSING_FILE_FIELD_IN_FILE_DATA = 12;
     final public static int SUBCODE_MISSING_FILE_FIELD_IN_ITEMS = 13;
     final public static int SUBCODE_FILE_DATA_IS_TOO_MUCH_VALUES = 14;
+    final public static int SUBCODE_THIS_TYPE_OF_WORKFLOW_DOES_NOT_SUPPORT_YET = 15;
 
     //SUBCPDE INVALID WORKFLOW TEMPLATE - 5003
 //    final public static int SUBCODE_WORKFLOW_TEMPLATE_ALREADY_EXISTED = 2;
@@ -180,6 +167,8 @@ public class PaperlessConstant {
     //SUBCODE INVALID ASSET - 5004
     final public static int SUBCODE_CANNOT_UPLOAD_ASSET = 2;
     final public static int SUBCODE_INVALID_FILE_TYPE = 3;
+    final public static int SUBCODE_THIS_TYPE_IS_NOT_AN_ASSET = 4;
+    final public static int SUBCODE_MISSING_FILE_DATA = 5;
 
     //SUBCODE INVALID JWT - 5005
     final public static int SUBCODE_INVALID_JWT_TOKEN = 2;

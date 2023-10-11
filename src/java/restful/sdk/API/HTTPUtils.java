@@ -85,6 +85,28 @@ public class HTTPUtils {
             throw new RuntimeException("Request failed. " + e.getMessage(), e);
         }
     }
+    
+    public static HttpResponse sendPost(
+            String endpointUrl,
+            ContentType contentType,
+            byte[] requestBody,
+            String mimeType) {
+        try {
+
+            String httpMethod = "POST";
+            int timeout = 50000;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Content-Type", "application/octet-stream");
+            headers.put("x-mime-type", mimeType);
+            headers.put("Content-Length", String.valueOf(requestBody.length));
+//            headers.put("X-RSSP-BACKEND", "rssp02");
+
+            return invokeHttpRequestAsStream(null, endpointUrl, httpMethod, contentType, timeout, headers, requestBody);                   
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Request failed. " + e.getMessage(), e);
+        }
+    }
 
     private static HttpResponse invokeHttpRequest(
             String[] truststore,
@@ -186,9 +208,9 @@ public class HTTPUtils {
                 connection.disconnect();
             }
         }
-    }
+    }        
 
-    public static InputStream invokeHttpRequestAsStream(
+    public static HttpResponse invokeHttpRequestAsStream(
             String endpointUrl,
             String httpMethod,
             ContentType contentType,
@@ -202,7 +224,7 @@ public class HTTPUtils {
         }
     }
 
-    public static InputStream invokeHttpRequestAsStream(String[] truststore, String endpointUrl,
+    public static HttpResponse invokeHttpRequestAsStream(String[] truststore, String endpointUrl,
             String httpMethod,   
             ContentType contentType,
             int timeout,
@@ -222,18 +244,78 @@ public class HTTPUtils {
                 }
             }
 
+//            int responseCode = connection.getResponseCode();
+//            if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+//                    || responseCode == HttpURLConnection.HTTP_MOVED_PERM
+//                    || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+//                return invokeHttpRequestAsStream(truststore, connection.getHeaderField("Location"), httpMethod, contentType, timeout, headers, requestBody);
+//            }
+
+            HttpResponse response = new HttpResponse();
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
                     || responseCode == HttpURLConnection.HTTP_MOVED_PERM
                     || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-                return invokeHttpRequestAsStream(truststore, connection.getHeaderField("Location"), httpMethod, contentType, timeout, headers, requestBody);
+                return invokeHttpRequestAsStream(
+                        truststore,
+                        connection.getHeaderField("Location"),
+                        httpMethod,
+                        contentType,
+                        timeout,
+                        headers,
+                        requestBody);
             }
 
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new RuntimeException("HTTP Response [" + responseCode + "]");
+//            LOGGER.debug("Response Code: " + responseCode);
+//            for (String key : connection.getHeaderFields().keySet()) {
+//                LOGGER.debug("" + key + ": ");
+//                for (String val : connection.getHeaderFields().get(key)) {
+//                    LOGGER.debug("\t\t" + val + " ");
+//                }
+//            }
+
+            InputStream is;
+            if (responseCode > 299) {
+                is = connection.getErrorStream();
+                response.setStatus(false);
+                if (is == null) {
+                    String responseMsg = connection.getResponseMessage();
+//                    LOGGER.debug("<<< RECEIVE: {}", responseMsg);
+                    response.setMsg(responseMsg);
+                    response.setHttpCode(responseCode);
+                    return response;
+                }
+            } else if (responseCode != HttpURLConnection.HTTP_OK) {
+                String responseMsg = connection.getResponseMessage();
+//                LOGGER.debug("<<< RECEIVE: {}", responseMsg);
+                response.setMsg(responseMsg);
+                response.setStatus(true);
+                response.setHttpCode(responseCode);
+                return response;
             } else {
-                return (InputStream) connection.getContent();
+                try {
+                    is = connection.getInputStream();
+                    response.setStatus(true);
+                } catch (IOException ex) {
+//                    LOGGER.debug("Error when read inputstream, caused by", ex);
+                    is = connection.getErrorStream();
+                    response.setStatus(false);
+                }
             }
+
+            StringBuilder msg = new StringBuilder();
+            try (BufferedReader rd = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    msg.append(line);
+                    msg.append('\r');
+//                    msg.append(System.lineSeparator());
+                }
+            }
+//            LOGGER.debug("<<< RECEIVE: {}", msg.toString());
+            response.setMsg(msg.toString());
+            response.setHttpCode(responseCode);
+            return response;
         } catch (RuntimeException e) {
             throw e;
         } catch (IOException e) {

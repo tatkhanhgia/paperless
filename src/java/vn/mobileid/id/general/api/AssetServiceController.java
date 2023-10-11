@@ -294,7 +294,7 @@ public class AssetServiceController extends HttpServlet {
     }
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="Download ">
+    //<editor-fold defaultstate="collapsed" desc="Download">
     public Response downloadAsset(
             @Context final HttpServletRequest request,
             @PathParam("id") int id) {

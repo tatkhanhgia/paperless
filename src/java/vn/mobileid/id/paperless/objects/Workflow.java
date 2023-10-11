@@ -29,10 +29,10 @@ public class Workflow {
     private int template_type;
 
     @AnnotationORM(columnName = "TEMPLATE_TYPE_NAME")
-    private String template_type_name;
+    private String template_type_name_vn;
 
     @AnnotationORM(columnName = "TEMPLATE_TYPE_NAME_EN")
-    private String template_type_name_en;
+    private String template_type_name;
 
     @AnnotationORM(columnName = "LABEL")
     private String label;
@@ -41,10 +41,10 @@ public class Workflow {
     private int workflow_type;
 
     @AnnotationORM(columnName = "WORKFLOW_TYPE_NAME")
-    private String workflow_type_name;
+    private String workflow_type_name_vn;
 
     @AnnotationORM(columnName = "WORKFLOW_TYPE_NAME_EN")
-    private String workflow_type_name_en;
+    private String workflow_type_name;
 
     private String note;
     
@@ -180,21 +180,21 @@ public class Workflow {
     }
 
     @JsonProperty("template_type_name")
-    public String getWorkflowTemplate_type_name() {
-        return template_type_name;
+    public String getWorkflowTemplate_type_name_vn() {
+        return template_type_name_vn;
     }
 
-    public void setWorkflowTemplate_type_name(String template_type_name) {
-        this.template_type_name = template_type_name;
+    public void setWorkflowTemplate_type_name_vn(String template_type_name) {
+        this.template_type_name_vn = template_type_name;
     }
 
-    @JsonProperty("workflow_type_name")
-    public String getWorkflow_type_name() {
-        return workflow_type_name;
+    
+    public String getWorkflow_type_name_vn() {
+        return workflow_type_name_vn;
     }
 
-    public void setWorkflow_type_name(String workflow_type_name) {
-        this.workflow_type_name = workflow_type_name;
+    public void setWorkflow_type_name_vn(String workflow_type_name) {
+        this.workflow_type_name_vn = workflow_type_name;
     }
 
     @JsonProperty("initiator_id")
@@ -206,20 +206,21 @@ public class Workflow {
         this.initiator_id = initiator_id;
     }  
     
-    public String getWorkflowTemplate_type_name_en() {
-        return template_type_name_en;
+    public String getWorkflowTemplate_type_name() {
+        return template_type_name;
     }
 
-    public void setWorkflowTemplate_type_name_en(String template_type_name_en) {
-        this.template_type_name_en = template_type_name_en;
+    public void setWorkflowTemplate_type_name(String template_type_name_en) {
+        this.template_type_name = template_type_name_en;
     }
 
-    public String getWorkflow_type_name_en() {
-        return workflow_type_name_en;
+    public String getWorkflow_type_name() {
+        return workflow_type_name;
     }
 
-    public void setWorkflow_type_name_en(String workflow_type_name_en) {
-        this.workflow_type_name_en = workflow_type_name_en;
+    @JsonProperty("workflow_type_name")
+    public void setWorkflow_type_name(String workflow_type_name_en) {
+        this.workflow_type_name = workflow_type_name_en;
     }
     
     

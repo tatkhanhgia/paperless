@@ -44,8 +44,9 @@ public class CustomListWorkflowSerializer implements JsonSerializable {
             jg.writeNumberField("workflow_id", workflow.getWorkflow_id());            
             jg.writeStringField("workflow_label", workflow.getLabel());
             jg.writeStringField("workflow_type_name", workflow.getWorkflow_type_name());   
+            jg.writeStringField("workflow_type_name_vn", workflow.getWorkflow_type_name_vn());   
             jg.writeStringField("workflow_template_type_name", workflow.getWorkflowTemplate_type_name());   
-            jg.writeStringField("workflow_template_type_name_en", workflow.getWorkflowTemplate_type_name_en());   
+            jg.writeStringField("workflow_template_type_name_vn", workflow.getWorkflowTemplate_type_name_vn());   
             jg.writeNumberField("workflow_template_type_id", workflow.getWorkflowTemplate_type());
             jg.writeStringField("status", (workflow.getStatus()==1?"ACTIVE":"INACTIVE"));                       
             jg.writeStringField("note",workflow.getNote());

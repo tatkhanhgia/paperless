@@ -24,8 +24,8 @@ public class ItemDetails {
     private String remark;
 
     //Remark language
-    private String remark_language;
-    private String remark_language_en;
+    private String field_name;
+    private String field_name_vn;
     
     public ItemDetails() {
     }
@@ -91,28 +91,25 @@ public class ItemDetails {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }      
+
+    @JsonProperty("field_name")
+    public String getField_name() {
+        return field_name;
     }
 
-    @JsonProperty("remark_language")
-    public String getRemark_language() {
-        return remark_language;
+    public void setField_name(String field_name) {
+        this.field_name = field_name;
     }
 
-    public void setRemark_language(String remark_language) {
-        this.remark_language = remark_language;
+    @JsonProperty("field_name_vn")
+    public String getField_name_vn() {
+        return field_name_vn;
     }
 
-    @JsonProperty("remark_language_en")
-    public String getRemark_language_en() {
-        return remark_language_en;
+    public void setField_name_vn(String field_name_vn) {
+        this.field_name_vn = field_name_vn;
     }
-
-    public void setRemark_language_en(String remark_language_en) {
-        this.remark_language_en = remark_language_en;
-    }
-    
-    
-    
 
     public static Object checkType(int i){
         if(i == 1)

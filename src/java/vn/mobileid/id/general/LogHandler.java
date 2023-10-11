@@ -269,10 +269,10 @@ public class LogHandler {
             Class object,
             String transactionID,
             String message) {
-        if (isShowInfoLog()) {
+//        if (isShowInfoLog()) {
             Logger LOG = LogManager.getLogger(object);
             LOG.info("TransactionID:" + transactionID + "\n" + message);
-        }
+//        }
     }
     
     public static void fatal(

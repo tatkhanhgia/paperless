@@ -50,7 +50,7 @@ public class GetFileManagement {
         }
         
         file.setData((byte[])response_.getData());
-        
+        System.out.println("Data from FMS:"+((byte[])response_.getData()).length);
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 file

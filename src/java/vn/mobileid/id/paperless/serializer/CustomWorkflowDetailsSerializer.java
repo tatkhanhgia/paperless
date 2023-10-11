@@ -12,9 +12,9 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 import vn.mobileid.id.general.PolicyConfiguration;
+import vn.mobileid.id.paperless.PaperlessConstant;
 
 /**
  *
@@ -35,8 +35,28 @@ public class CustomWorkflowDetailsSerializer implements JsonSerializable {
         jg.writeFieldName("workflow_option");
         DateFormat dateFormat = new SimpleDateFormat(PolicyConfiguration.getInstant().getSystemConfig().getAttributes().get(0).getDateFormat());
         jg.writeStartObject();
-        for (WorkflowAttributeType ob : listAttributeType) {
-            
+        for (WorkflowAttributeType ob : listAttributeType) {    
+            if(ob.getValue()==null){
+                jg.writeNumberField(ob.getName(), 0);
+            }
+            if(ob.getValue() instanceof String){
+                try{
+                    int value = Integer.parseInt((String)ob.getValue());
+                    if(value == 1){
+                        jg.writeBooleanField(ob.getName(), true);
+                        continue;
+                    }
+                    if(value == 0 
+                            && ob.getId() != PaperlessConstant.ASSET_TYPE_APPEND
+                            && ob.getId() != PaperlessConstant.ASSET_TYPE_BACKGROUND
+                            && ob.getId() != PaperlessConstant.ASSET_TYPE_TEMPLATE){
+                        jg.writeBooleanField(ob.getName(), false);
+                        continue;
+                    }       
+                    jg.writeNumberField(ob.getName(), value);
+                    continue;
+                }catch(Exception ex){}
+            }
             if(ob.getValue() instanceof String){
                 jg.writeStringField(ob.getName(), (String)ob.getValue());
             }

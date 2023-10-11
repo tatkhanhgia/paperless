@@ -72,6 +72,10 @@ public class QryptoService {
         }                
     }
 
+    public void login() throws Exception{
+        this.session.login();
+    }
+    
     public IssueQryptoWithFileAttachResponse generateQR(
             QRSchema QR,
             vn.mobileid.id.qrypto.object.Configuration configuration,

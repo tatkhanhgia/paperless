@@ -13,6 +13,7 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
+import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 
 /**
  *
@@ -20,7 +21,7 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
  */
 public class GetAsset {
 
-    //<editor-fold defaultstate="collapsed" desc="get Asset">
+    //<editor-fold defaultstate="collapsed" desc="get Asset - Constructor (AssetId)">
     /**
      * Lấy về giá trị một Asset thông qua Id
      *
@@ -48,11 +49,53 @@ public class GetAsset {
         }
 
         return new InternalResponse(
-                PaperlessConstant.HTTP_CODE_SUCCESS, response.getObject()
+                PaperlessConstant.HTTP_CODE_SUCCESS, 
+                response.getObject()
         );
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="get Asset - Constructor(WorkflowAttributeType)">
+    /**
+     * Lấy về giá trị một Asset thông qua WorkflowAttributeType
+     *
+     * @param attribute
+     * @param transactionId
+     * @return Asset
+     * @throws Exception
+     */
+    public static InternalResponse getAsset(
+            WorkflowAttributeType attribute,
+            String transactionId
+    ) throws Exception {
+        //Check type of Attribyte Type is an Asset
+        if(attribute.getId() != PaperlessConstant.ASSET_TYPE_TEMPLATE &&
+                attribute.getId() != PaperlessConstant.ASSET_TYPE_BACKGROUND && 
+                attribute.getId() != PaperlessConstant.ASSET_TYPE_APPEND){
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                            PaperlessConstant.SUBCODE_THIS_TYPE_IS_NOT_AN_ASSET,
+                            "en",
+                            transactionId)
+            );
+        }
+        
+        //Parse ID from AttributeType
+        int assetId = 0;
+        if(attribute.getValue() instanceof String){
+            assetId = Integer.parseInt((String)attribute.getValue());
+        }
+        if(attribute.getValue() instanceof Integer){
+            assetId = (int)attribute.getValue();
+        }
+        
+        //Get Asset
+        return getAsset(assetId, transactionId);        
+    }
+    //</editor-fold>
+    
     //<editor-fold defaultstate="collapsed" desc="Get Total Record Asset">
     /**
      * Lấy về tổng số row các record của Asset thông qua dữ liệu truyền vào
