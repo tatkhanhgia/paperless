@@ -256,16 +256,7 @@ public class WorkflowActivity {
 
     public void setCSV_id(String CSV_id) {
         this.CSV_id = CSV_id;
-    }
-
-    @JsonProperty("generation_type")
-    public int getGeneration_type_vn() {
-        return generation_type;
-    }
-
-    public void setGeneration_type_vn(int Generation_type) {
-        this.generation_type = Generation_type;
-    }
+    }   
     
     public String getRequestData() {
         return requestData;
@@ -349,6 +340,7 @@ public class WorkflowActivity {
         this.status_name_vn = status_name_vn;
     }
 
+    @JsonProperty("generation_type")
     public String getGeneration_type_name() {
         return generation_type_name;
     }
