@@ -6,12 +6,9 @@
 package vn.mobileid.id.utils;
 
 import vn.mobileid.id.general.Configuration;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.Gson;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,34 +44,26 @@ import java.util.stream.Stream;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SerializationUtils;
-
-//import org.json.simple.JSONObject;
-//import org.json.simple.parser.JSONParser;
-import vn.mobileid.id.general.email.EmailReq;
 import vn.mobileid.id.general.email.EmailResp;
 import vn.mobileid.id.general.objects.CredentialTokensJSNObject;
 import vn.mobileid.id.general.LogHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import vn.mobileid.id.general.database.Database;
-import vn.mobileid.id.general.database.DatabaseImpl;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import restful.sdk.API.Property;
+import vn.mobileid.id.general.PolicyConfiguration;
+import vn.mobileid.id.general.annotation.AnnotationJWT;
+import vn.mobileid.id.general.keycloak.obj.User;
+import vn.mobileid.id.paperless.object.enumration.TemplateUserActivity;
 
 /**
  *
@@ -1291,5 +1280,18 @@ public class Utils {
 
         body = stringBuilder.toString();
         return body;
+    }
+    
+    public static String generateDescription_UserActivity(User user,TemplateUserActivity name){
+        switch (name.getName()){
+            case "createWorkflowActivity":{
+                String template = PolicyConfiguration.getInstant().getTemplateUserActivity().getAttributes().get(0).getCreateWorkflowActivity();
+                template = AnnotationJWT.replaceAnnotation(template, user.getEmail());
+                return template;
+            }
+            default:{
+                return "";
+            }
+        }
     }
 }

@@ -2695,6 +2695,7 @@ public class DatabaseImpl implements Database {
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pSTATUS_NAME", java.sql.Types.VARCHAR);
+            cals.registerOutParameter("pCREATED_USER_ID", java.sql.Types.BIGINT);
 //            System.out.println(cals.toString());
 
 //                    
@@ -2709,7 +2710,11 @@ public class DatabaseImpl implements Database {
                 response.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
             } else {
                 String status = cals.getString("pSTATUS_NAME");
-                response.setObject(status);
+                long id = cals.getLong("pCREATED_USER_ID");
+                List<Object> objects = new ArrayList<>();
+                objects.add(status);
+                objects.add(id);
+                response.setObject(objects);
                 response.setStatus(PaperlessConstant.CODE_SUCCESS);
             }
         } catch (Exception e) {

@@ -22,6 +22,7 @@ import vn.mobileid.id.general.database.DatabaseV2_WorkflowDetails;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.Category;
 import vn.mobileid.id.paperless.objects.EventAction;
 import vn.mobileid.id.paperless.objects.GenerationType;
 import vn.mobileid.id.paperless.objects.StatusOfAccount;
@@ -62,6 +63,9 @@ public class Resources extends HttpServlet {
     //Save Event Action in DB <=> Mapping with Action, API 
     private static volatile HashMap<Integer, EventAction> listEventAction = new HashMap<>();
     
+    //Save Category
+    private static volatile HashMap<Integer, Category> listCategory = new HashMap<>();
+    
     //Save User Status in DB
     private static volatile HashMap<Integer, StatusOfAccount> listStatusOfAccount = new HashMap<>();
     
@@ -101,6 +105,8 @@ public class Resources extends HttpServlet {
         reloadListGenerationType();
         
         reloadListWorkflowType();
+        
+        reloadListCategory();
 
         LOG.info("Service is started up and ready to use!");
         System.out.println("\tTime init:" + (System.currentTimeMillis() - start));
@@ -164,6 +170,18 @@ public class Resources extends HttpServlet {
             }
         }
     }
+    
+    public static void reloadListCategory() throws Exception {
+        DatabaseV2_User db = new DatabaseImpl_V2_User();
+        listCategory = new HashMap();
+        DatabaseResponse res = db.getCategory();
+        if (res.getStatus() == PaperlessConstant.CODE_SUCCESS) {
+            List<Category> list = (List<Category>) res.getObject();
+            for (Category temp : list) {
+                listCategory.put(temp.getId(), temp);
+            }
+        }
+    } 
 
     public static void reloadListWorkflowDetailAttributeTypes() throws Exception {
         DatabaseV2_WorkflowDetails callDb = new DatabaseImpl_V2_WorkflowDetails();
@@ -276,5 +294,9 @@ public class Resources extends HttpServlet {
 
     public static HashMap<Integer, GenerationType> getListGenerationType() {
         return listGenerationType;
+    }
+    
+    public static HashMap<Integer, Category> getListCategory(){
+        return listCategory;
     }
 }

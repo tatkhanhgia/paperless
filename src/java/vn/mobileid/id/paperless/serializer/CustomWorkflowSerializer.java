@@ -46,11 +46,11 @@ public class CustomWorkflowSerializer implements JsonSerializable {
             jg.writeStringField("note",workflow.getNote());
             jg.writeStringField("metadata", workflow.getMetadata());
             jg.writeStringField("created_at", dateFormat.format(workflow.getCreated_at()));
-//            jg.writeStringField("created_by", workflow.getCreated_by());
-//            if (workflow.getLast_modified_at() != null) {
-//                jg.writeStringField("modified_at", dateFormat.format(workflow.getLast_modified_at()));
-//                jg.writeStringField("modified_by", workflow.getLast_modified_by());
-//            }
+            jg.writeStringField("created_by", workflow.getCreated_by());
+            if (workflow.getLast_modified_at() != null) {
+                jg.writeStringField("modified_at", dateFormat.format(workflow.getLast_modified_at()));
+                jg.writeStringField("modified_by", workflow.getLast_modified_by());
+            }
             jg.writeEndObject();
 
     }

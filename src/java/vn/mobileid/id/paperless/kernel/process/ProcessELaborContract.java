@@ -227,7 +227,6 @@ public class ProcessELaborContract {
         }
 
         //Write into DB
-        System.out.println("Begin write into DB");
         response = UpdateFileManagement.updateFileManagement(
                 woAc.getFile().getID(),
                 null,

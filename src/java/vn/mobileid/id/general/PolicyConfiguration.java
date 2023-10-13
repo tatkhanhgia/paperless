@@ -15,6 +15,7 @@ import vn.mobileid.id.general.policy.object.PolicyFrameSignatureProperties;
 import vn.mobileid.id.general.policy.object.PolicyResponse;
 import vn.mobileid.id.general.policy.object.PolicySignatureProperties;
 import vn.mobileid.id.general.policy.object.PolicySystemConfiguration;
+import vn.mobileid.id.general.policy.object.PolicyUserActivityConfiguration;
 import vn.mobileid.id.paperless.PaperlessConstant;
 
 /**
@@ -29,6 +30,7 @@ public class PolicyConfiguration {
     private PolicyFrameSignatureProperties elaborContractTemplate;
     private PolicyFrameSignatureProperties esigncloudTemplate;
     private PolicySystemConfiguration systemConfig;
+    private PolicyUserActivityConfiguration templateUserActivity;
 
     public static PolicyConfiguration getInstant()  {
         if (instance == null) {
@@ -88,9 +90,23 @@ public class PolicyConfiguration {
             systemConfig = (PolicySystemConfiguration) convertPolicyResponseToObject(
                     (PolicyResponse) response.getObject(),
                     PolicySystemConfiguration.class);
+            
+            response = db.getPolicyAttribute(
+                    PolicyConstant.TEMPLATE_USER_ACTIVITY);
+            if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                LogHandler.fatal(
+                        PolicyConfiguration.class,
+                        "Init transaction",
+                        "Cannot Init Policy !!!");
+            }
+            
+            templateUserActivity = (PolicyUserActivityConfiguration) convertPolicyResponseToObject(
+                    (PolicyResponse) response.getObject(),
+                    PolicyUserActivityConfiguration.class);
 
             if (signatureProperties == null || esigncloudTemplate == null
-                    || elaborContractTemplate == null || systemConfig == null) {
+                    || elaborContractTemplate == null || systemConfig == null
+                    || templateUserActivity == null) {
                 LogHandler.fatal(
                         PolicyConfiguration.class,
                         "Init transaction",
@@ -144,6 +160,10 @@ public class PolicyConfiguration {
         return systemConfig;
     }
     
+    public PolicyUserActivityConfiguration getTemplateUserActivity(){
+        return templateUserActivity;
+    }
+    
     
     public static void main(String[] args) throws Exception{
         
@@ -164,6 +184,10 @@ public class PolicyConfiguration {
                         .getSignatureProperties()
                         .getAttributes().get(0)
                         .getWitnessAgreementUUID());
+        
+        System.out.println(PolicyConfiguration
+                .getInstant()
+        .getTemplateUserActivity().getAttributes().get(0).getCreateWorkflowActivity());
     }
     
 }

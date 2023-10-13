@@ -4,12 +4,20 @@
  */
 package vn.mobileid.id.paperless.objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import vn.mobileid.id.general.annotation.AnnotationORM;
+import vn.mobileid.id.paperless.serializer.CustomFileManagementSerializer;
+import vn.mobileid.id.paperless.serializer.CustomQRSerializer;
 
 /**
  *
  * @author GiaTK
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonSerialize(using = CustomQRSerializer.class)
 public class QR extends DatabaseDefaultObject{
     
     @AnnotationORM(columnName = "ID")

@@ -11,6 +11,7 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Account;
+import vn.mobileid.id.paperless.objects.Category;
 import vn.mobileid.id.paperless.objects.StatusOfAccount;
 
 /**
@@ -24,17 +25,19 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
             String pUSER_EMAIL,
             int pENTERPRISE_ID,
             String pTRANSACTION_ID,
+            long pLOG_ID,
             String pCATEGORY_NAME,
             String pUSER_ACTIVITY_EVENT,
             String pHMAC,
             String pCREATED_BY, 
             String transactionId) throws Exception {
-        String nameStore = "{ CALL USP_USER_ACTIVITY_ADD(?,?,?,?,?,?,?,?,?)}";
+        String nameStore = "{ CALL USP_USER_ACTIVITY_ADD(?,?,?,?,?,?,?,?,?,?)}";
 
         HashMap<String, Object> input = new HashMap<>();
         input.put("pUSER_EMAIL", pUSER_EMAIL);
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
         input.put("pTRANSACTION_ID", pTRANSACTION_ID);
+        input.put("pLOG_ID", pLOG_ID);
         input.put("pCATEGORY_NAME", pCATEGORY_NAME);
         input.put("pUSER_ACTIVITY_EVENT_NAME", pUSER_ACTIVITY_EVENT);
         input.put("pHMAC", pHMAC);
@@ -76,10 +79,13 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
             String pDETAIL, 
             String pAGENT, 
             String pAGENT_DETAIL,
+            String pIP_ADDRESS,
+            String pDESCRIPTION,
+            String pMETA_DATA,
             String pHMAC, 
             String pCREATED_BY, 
             String transactionId) throws Exception {
-        String nameStore = "{ CALL USP_USER_ACTIVITY_LOG_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+        String nameStore = "{ CALL USP_USER_ACTIVITY_LOG_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 
         HashMap<String, Object> input = new HashMap<>();
         input.put("pUSER_EMAIL", pUSER_EMAIL);
@@ -91,6 +97,9 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
         input.put("pDETAIL", pDETAIL);
         input.put("pAGENT", pAGENT);
         input.put("pAGENT_DETAIL", pAGENT_DETAIL);
+        input.put("pIP_ADDRESS", pIP_ADDRESS);
+        input.put("pDESCRIPTION", pDESCRIPTION);
+        input.put("pMETA_DATA", pMETA_DATA);
         input.put("pHMAC", pHMAC);
         input.put("pCREATED_BY", pCREATED_BY);
         
@@ -296,6 +305,23 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
                 input,
                 null,
                 "Get All Account belongs to User");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+       return response;
+    }
+
+    @Override
+    public DatabaseResponse getCategory() throws Exception {
+        String nameStore = "{ CALL USP_USER_ACTIVITY_CATEGORY_LIST()}";
+             
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                Category.class,
+                nameStore,
+                null,
+                null,
+                "Get list Category");
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 

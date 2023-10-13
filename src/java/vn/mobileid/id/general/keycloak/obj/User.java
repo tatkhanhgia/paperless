@@ -51,6 +51,9 @@ public class User {
     private int aid; //authorized party ID
     private Date passwordExpiredAt;
     
+    //Internal Service
+    private String ipAddress;
+    
     @JsonProperty("exp")
     public long getExp() {
         return exp;
@@ -282,7 +285,12 @@ public class User {
     public void setPasswordExpiredAt(Date passwordExpiredAt) {
         this.passwordExpiredAt = passwordExpiredAt;
     }
-    
-    
-    
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
 }

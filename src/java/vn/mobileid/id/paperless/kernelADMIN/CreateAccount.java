@@ -5,6 +5,7 @@
 package vn.mobileid.id.paperless.kernelADMIN;
 
 import java.util.Date;
+import java.util.List;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
@@ -15,8 +16,8 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.kernel.GetEmailTemplate;
-import vn.mobileid.id.paperless.kernel.GetEnterpriseInfo;
-import vn.mobileid.id.paperless.kernel.GetUser;
+import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
+import vn.mobileid.id.paperless.kernel_v2.GetUser;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.Enterprise;
@@ -98,7 +99,7 @@ public class CreateAccount {
      * @param business_type
      * @param org_web
      * @param transactionID
-     * @return
+     * @return String email of User
      * @throws Exception 
      */
     public static InternalResponse createAccount(
@@ -115,6 +116,7 @@ public class CreateAccount {
             String org_web,
             String transactionID
     ) throws Exception {
+        //<editor-fold defaultstate="collapsed" desc="Get Infor of Enterprise + get ID Owner">
         //Get info enterprise (get ID owner)
         InternalResponse res = GetEnterpriseInfo.getEnterprise(
                 enteprise_name,
@@ -137,8 +139,9 @@ public class CreateAccount {
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
-
-        //Processing
+        //</editor-fold>
+        
+        //<editor-fold defaultstate="collapsed" desc="Processing create User">
         res = CreateUser.createUser(
                 ((User) res.getData()).getEmail(),
                 password,
@@ -156,6 +159,11 @@ public class CreateAccount {
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
+        List<Object> objects = (List<Object>)res.getData();
+        String status = (String)objects.get(0);
+        long idUser = (long)objects.get(1);
+        //</editor-fold>
+        
 
         EmailTemplate template;
 
@@ -216,12 +224,12 @@ public class CreateAccount {
         
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
-                "");
+                (Object)idUser);
     }
     //</editor-fold>
     
 
-    public static class CreateUser {
+    private static class CreateUser {
 
         public static InternalResponse createUser(
                 String email,
@@ -267,7 +275,7 @@ public class CreateAccount {
                     );
                 }
                 response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
-                response.setData((String) res.getObject());
+                response.setData(res.getObject());
                 return response;
             } catch (Exception ex) {
                 LogHandler.error(

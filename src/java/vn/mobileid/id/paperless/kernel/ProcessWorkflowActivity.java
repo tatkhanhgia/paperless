@@ -303,6 +303,7 @@ public class ProcessWorkflowActivity {
                 woAc = (WorkflowActivity) response.getData();
                 Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
                 res.setMessage("ELaborContract"); //Data Temp
+                res.setData(response.getData());
                 return res;
             }
             case 8: {//ESign Cloud
@@ -340,6 +341,7 @@ public class ProcessWorkflowActivity {
                 woAc = (WorkflowActivity) response.getData();
                 Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
                 res.setMessage("ESignCloud");
+                res.setData(response.getData());
                 return res;
             }
             default: {
@@ -460,6 +462,7 @@ public class ProcessWorkflowActivity {
                 } else {
                     Resources.putIntoRAM(String.valueOf(woAc.getId()), woAc);
                 }
+                response.setData(woAc);
                 return response;
             }
             case 2: {//Secure QR
@@ -485,6 +488,7 @@ public class ProcessWorkflowActivity {
                 } else {
                     Resources.putIntoRAM(String.valueOf(woAc.getId()), woAc);
                 }
+                response.setData(woAc);
                 return response;
             }
             default: {

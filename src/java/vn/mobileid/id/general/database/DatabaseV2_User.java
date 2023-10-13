@@ -16,6 +16,7 @@ public interface DatabaseV2_User {
             String pUSER_EMAIL,
             int pENTERPRISE_ID,
             String pTRANSACTION_ID,
+            long pLOG_ID,
             String pCATEGORY_NAME,
             String pUSER_ACTIVITY_EVENT,
             String pHMAC,
@@ -33,6 +34,9 @@ public interface DatabaseV2_User {
             String pDETAIL,
             String pAGENT,
             String pAGENT_DETAIL,
+            String pIP_ADDRESS,
+            String pDESCRIPTION,
+            String pMETA_DATA,
             String pHMAC,
             String pCREATED_BY,
             String transactionId
@@ -91,5 +95,5 @@ public interface DatabaseV2_User {
             String transactionId
     )throws Exception;
     
-    
+    public DatabaseResponse getCategory()throws Exception;
 }

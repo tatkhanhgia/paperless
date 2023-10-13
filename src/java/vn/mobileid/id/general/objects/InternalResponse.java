@@ -7,8 +7,7 @@ package vn.mobileid.id.general.objects;
 
 import java.util.HashMap;
 import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.utils.Utils;
+import vn.mobileid.id.paperless.objects.Enterprise;
 
 /**
  *
@@ -31,6 +30,7 @@ public class InternalResponse {
 
     //Data backend
     private User object;
+    private Enterprise enterprise;
     private Object data;
     private HashMap<String, Object> headers;
     
@@ -125,6 +125,13 @@ public class InternalResponse {
         this.object = object;
     }
 
+    public Enterprise getEnterprise() {
+        return enterprise;
+    }
+
+    public void setEnterprise(Enterprise enterprise) {
+        this.enterprise = enterprise;
+    }
  
     /**
      * Get data Object from Response

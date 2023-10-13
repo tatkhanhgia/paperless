@@ -324,6 +324,7 @@ public class WorkflowActivity {
         this.workflow_template_type_name = workflow_template_type_name;
     }
 
+    @JsonProperty("status")
     public String getStatus_name() {
         return status_name;
     }

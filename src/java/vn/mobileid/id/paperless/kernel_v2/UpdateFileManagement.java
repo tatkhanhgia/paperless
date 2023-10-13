@@ -84,15 +84,11 @@ public class UpdateFileManagement {
 //        }
 //String uuid = client.getUUID();
             
-        System.out.println("Data leg:"+data.length);
-        System.out.println("Start call FMS");
         InternalResponse response = UploadToFMS.uploadToFMS(data, transactionID);
-        System.out.println("End call FMS");
         if(response.getStatus()!=PaperlessConstant.HTTP_CODE_SUCCESS){return response;}
         
         String uuid = response.getMessage();
         
-        System.out.println("UUID:"+uuid);
         
         DatabaseImpl_V2_FileManagement DB = new DatabaseImpl_V2_FileManagement();
 

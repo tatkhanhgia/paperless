@@ -30,7 +30,7 @@ public class UploadAsset {
      * @param user
      * @param asset
      * @param transactionID
-     * @return
+     * @return long AssetID
      * @throws Exception
      */
     public static InternalResponse uploadAsset(
@@ -87,7 +87,7 @@ public class UploadAsset {
      * @param hmac
      * @param createdBy
      * @param transaction_id
-     * @return
+     * @return long AssetID
      * @throws Exception
      */
     public static InternalResponse uploadAsset(

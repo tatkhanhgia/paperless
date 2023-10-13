@@ -225,46 +225,66 @@ public class XSLT_PDF_Processing {
     }
     //</editor-fold>
 
-    public static void main(String[] arhs) throws IOException {
-        //==========Append Background + QR Image into XSLT==============================
-        FileOutputStream os = new FileOutputStream("C:\\Users\\Admin\\Downloads\\temp.tmp");
-        os.write(Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Desktop\\BG\\329247033_3020219851607214_1964181824628587693_n.jpg")));
-        os.close();
-        KYC temp = new KYC();
-        temp.setFullName("Châu Trần Anh Thư");
-        temp.setIssuanceDate("1234");
-        temp.setBackground("C:\\Users\\Admin\\Downloads\\hello.bmp");
-        temp.setQR("C:\\Users\\Admin\\Downloads\\1.jpg");
-        temp.setWidth(10);
-        temp.setHeight(10);
-        byte[] html = XSLT_PDF_Processing.appendData(temp,
-                Files.readAllBytes(new File("C:\\Users\\Admin\\Downloads\\test.xslt").toPath()));
-        byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
-        try ( FileOutputStream fileOuputStream = new FileOutputStream("C:\\Users\\Admin\\Downloads\\afterappend.pdf")) {
-            fileOuputStream.write(pdf);
+    public static void main(String[] arhs) throws Exception {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\simple-report.xslt")));
+
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        try ( InputStream is = new ByteArrayInputStream(Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\simple-report.xml")))) {
+            DocumentBuilder db = dbf.newDocumentBuilder();
+
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer(
+                    new StreamSource(inputStream));
+
+            StreamResult result = new StreamResult(output);
+            transformer.transform(new DOMSource(db.parse(is)), result);
+
+            FileOutputStream oss = new FileOutputStream("C:\\Users\\Admin\\Downloads\\simple-report.html");
+            oss.write(output.toByteArray());
+            oss.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        //Append pdf into final file
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        PdfDocument pdfDocument = new PdfDocument(new PdfWriter(bos));
-        PdfMerger merger = new PdfMerger(pdfDocument);
-
-        PdfDocument pdfDocument_original = new PdfDocument(new PdfReader(new ByteArrayInputStream(pdf)));
-        merger.merge(pdfDocument_original, 1, pdfDocument_original.getNumberOfPages());
-        
-        PdfDocument pdfDocument_append = new PdfDocument(new PdfReader("C:\\Users\\Admin\\Downloads\\result.pdf"));
-        merger.merge(pdfDocument_append, 1, pdfDocument_append.getNumberOfPages());
-        
-        pdfDocument_original.close();
-        pdfDocument_append.close();
-        pdfDocument.close();
-        
-        try ( FileOutputStream fileOuputStream = new FileOutputStream("C:\\Users\\Admin\\Downloads\\afterappendnewPdf.pdf")) {
-            fileOuputStream.write(bos.toByteArray());
-        }
-
-        //Delete temporal file
-        Files.delete(Paths.get("C:\\Users\\Admin\\Downloads\\temp.tmp"));
+//        //==========Append Background + QR Image into XSLT==============================
+//        FileOutputStream os = new FileOutputStream("C:\\Users\\Admin\\Downloads\\temp.tmp");
+//        os.write(Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Desktop\\BG\\329247033_3020219851607214_1964181824628587693_n.jpg")));
+//        os.close();
+//        KYC temp = new KYC();
+//        temp.setFullName("Châu Trần Anh Thư");
+//        temp.setIssuanceDate("1234");
+//        temp.setBackground("C:\\Users\\Admin\\Downloads\\hello.bmp");
+//        temp.setQR("C:\\Users\\Admin\\Downloads\\1.jpg");
+//        temp.setWidth(10);
+//        temp.setHeight(10);
+//        byte[] html = XSLT_PDF_Processing.appendData(temp,
+//                Files.readAllBytes(new File("C:\\Users\\Admin\\Downloads\\test.xslt").toPath()));
+//        byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
+//        try ( FileOutputStream fileOuputStream = new FileOutputStream("C:\\Users\\Admin\\Downloads\\afterappend.pdf")) {
+//            fileOuputStream.write(pdf);
+//        }
+//
+//        //Append pdf into final file
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        PdfDocument pdfDocument = new PdfDocument(new PdfWriter(bos));
+//        PdfMerger merger = new PdfMerger(pdfDocument);
+//
+//        PdfDocument pdfDocument_original = new PdfDocument(new PdfReader(new ByteArrayInputStream(pdf)));
+//        merger.merge(pdfDocument_original, 1, pdfDocument_original.getNumberOfPages());
+//        
+//        PdfDocument pdfDocument_append = new PdfDocument(new PdfReader("C:\\Users\\Admin\\Downloads\\result.pdf"));
+//        merger.merge(pdfDocument_append, 1, pdfDocument_append.getNumberOfPages());
+//        
+//        pdfDocument_original.close();
+//        pdfDocument_append.close();
+//        pdfDocument.close();
+//        
+//        try ( FileOutputStream fileOuputStream = new FileOutputStream("C:\\Users\\Admin\\Downloads\\afterappendnewPdf.pdf")) {
+//            fileOuputStream.write(bos.toByteArray());
+//        }
+//
+//        //Delete temporal file
+//        Files.delete(Paths.get("C:\\Users\\Admin\\Downloads\\temp.tmp"));
 
         //Get data from XSLT
 //        Item_JSNObject item = XSLT_PDF_Processing.getValueFromXSLT(Files.readAllBytes(new File("D:\\NetBean\\qrypto\\file\\test.xslt").toPath()));

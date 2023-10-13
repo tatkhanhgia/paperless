@@ -376,9 +376,13 @@ public class ManageTokenWithDB {
             if (internalResponse.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return internalResponse;
             }
-            return new InternalResponse(
+            InternalResponse result = new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     new ObjectMapper().writeValueAsString(response));
+            
+            info.setAid(enterprise.getId());
+            result.setUser(info);
+            return result;
         } catch (Exception e) {
             throw new Exception("Cannot create token!", e);
         }

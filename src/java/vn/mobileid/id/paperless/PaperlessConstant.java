@@ -160,6 +160,7 @@ public class PaperlessConstant {
     final public static int SUBCODE_MISSING_FILE_FIELD_IN_ITEMS = 13;
     final public static int SUBCODE_FILE_DATA_IS_TOO_MUCH_VALUES = 14;
     final public static int SUBCODE_THIS_TYPE_OF_WORKFLOW_DOES_NOT_SUPPORT_YET = 15;
+    final public static int SUBCODE_NOT_SUPPORT_THIS_STATUS_OF_WORKFLOW_ACTIVITY = 16;
 
     //SUBCPDE INVALID WORKFLOW TEMPLATE - 5003
 //    final public static int SUBCODE_WORKFLOW_TEMPLATE_ALREADY_EXISTED = 2;

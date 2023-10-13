@@ -78,7 +78,8 @@ public class PaperlessService_V2 {
                             null));
         }
 
-        return UpdateUser.updateUser(
+        
+        response = UpdateUser.updateUser(
                 account.getUser_email(),
                 account.getUser_name(),
                 account.getMobile_number(),
@@ -93,8 +94,11 @@ public class PaperlessService_V2 {
                 "hmac",
                 account.getUser_email(),
                 transactionID);
+        response.setUser(user_info);
+        return response;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Update Enterprise User">
     public static InternalResponse updateEnterpriseUser(
             final HttpServletRequest request,
             String payload,
@@ -233,11 +237,14 @@ public class PaperlessService_V2 {
         if(task2.getResponse().getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
             return task2.getResponse();
         }
-        return new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
-                ""
-        );
+                "");
+        response.setUser(user_token);
+        return response;
     }
+    //</editor-fold>
+    
 
     public static InternalResponse deleteUser(
             final HttpServletRequest request,
@@ -286,12 +293,14 @@ public class PaperlessService_V2 {
                     PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
                     null);
         }
-
-        return DeleteUser.deleteUser(
+        
+        response = DeleteUser.deleteUser(
                 user_info.getEmail(), 
                 emailToBeDelete, 
                 user_info.getAid(), 
                 transactionID);
+        response.setUser(user_info);
+        return response;
     }
 
     //<editor-fold defaultstate="collapsed" desc="Get Report of Workflow Ac">
@@ -504,6 +513,7 @@ public class PaperlessService_V2 {
             return res;
         }
         res.setData(fileExcel);
+        res.setUser(user_info);
         return res;
     }
     //</editor-fold>

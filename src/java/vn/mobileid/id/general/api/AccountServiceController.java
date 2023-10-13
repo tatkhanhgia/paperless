@@ -18,14 +18,16 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.PaperlessService;
+import vn.mobileid.id.paperless.object.enumration.Category;
+import vn.mobileid.id.paperless.object.enumration.EventAction;
 import vn.mobileid.id.utils.Utils;
 
 /**
  *
  * @author GiaTK
  */
-public class AccountServiceController extends HttpServlet{
-    
+public class AccountServiceController extends HttpServlet {
+
     public static void service_(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         String method = req.getMethod();
         switch (method) {
@@ -43,29 +45,35 @@ public class AccountServiceController extends HttpServlet{
             }
         }
     }
-    
+
     @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {          
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        //<editor-fold defaultstate="collapsed" desc="Get Organization">
         if (req.getRequestURI().matches("^/paperless/v2/account/organization$")) {
             String transactionId = debugRequestLOG("Get Organization", req, null, 0);
-            LogHandler.request(AccountServiceController.class,
+            LogHandler.request(
+                    AccountServiceController.class,
                     transactionId);
-//            if (!Utils.isNullOrEmpty(req.getContentType()) && req.getContentType().equalsIgnoreCase("application/octet-stream")) {
             try {
                 InternalResponse response = PaperlessService.getOrganization(req, transactionId);
-                if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    Utils.sendMessage(
-                            res,
-                            response.getStatus(),
-                            "application/json",
-                            response.getMessage());
-                } else {
-                    Utils.sendMessage(
-                            res,
-                            response.getStatus(),
-                            "application/json",
-                            response.getMessage());
-                }
+
+                ServicesController.logIntoDB(
+                        req,
+                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
+                        response.getUser()==null?0:response.getUser().getAid(),
+                        0,
+                        response.getStatus(),
+                        "",
+                        response.getMessage(),
+                        "Get Organization",
+                        transactionId
+                );                
+
+                Utils.sendMessage(
+                        res,
+                        response.getStatus(),
+                        "application/json",
+                        response.getMessage());
 
             } catch (Exception ex) {
                 LogHandler.error(AccountServiceController.class,
@@ -77,18 +85,8 @@ public class AccountServiceController extends HttpServlet{
                         "application/json",
                         null);
             }
-//            } else {
-//                Utils.sendMessage(res, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, null);
-//            }                
-//            } else {
-//                Utils.sendMessage(res, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, null);
-//            }                
-//            } else {
-//                Utils.sendMessage(res, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, null);
-//            }                
-//            } else {
-//                Utils.sendMessage(res, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, null);
-//            }                
+            //</editor-fold>
+
         } else {
             Utils.sendMessage(
                     res,
@@ -97,16 +95,8 @@ public class AccountServiceController extends HttpServlet{
                     null);
         }
     }
-    
-    
-    //========================INTERNAL METHOD==========================
-    private static String conclusionString(String payload, int id) {
-        String pattern = "\"value\":.*";
-        if (payload == null) {
-            return String.valueOf(id);
-        }
-        return payload.replaceAll(pattern, "\"value\":\"base64\"}]}");
-    }   
+
+    //========================INTERNAL METHOD==========================   
 
     private static String getUser(String payload) {
         String[] chunks = payload.split("\\.");
@@ -116,14 +106,14 @@ public class AccountServiceController extends HttpServlet{
                 payload = new String(Base64.getUrlDecoder().decode(payload), "UTF-8");
                 chunks = payload.split(":");
                 return chunks[0];
-            } catch (Exception ex) {                
+            } catch (Exception ex) {
                 return "";
             }
-        }       
+        }
 
         try {
             payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
-        } catch (Exception ex) {            
+        } catch (Exception ex) {
             return "";
         }
         int begin = payload.indexOf("email");
@@ -136,7 +126,7 @@ public class AccountServiceController extends HttpServlet{
                 + "\n\tContentType:" + request.getContentType();
         String user = "";
         if (request.getHeader("Authorization") != null) {
-            data += "\n\tAuthorization:"+request.getHeader("Authorization");
+            data += "\n\tAuthorization:" + request.getHeader("Authorization");
             user = getUser(request.getHeader("Authorization"));
             data += "\n\tUser:" + user;
         }
@@ -148,16 +138,13 @@ public class AccountServiceController extends HttpServlet{
         if (request.getHeader("x-send-mail") != null) {
             data += "\n\tSendMail:" + request.getHeader("x-send-mail");
         }
-        data += "\n\tBody (or ID):" + conclusionString(payload, id);
+        data += "\n\tBody (or ID):" + ServicesController.conclusionString(payload, id);
 
         LogHandler.request(ServicesController.class, data);
         return transaction;
-    }
+    }   
 
-    private static void debugResponseLOG(String function, InternalResponse response) {
-        LogHandler.request(AdminServicesController.class, "\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
-    }
-    
+    //<editor-fold defaultstate="collapsed" desc="Populate Http Servlet Response">
     private static HttpServletResponse populateHttpServletResponse(
             Response response,
             HttpServletResponse res) throws IOException {
@@ -174,4 +161,6 @@ public class AccountServiceController extends HttpServlet{
             return res;
         }
     }
+    //</editor-fold>
+    
 }

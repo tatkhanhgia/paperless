@@ -5,6 +5,7 @@
 package vn.mobileid.id.paperless;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -188,10 +189,12 @@ public class PaperlessService {
         }
 
         //Processing
-        return CreateWorkflow.processingCreateWorkflow(
+        response = CreateWorkflow.processingCreateWorkflow(
                 workflow,
                 user_info,
                 transactionID);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -309,10 +312,12 @@ public class PaperlessService {
         }
 
         //Processing
-        return CreateWorkflowActivity.processingCreateWorkflowActivity(
+        response = CreateWorkflowActivity.processingCreateWorkflowActivity(
                 workflow,
                 user_info,
                 transactionID);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -393,7 +398,7 @@ public class PaperlessService {
             JWT = (JWT_Authenticate) ProcessEID_JWT.getInfoJWT(headerJWT).getData();
         }
         //Processing
-        return ProcessWorkflowActivity.assign(
+        response = ProcessWorkflowActivity.assign(
                 id,
                 x_file_name,
                 JWT,
@@ -401,6 +406,8 @@ public class PaperlessService {
                 data,
                 true,
                 transactionID);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -485,6 +492,7 @@ public class PaperlessService {
                     res.getMessage(),
                     transactionID);
         }
+        res.setUser(user_info);
         return res;
     }
 
@@ -542,7 +550,7 @@ public class PaperlessService {
             JWT = (JWT_Authenticate) ProcessEID_JWT.getInfoJWT(headerJWT).getData();
         }
         //Processing                
-        return ProcessWorkflowActivity.process(
+        response = ProcessWorkflowActivity.process(
                 id,
                 x_file_name,
                 JWT,
@@ -550,6 +558,8 @@ public class PaperlessService {
                 data,
                 false,
                 transactionID);
+        response.setUser(user_info);
+        return response;
     }
 
     //<editor-fold defaultstate="collapsed" desc="Download Document">
@@ -566,10 +576,13 @@ public class PaperlessService {
         User user_info = response.getUser();
 
         //Processing
-        return GetDocument.getDocument(id, transactionID);
+        response = GetDocument.getDocument(id, transactionID);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get Document Details">
     public static InternalResponse getDocumentDetails(
             final HttpServletRequest request,
             int id,
@@ -583,15 +596,17 @@ public class PaperlessService {
         User user_info = response.getUser();
 
         //Processing
-        InternalResponse res = GetDocument.getDocument(id, transactionID);
+        InternalResponse res = GetDocument.getDocumentObject(id, transactionID);
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
         res.setMessage(
                 new ObjectMapper().writeValueAsString(
                         res.getData()));
+        res.setUser(user_info);
         return res;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Workflow Details">
     public static InternalResponse getWorkflowDetail(
@@ -613,28 +628,31 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        List<WorkflowAttributeType> list1 = (List<WorkflowAttributeType>)response.getData();
-        
+        List<WorkflowAttributeType> list1 = (List<WorkflowAttributeType>) response.getData();
+
         //Get Workflow
         response = GetWorkflow.getWorkflow(id, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        Workflow workflow = (Workflow)response.getData();
-        
+        Workflow workflow = (Workflow) response.getData();
+
         //Get WorkflowTemplate Type
         response = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(workflow.getWorkflow_type(), transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        WorkflowTemplateType templateType = (WorkflowTemplateType)response.getData();
+        WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
         List<WorkflowAttributeType> listFinal = templateType.convertToWorkflowAttributeType(list1);
-        
+
         CustomWorkflowDetailsSerializer custom = new CustomWorkflowDetailsSerializer(listFinal);
-        return new InternalResponse(
+
+        response = new InternalResponse(
                 response.getStatus(),
                 new ObjectMapper()
                         .writeValueAsString(custom));
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -658,10 +676,12 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        return new InternalResponse(
+        response =  new InternalResponse(
                 response.getStatus(),
                 new ObjectMapper()
                         .writeValueAsString(response.getData()));
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -697,11 +717,13 @@ public class PaperlessService {
             byte[] data = XSLT_PDF_Processing.convertHTMLtoPDF(xslt);
             response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
             response.setData(data);
+            response.setUser(user_info);
             return response;
         }
         if (value.equalsIgnoreCase("XSLT")) {
             response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
             response.setData(asset.getBinaryData());
+            response.setUser(user_info);
             return response;
         }
         return new InternalResponse(
@@ -741,6 +763,7 @@ public class PaperlessService {
             Asset assetTemp = new Asset();
             assetTemp.setBase64(Base64.getEncoder().encodeToString(data));
             response.setData(assetTemp);
+            response.setUser(user_info);
             return response;
         }
         if (value.equalsIgnoreCase("XSLT")) {
@@ -748,6 +771,7 @@ public class PaperlessService {
             Asset assetTemp = new Asset();
             assetTemp.setBase64(Base64.getEncoder().encodeToString(asset.getBinaryData()));
             response.setData(assetTemp);
+            response.setUser(user_info);
             return response;
         }
         return new InternalResponse(
@@ -781,12 +805,14 @@ public class PaperlessService {
             child.put("workflow_template_type_name_vn", value.getRemark_vn());
             node.add(child);
         });
-        return new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 node);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Get Generation Type">
     public static InternalResponse getGenerationType(
             final HttpServletRequest request,
@@ -813,9 +839,11 @@ public class PaperlessService {
             child.put("generation_type_name_vn", value.getRemark_vn());
             node.add(child);
         });
-        return new InternalResponse(
+        response =  new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 node);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -845,12 +873,14 @@ public class PaperlessService {
             child.put("workflow_type_name_vn", value.getRemark_vn());
             node.add(child);
         });
-        return new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 node);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Upload Asset">
     public static InternalResponse uploadAsset(
             final HttpServletRequest request,
@@ -890,14 +920,14 @@ public class PaperlessService {
                     "{INVALID FILE}");
         }
         //Check null
-        if(outputStream == null || outputStream.toByteArray().length <=0){
+        if (outputStream == null || outputStream.toByteArray().length <= 0) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                     PaperlessMessageResponse.getErrorMessage(
-                    PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
-                    PaperlessConstant.SUBCODE_MISSING_FILE_DATA,
-                    "en",
-                    null));
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                            PaperlessConstant.SUBCODE_MISSING_FILE_DATA,
+                            "en",
+                            null));
         }
 
         //Processing        
@@ -932,6 +962,7 @@ public class PaperlessService {
             return response;
         }
         response.setMessage("{\"asset_id\":" + response.getData() + "}");
+        response.setUser(user_info);
         return response;
     }
     //</editor-fold>
@@ -996,6 +1027,7 @@ public class PaperlessService {
             return response;
         }
         response.setMessage("{\"asset_id\":" + response.getData() + "}");
+        response.setUser(user_info);
         return response;
     }
     //</editor-fold>
@@ -1003,6 +1035,7 @@ public class PaperlessService {
     //<editor-fold defaultstate="collapsed" desc="Update Asset">
     public static InternalResponse updateAsset(
             final HttpServletRequest request,
+            int id,
             String transactionID) throws Exception {
         //Check valid token
         InternalResponse response = verifyToken(request, transactionID);
@@ -1012,18 +1045,18 @@ public class PaperlessService {
 
         User user_info = response.getUser();
 
-        //Get header
-        int id = 0;
-        try {
-            String temp = request.getRequestURI();
-            temp = temp.replace("/paperless/v1/asset/", "");
-            id = Integer.parseInt(temp);
-        } catch (Exception ex) {
-            String message = "{\"message\":\"Cannot parse id from url\"}";
-            return new InternalResponse(
-                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    message);
-        }
+//        //Get header
+//        int id = 0;
+//        try {
+//            String temp = request.getRequestURI();
+//            temp = temp.replace("/paperless/v1/asset/", "");
+//            id = Integer.parseInt(temp);
+//        } catch (Exception ex) {
+//            String message = "{\"message\":\"Cannot parse id from url\"}";
+//            return new InternalResponse(
+//                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+//                    message);
+//        }
         String x_file_type = Utils.getRequestHeader(request, "x-file-type");
 //        String x_file_name = Utils.getRequestHeader(request, "x-file-name");
         ByteArrayOutputStream outputStream;
@@ -1073,16 +1106,20 @@ public class PaperlessService {
                 null
         );
 
-        return UpdateAsset.updateAsset(
+        response = UpdateAsset.updateAsset(
                 asset,
                 user_info,
                 transactionID);
+        response.setUser(user_info);
+
+        return response;
     }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Update Asset Base64">
     public static InternalResponse updateAssetBase64(
             final HttpServletRequest request,
+            int id,
             String transactionID) throws Exception {
         //Check valid token
         InternalResponse response = verifyToken(request, transactionID);
@@ -1092,19 +1129,19 @@ public class PaperlessService {
 
         User user_info = response.getUser();
 
-        //Get header
-        int id = 0;
-        try {
-            String temp = request.getRequestURI();
-            temp = temp.replace("/paperless/v1/asset/", "");
-            temp = temp.replace("/base64", "");
-            id = Integer.parseInt(temp);
-        } catch (Exception ex) {
-            String message = "{\"message\":\"Cannot parse id from url\"}";
-            return new InternalResponse(
-                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    message);
-        }
+//        //Get header
+//        int id = 0;
+//        try {
+//            String temp = request.getRequestURI();
+//            temp = temp.replace("/paperless/v1/asset/", "");
+//            temp = temp.replace("/base64", "");
+//            id = Integer.parseInt(temp);
+//        } catch (Exception ex) {
+//            String message = "{\"message\":\"Cannot parse id from url\"}";
+//            return new InternalResponse(
+//                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+//                    message);
+//        }
         String x_file_type = Utils.getRequestHeader(request, "x-file-type");
         String payload = Utils.getPayload(request);
         if (Utils.isNullOrEmpty(payload)) {
@@ -1153,13 +1190,14 @@ public class PaperlessService {
             asset.setSize(asset.getBinaryData().length);
         }
 
-        return UpdateAsset.updateAsset(
+        response = UpdateAsset.updateAsset(
                 asset,
                 user_info,
                 transactionID);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
-    
 
     //<editor-fold defaultstate="collapsed" desc="Get Asset Template">
     public static InternalResponse getAssetTemplate(
@@ -1180,9 +1218,11 @@ public class PaperlessService {
             return response;
         }
         Asset asset = (Asset) response.getData();
-        return new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 asset.getMetadata());
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -1200,7 +1240,9 @@ public class PaperlessService {
         User user_info = response.getUser();
 
         //Processing
-        return GetAsset.getAsset(id, transactionID);
+        response = GetAsset.getAsset(id, transactionID);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -1375,10 +1417,12 @@ public class PaperlessService {
         HashMap<String, Object> hashmap = new HashMap<>();
         hashmap.put("x-total-records", list.size());
         res.setHeaders(hashmap);
+        res.setUser(user_info);
         return res;
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get List Asset">
     public static InternalResponse getListAsset(
             final HttpServletRequest request,
             String transactionID) throws JsonProcessingException, Exception {
@@ -1449,8 +1493,10 @@ public class PaperlessService {
         }
         CustomListAssetSerializer tempp = new CustomListAssetSerializer((List<Asset>) res.getData(), 0, 0);
         res.setMessage(new ObjectMapper().writeValueAsString(tempp));
+        res.setUser(user_info);
         return res;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get List Workflow Activity">
     public static InternalResponse getListWorkflowAc(
@@ -1654,6 +1700,7 @@ public class PaperlessService {
         HashMap<String, Object> hashmap = new HashMap<>();
         hashmap.put("x-total-records", list.size());
         res.setHeaders(hashmap);
+        res.setUser(user_info);
         return res;
     }
     //</editor-fold>
@@ -1744,7 +1791,7 @@ public class PaperlessService {
         }
 
         //Thread Pool to check template
-        String searchTemplate = "1,2,3,4,5,6,7,8";
+        String searchTemplate = "1,2,3,4,5,6,7";
         String template = Utils.getRequestHeader(request, "x-search-type");
         ExecutorService executor = Executors.newFixedThreadPool(2);
         TaskV2 templateType1 = new TaskV2(new Object[]{template}, transactionID) {
@@ -1756,19 +1803,19 @@ public class PaperlessService {
                     if (template != null) {
                         template = new String(Base64.getDecoder().decode(template));
                         switch (template) {
-                            case "QR GENERATOR": {
+                            case "QR GENERATION": {
                                 result = "1";
                                 break;
                             }
-                            case "PDF GENERATOR": {
+                            case "PDF GENERATION": {
                                 result = "2";
                                 break;
                             }
-                            case "SIMPLE PDF STAMPING": {
+                            case "PDF STAMPING": {
                                 result = "3";
                                 break;
                             }
-                            case "PDF STAMPING": {
+                            case "SIMPLE PDF STAMPING": {
                                 result = "4";
                                 break;
                             }
@@ -1776,20 +1823,16 @@ public class PaperlessService {
                                 result = "5";
                                 break;
                             }
-                            case "LEI PDF STAMPING": {
+                            case "E-LABOR CONTRACT - WITNESSING": {
                                 result = "6";
                                 break;
                             }
-                            case "E-LABOR CONTRACT": {
+                            case "E-LABOR CONTRACT - ESIGNCLOUD": {
                                 result = "7";
                                 break;
                             }
-                            case "ESIGNCLOUD": {
-                                result = "8";
-                                break;
-                            }
                             default: {
-                                result = "1,2,3,4,5,6,7,8";
+                                result = "1,2,3,4,5,6,7";
                                 break;
                             }
                         }
@@ -1857,6 +1900,7 @@ public class PaperlessService {
             return res;
         }
         res.setMessage("{\"x-total-records\":" + res.getData() + "}");
+        res.setUser(user_info);
         return res;
     }
     //</editor-fold>
@@ -1881,6 +1925,7 @@ public class PaperlessService {
         }
         CustomWorkflowTemplateSerializer serializer = new CustomWorkflowTemplateSerializer((WorkflowTemplate) response.getData());
         response.setMessage(new ObjectMapper().writeValueAsString(serializer));
+        response.setUser(user_info);
         return response;
     }
     //</editor-fold>
@@ -1904,6 +1949,7 @@ public class PaperlessService {
         }
         CustomWorkflowSerializer custom = new CustomWorkflowSerializer((Workflow) response.getData());
         response.setMessage(new ObjectMapper().writeValueAsString(custom));
+        response.setUser(user_info);
         return response;
     }
     //</editor-fold>
@@ -1929,6 +1975,7 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
+        response.setUser(user_info);
         return response;
     }
 
@@ -1953,6 +2000,7 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
+        response.setUser(user_info);
         return response;
     }
 
@@ -1978,6 +2026,28 @@ public class PaperlessService {
                             PaperlessConstant.CODE_FAIL,
                             PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
                             "en",
+                            null));
+        }
+
+        //Check format of payload
+        try {
+            JsonNode node = new ObjectMapper().readTree(payload);
+            if (!node.fieldNames().next().equalsIgnoreCase("workflow_option")) {
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_FAIL,
+                                PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                                PaperlessMessageResponse.getLangFromJson(payload),
+                                null));
+            }
+        } catch (Exception ex) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
 
@@ -2010,7 +2080,7 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-
+        response.setUser(user_info);
         return response;
     }
     //</editor-fold>
@@ -2073,12 +2143,11 @@ public class PaperlessService {
                 workflowtemplate,
                 "hmac",
                 transactionID);
-        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        return new InternalResponse(
-                response.getStatus(),
-                "");
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -2109,14 +2178,17 @@ public class PaperlessService {
         }
 
         //Processing
-        return UpdateUser.updateUserPassword(
+        response = UpdateUser.updateUserPassword(
                 user_info.getEmail(),
                 old_password,
                 new_password,
                 transactionID);
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Generate Hash Document">
     public static InternalResponse generateHashDocument(
             final HttpServletRequest request,
             String payload,
@@ -2177,9 +2249,10 @@ public class PaperlessService {
                 data,
                 headers,
                 transactionID);
-
+        res.setUser(user_info);
         return res;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Total Record Workflow">
     public static InternalResponse getTotalRecordsWorkflow(
@@ -2363,6 +2436,7 @@ public class PaperlessService {
         HashMap<String, Object> hashmap = new HashMap<>();
         hashmap.put("x-total-records", (long) res.getData());
         res.setHeaders(hashmap);
+        res.setUser(user_info);
         return res;
     }
     //</editor-fold>
@@ -2559,23 +2633,16 @@ public class PaperlessService {
                 searchTemplate,
                 status,
                 transactionID);
-//        InternalResponse res = GetAsset.getTotalRecordOfAssets(
-//                user_info.getAid(),
-//                user_info.getEmail(),
-//                filename,
-//                searchTemplate,
-//                status,
-//                (page_no <= 1) ? 0 : (page_no - 1) * record, //offset
-//                record == 0 ? numberOfRecords : record, //rowcount
-//                transactionID);
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
         res.setMessage("{\"x-total-record\":" + res.getData() + "}");
+        res.setUser(user_info);
         return res;
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Delete Asset">
     public static InternalResponse deleteAsset(
             final HttpServletRequest request,
             int id,
@@ -2596,8 +2663,10 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
+        response.setUser(user_info);
         return response;
     }
+    //</editor-fold>
 
     public static InternalResponse reactiveAsset(
             final HttpServletRequest request,
@@ -2623,6 +2692,7 @@ public class PaperlessService {
         return response;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Get Asset Type">
     public static InternalResponse getAssetType(
             final HttpServletRequest request,
             String transactionID) throws Exception {
@@ -2647,10 +2717,13 @@ public class PaperlessService {
             child.put("asset_type_name", key);
             node.add(child);
         });
-        return new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 node);
+        response.setUser(user_info);
+        return response;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Accounts/ Accoun">
     public static InternalResponse getAccounts(
@@ -2719,9 +2792,11 @@ public class PaperlessService {
             return response;
         }
 
-        return new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 new ObjectMapper().writeValueAsString(response.getData()));
+        response.setUser(user_info);
+        return response;
     }
     //</editor-fold>
 
@@ -2770,16 +2845,40 @@ public class PaperlessService {
                             null));
         }
 
+        //<editor-fold defaultstate="collapsed" desc="Check status">
+        if (woAc.getStatus_name() == null || woAc.getStatus_name().isEmpty()) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_NOT_SUPPORT_THIS_STATUS_OF_WORKFLOW_ACTIVITY,
+                            "en",
+                            null));
+        }
+        WorkflowActivityStatus status = null;
+        try {
+            status = WorkflowActivityStatus.valueOf(woAc.getStatus_name());
+        } catch (Exception ex) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_NOT_SUPPORT_THIS_STATUS_OF_WORKFLOW_ACTIVITY,
+                            "en",
+                            null));
+        }
+        //</editor-fold>
+
         //Processing
         response = UpdateWorkflowActivity.updateStatus(
                 id,
-                WorkflowActivityStatus.valueOf(woAc.getStatus_name()),
+                status,
                 user_info.getName() == null ? user_info.getEmail() : user_info.getName(),
                 transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-
+        response.setUser(user_info);
         return response;
     }
     //</editor-fold>
@@ -2835,11 +2934,45 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-
+        response.setUser(user_info);
         return response;
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get Category">
+    public static InternalResponse getCategory(
+            final HttpServletRequest request,
+            String transactionID) throws Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Processing
+        HashMap<Integer, GenerationType> hashmap = Resources.getListGenerationType();
+        if (hashmap == null || hashmap.isEmpty()) {
+            Resources.reloadListWorkflowTemplateType();
+            hashmap = Resources.getListGenerationType();
+        }
+        ArrayNode node = new ObjectMapper().createArrayNode();
+        hashmap.forEach((key, value) -> {
+            ObjectNode child = new ObjectMapper().createObjectNode();
+            child.put("generation_type_id", key);
+            child.put("generation_type_name", value.getGeneration_type_name());
+            child.put("generation_type_name_vn", value.getRemark_vn());
+            node.add(child);
+        });
+        response =  new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                node);
+        response.setUser(user_info);
+        return response;
+    }
+    //</editor-fold>
+    
     //=================== INTERNAL FUNCTION - METHOD============================
     /**
      * Hàm check workflow_template_type từ chuỗi payload truyền vào

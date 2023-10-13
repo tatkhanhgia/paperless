@@ -24,7 +24,8 @@ import vn.mobileid.id.utils.XSLT_PDF_Processing;
  */
 public class GetDocument {
 
-    /**
+    //<editor-fold defaultstate="collapsed" desc="Get Document (Binary data)">
+     /**
      * Get Document of the WorkflowActivity
      *
      * @param workflowActivityID - ID of the Workflow Activity
@@ -53,7 +54,7 @@ public class GetDocument {
         WorkflowActivity woAc = (WorkflowActivity) response.getData();
 
         //Get Transaction
-        System.out.println("TransactionId:"+woAc.getTransaction());
+//        System.out.println("TransactionId:"+woAc.getTransaction());
         response = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
@@ -61,7 +62,7 @@ public class GetDocument {
 
         //From info of transaction. Get fileManagement or QR
         Transaction transaction = (Transaction) response.getData();
-        System.out.println("Transaction:"+transaction.getObject_type().name());
+//        System.out.println("Transaction:"+transaction.getObject_type().name());
         if (transaction.getObject_type().getNumber() != ObjectType.PDF.getNumber()) {
             if (transaction.getObject_type().equals(ObjectType.QR)) {
                 response = GetQR.getQR(transaction.getObject_id(), transactionID);
@@ -126,4 +127,111 @@ public class GetDocument {
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 file.getData());
     }
+    //</editor-fold>
+    
+    
+    //<editor-fold defaultstate="collapsed" desc="Get Document (Document Object)">
+     /**
+     * Get Document of the WorkflowActivity
+     *
+     * @param workflowActivityID - ID of the Workflow Activity
+     * @param transactionID
+     * @return FileManagement
+     * @throws Exception
+     */
+    public static InternalResponse getDocumentObject(
+            int workflowActivityID,
+            String transactionID) throws Exception {
+//        try {        
+        InternalResponse response = null;
+
+        response = GetWorkflowActivity.getWorkflowActivity(
+                workflowActivityID,
+                transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_EXISTED,
+                            "en",
+                            null));
+        }
+        WorkflowActivity woAc = (WorkflowActivity) response.getData();
+
+        //Get Transaction
+//        System.out.println("TransactionId:"+woAc.getTransaction());
+        response = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+
+        //From info of transaction. Get fileManagement or QR
+        Transaction transaction = (Transaction) response.getData();
+//        System.out.println("Transaction:"+transaction.getObject_type().name());
+        if (transaction.getObject_type().getNumber() != ObjectType.PDF.getNumber()) {
+            if (transaction.getObject_type().equals(ObjectType.QR)) {
+                response = GetQR.getQR(transaction.getObject_id(), transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
+                }
+                QR temp = (QR) response.getData();                
+                if(temp.getImage() == null || temp.getImage().isEmpty()){
+                    return new InternalResponse(
+                            PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                            PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
+                            "en",
+                            null)
+                    );
+                }
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_SUCCESS,
+                        temp
+                );
+            } else {
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                        "{\"Message\":\"The type of Workflow Activity cannot access this API\"}"
+                );
+            }
+        } else {
+            response = GetFileManagement.getFileManagement(transaction.getObject_id(), transactionID);
+        }
+
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        FileManagement file = (FileManagement) response.getData();
+
+        if (file.getData() == null) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                            PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_DOES_NOT_PROCESS_YET,
+                            "en",
+                            null)
+            );
+        }
+        if (file.isIsSigned() == false) {
+            if (woAc.getRequestData() == null) {
+                woAc = (WorkflowActivity) GetWorkflowActivity.getWorkflowActivity(woAc.getId(), transactionID).getData();
+            }
+            KYC object = new ObjectMapper().readValue(
+                    woAc.getRequestData(),
+                    KYC.class);
+            byte[] xsltC = file.getData();
+            byte[] html = XSLT_PDF_Processing.appendData(object, xsltC);
+
+            //Convert from HTML to PDF
+            byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
+            file.setData(pdf);
+        }
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                file);
+    }
+    //</editor-fold>
 }

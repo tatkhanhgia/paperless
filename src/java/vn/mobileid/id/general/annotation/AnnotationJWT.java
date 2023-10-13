@@ -42,4 +42,14 @@ public enum AnnotationJWT {
         }
         return original;
     }
+
+    public static String replaceAnnotation(String original, String data){
+        for(AnnotationJWT annotation : values()){
+            if(original.contains(annotation.getNameAnnot())){
+                original = original.replaceAll(annotation.getNameAnnot(), data);
+            }
+        }
+        return original;
+    }
 }
+

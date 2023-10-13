@@ -41,25 +41,25 @@
 //    public static void hede() throws SAXException, IOException, TransformerException {
 //        // Step 1: Construct a FopFactory by specifying a reference to the configuration file
 //        // (reuse if you plan to render multiple documents!)
-//         ResourceResolver resolver = new ResourceResolver() {
-//        public OutputStream getOutputStream(URI uri) throws IOException {
-//            System.out.println("Get OS");
-//            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-//            InputStream in = loader.getResourceAsStream("resources/hello.bmp");
-//            byte[] temp = null;
-//            in.read(temp);
-//            in.close();
-//            OutputStream out = new ByteArrayOutputStream();
-//            out.write(temp);
-//            out.close();
-//            return out;
-//        }
-//
-//        public Resource getResource(URI uri) throws IOException {
-//            System.out.println("GetResource:"+uri.toASCIIString());
-//            return new Resource(Thread.currentThread().getContextClassLoader().getResourceAsStream(uri.toASCIIString()));
-//        }
-//    };
+////         ResourceResolver resolver = new ResourceResolver() {
+////        public OutputStream getOutputStream(URI uri) throws IOException {
+////            System.out.println("Get OS");
+////            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+////            InputStream in = loader.getResourceAsStream("resources/hello.bmp");
+////            byte[] temp = null;
+////            in.read(temp);
+////            in.close();
+////            OutputStream out = new ByteArrayOutputStream();
+////            out.write(temp);
+////            out.close();
+////            return out;
+////        }
+////
+////        public Resource getResource(URI uri) throws IOException {
+////            System.out.println("GetResource:"+uri.toASCIIString());
+////            return new Resource(Thread.currentThread().getContextClassLoader().getResourceAsStream(uri.toASCIIString()));
+////        }
+////    };
 //      FopFactory fopFactory = FopFactory.newInstance(
 //              new File("C:\\Users\\Admin\\Documents\\NetBeansProjects\\Library_RSSP_SDK\\ProjectRSSP_newest\\paperless\\src\\java\\resources\\fop.xconf").toURI());      
 //      // Step 2: Set up output stream.

@@ -13,4 +13,5 @@ public class PolicyConstant {
     public static int SIGNATUREPROPERTIES_ELABORCONTRACT_TEMPLATE = 2;
     public static int SIGNATUREPROPERTIES = 3;
     public static int SYSTEMPOLICY = 4;
+    public static int TEMPLATE_USER_ACTIVITY=14;
 }

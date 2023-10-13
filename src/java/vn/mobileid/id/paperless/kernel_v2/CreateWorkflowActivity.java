@@ -11,11 +11,13 @@ import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.object.enumration.Category;
 import vn.mobileid.id.paperless.object.enumration.DownloadLinkType;
+import vn.mobileid.id.paperless.object.enumration.EventAction;
 import vn.mobileid.id.paperless.object.enumration.FileType;
 import vn.mobileid.id.paperless.object.enumration.ObjectType;
+import vn.mobileid.id.paperless.object.enumration.TemplateUserActivity;
 import vn.mobileid.id.paperless.object.enumration.WorkflowActivityProductType;
-import vn.mobileid.id.paperless.objects.EventAction;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
@@ -117,7 +119,7 @@ public class CreateWorkflowActivity {
      * @param woAc - WorkflowActivity
      * @param user - User
      * @param transaction
-     * @return String / ID of that WorkflowActivity
+     * @return Message to return it to Client. Data is long of Workflow Activity ID
      * @throws Exception
      */
     public static InternalResponse processingCreateWorkflowActivity(
@@ -144,21 +146,23 @@ public class CreateWorkflowActivity {
 
         //<editor-fold defaultstate="collapsed" desc="Create User Activity Log">
         //Create new User Activity Log
-        EventAction tempp = Resources.getListEventAction().get(4);
-        String action = tempp.getEvent_name();
         response = CreateUserActivityLog.createUserActivityLog(
                 user.getEmail(),
                 user.getAid(),
                 "Workflow Activity",
-                tempp.getEvent_name(),
+                EventAction.New,
                 null,
                 null,
-                transaction,
+                "Create new Workflow Activity",
                 null,
                 null,
+                user.getIpAddress(),
+                Utils.generateDescription_UserActivity(user,TemplateUserActivity.createWorkflowActivity),
+                "",
                 "hmac",
                 user.getName() == null ? user.getEmail() : user.getName(),
                 transactionID);
+        
 
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
@@ -185,7 +189,7 @@ public class CreateWorkflowActivity {
                 QRUUID = (long) response.getData();
                 break;
             }
-            case 2:{
+            case 2: {
                 type = ObjectType.PDF;
                 break;
             }
@@ -253,6 +257,18 @@ public class CreateWorkflowActivity {
         transaction = (String) response.getData();
         //</editor-fold>
 
+        //Create User Activity
+        CreateUserActivity.createUserActivity(
+                user.getEmail(), 
+                user.getAid(), 
+                transaction, 
+                logID,
+                Category.WorkflowActivity, 
+                EventAction.New, 
+                "hmac", 
+                user.getName()==null?user.getEmail():user.getName(), 
+                transactionID);
+        
         //Create new Workflow Activity            
         DatabaseV2_WorkflowActivity callDb = new DatabaseImpl_V2_WorkflowActivity();
         DatabaseResponse callDB = callDb.createWorkflowActivity(
@@ -270,20 +286,22 @@ public class CreateWorkflowActivity {
                 user.getName() == null ? user.getEmail() : user.getName(),
                 transactionID);
 
-        if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {           
+        if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_FORBIDDEN,
                     PaperlessMessageResponse.getErrorMessage(
-                    PaperlessConstant.CODE_FAIL,
-                    callDB.getStatus(),
-                    "en",
-                    null)
+                            PaperlessConstant.CODE_FAIL,
+                            callDB.getStatus(),
+                            "en",
+                            null)
             );
         }
 
-        return new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 "{\"workflow_activity_id\":" + callDB.getObject() + "}");
+        response.setData(callDB.getObject());
+        return response;
     }
 
     //</editor-fold>

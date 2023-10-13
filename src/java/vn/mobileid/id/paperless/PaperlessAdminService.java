@@ -70,6 +70,7 @@ public class PaperlessAdminService {
         return response;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Create Account">
     public static InternalResponse createAccount(
             final HttpServletRequest request,
             String payload,
@@ -161,8 +162,8 @@ public class PaperlessAdminService {
                                 PaperlessMessageResponse.getLangFromJson(payload),
                                 null));
             }
-            Date now = Date.from(Instant.now().plusSeconds(PaperlessConstant.password_expired_at));            
-            return CreateAccount.createAccount(
+            Date now = Date.from(Instant.now().plusSeconds(PaperlessConstant.password_expired_at));      
+            response = CreateAccount.createAccount(
                     jwtdata.getEmail(),
                     account.getUser_password(),
                     jwtdata.getPhone_number(),
@@ -175,11 +176,13 @@ public class PaperlessAdminService {
                     BusinessType.BUSINESS.getType(), //int - businessType
                     "https://paperless.mobile-id.vn",
                     transactionID);
+            response.setEnterprise(ent);
+            return response;
         }
 
         //FLOW CREATE ACCOUNT BASE ON PAYLOAD    
-        Date now = Date.from(Instant.now().plusSeconds(PaperlessConstant.password_expired_at));            
-        return CreateAccount.createAccount(
+        Date now = Date.from(Instant.now().plusSeconds(PaperlessConstant.password_expired_at));   
+        response = CreateAccount.createAccount(
                 account.getUser_email(),
                 account.getUser_password(),
                 account.getMobile_number(),
@@ -192,7 +195,11 @@ public class PaperlessAdminService {
                 BusinessType.BUSINESS.getType(), //int - businessType
                 "https://paperless.mobile-id.vn",
                 transactionID);
+        response.setEnterprise(ent);
+        return response;
     }
+    //</editor-fold>
+    
 
     public static InternalResponse verifyEmail(
             final HttpServletRequest request,
@@ -235,10 +242,12 @@ public class PaperlessAdminService {
             return res;
         }
 
-        return VerifyEmail.verifyEmail(
+        response = VerifyEmail.verifyEmail(
                 account.getUser_email(),
                 account.getAuthorization_code(),
                 transactionID);
+        response.setData(account);
+        return response;
     }
 
     public static InternalResponse getAccounts(
@@ -363,6 +372,7 @@ public class PaperlessAdminService {
                 hashmap.put("x-total-records", accounts.size());
                 response.setHeaders(hashmap);
                 response.setMessage(new ObjectMapper().writeValueAsString(custom));
+                response.setEnterprise(ent);
                 return response;
             }
         } else {
@@ -386,6 +396,7 @@ public class PaperlessAdminService {
             hashmap.put("x-total-records", accounts.size());
             res.setHeaders(hashmap);
             res.setMessage(new ObjectMapper().writeValueAsString(custom));
+            res.setEnterprise(ent);
             return res;
         }
     }
@@ -474,10 +485,11 @@ public class PaperlessAdminService {
                             null));
         }
 
-        return ManageUser.setNewPassword(
+        response = ManageUser.setNewPassword(
                 Utils.getRequestHeader(request, "x-security-code"),
                 account.getUser_password(),
                 transactionID);
+        return response;
     }
 
     public static InternalResponse verifyADMINToken(

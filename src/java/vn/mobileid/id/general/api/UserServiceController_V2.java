@@ -16,15 +16,17 @@ import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.PaperlessService_V2;
+import vn.mobileid.id.paperless.object.enumration.Category;
+import vn.mobileid.id.paperless.object.enumration.EventAction;
 import vn.mobileid.id.utils.Utils;
 
 /**
  *
- * @author GiaTK    
+ * @author GiaTK
  */
-public class UserServiceController_V2 extends HttpServlet{
-    
-     public static void service_(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
+public class UserServiceController_V2 extends HttpServlet {
+
+    public static void service_(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         String method = req.getMethod();
         switch (method) {
             case "GET": {
@@ -32,7 +34,7 @@ public class UserServiceController_V2 extends HttpServlet{
                 break;
             }
             case "PUT": {
-                
+
             }
 //            case "POST": {
 //                new AccountServiceController().doPost(req, res);
@@ -44,47 +46,67 @@ public class UserServiceController_V2 extends HttpServlet{
             }
         }
     }
-    
+
     @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {   Utils.sendMessage(
-                    res,
-                    PaperlessConstant.HTTP_CODE_METHOD_NOT_ALLOWED,
-                    "application/json",
-                    null);   }
-    
-    @Override
-    public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {  
-         Utils.sendMessage(
-                    res,
-                    PaperlessConstant.HTTP_CODE_METHOD_NOT_ALLOWED,
-                    "application/json",
-                    null);
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        Utils.sendMessage(
+                res,
+                PaperlessConstant.HTTP_CODE_METHOD_NOT_ALLOWED,
+                "application/json",
+                null);
     }
-    
+
     @Override
-    public void doPut(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {  
+    public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        Utils.sendMessage(
+                res,
+                PaperlessConstant.HTTP_CODE_METHOD_NOT_ALLOWED,
+                "application/json",
+                null);
+    }
+
+    @Override
+    public void doPut(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         if (req.getRequestURI().matches("^/paperless/v2/settings/profile/general$")) {
             String transactionId = debugRequestLOG("update general profile", req, null, 0);
             LogHandler.request(UserServiceController_V2.class,
                     transactionId);
             try {
                 InternalResponse response = PaperlessService_V2.updateGeneralProfile(
-                        req, 
-                        Utils.getPayload(req), 
+                        req,
+                        Utils.getPayload(req),
                         transactionId);
+
+                ServicesController.logIntoDB(
+                        req,
+                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
+                        response.getUser()==null?0:response.getUser().getAid(),
+                        0,
+                        response.getStatus(),
+                        "",
+                        response.getMessage(),
+                        "Update User information",
+                        transactionId
+                );
+
                 if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    Utils.sendMessage(
-                            res,
-                            response.getStatus(),
-                            "application/json",
-                            null);
-                } else {
-                    Utils.sendMessage(
-                            res,
-                            response.getStatus(),
-                            "application/json",
-                            response.getMessage());
+                    ServicesController.createUserActivity(
+                            req,
+                            response,
+                            "Update User information",
+                            "User",
+                            0,
+                            EventAction.Update,
+                            "Update User information",
+                            "Update User information",
+                            Category.Account);
                 }
+
+                Utils.sendMessage(
+                        res,
+                        response.getStatus(),
+                        "application/json",
+                        response.getMessage());
 
             } catch (Exception ex) {
                 LogHandler.error(AccountServiceController.class,
@@ -96,12 +118,7 @@ public class UserServiceController_V2 extends HttpServlet{
                         "application/json",
                         null);
             }
-//            } else {
-//                Utils.sendMessage(res, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, null);
-//            }                
-//            } else {
-//                Utils.sendMessage(res, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, null);
-//            }                
+
         } else {
             Utils.sendMessage(
                     res,
@@ -110,8 +127,7 @@ public class UserServiceController_V2 extends HttpServlet{
                     null);
         }
     }
-    
-    
+
     //========================INTERNAL METHOD==========================
     private static String conclusionString(String payload, int id) {
         String pattern = "\"value\":.*";
@@ -119,7 +135,7 @@ public class UserServiceController_V2 extends HttpServlet{
             return String.valueOf(id);
         }
         return payload.replaceAll(pattern, "\"value\":\"base64\"}]}");
-    }   
+    }
 
     private static String getUser(String payload) {
         String[] chunks = payload.split("\\.");
@@ -129,14 +145,14 @@ public class UserServiceController_V2 extends HttpServlet{
                 payload = new String(Base64.getUrlDecoder().decode(payload), "UTF-8");
                 chunks = payload.split(":");
                 return chunks[0];
-            } catch (Exception ex) {                
+            } catch (Exception ex) {
                 return "";
             }
-        }       
+        }
 
         try {
             payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
-        } catch (Exception ex) {            
+        } catch (Exception ex) {
             return "";
         }
         int begin = payload.indexOf("email");
@@ -149,7 +165,7 @@ public class UserServiceController_V2 extends HttpServlet{
                 + "\n\tContentType:" + request.getContentType();
         String user = "";
         if (request.getHeader("Authorization") != null) {
-            data += "\n\tAuthorization:"+request.getHeader("Authorization");
+            data += "\n\tAuthorization:" + request.getHeader("Authorization");
             user = getUser(request.getHeader("Authorization"));
             data += "\n\tUser:" + user;
         }
@@ -169,5 +185,5 @@ public class UserServiceController_V2 extends HttpServlet{
 
     private static void debugResponseLOG(String function, InternalResponse response) {
         LogHandler.request(AdminServicesController.class, "\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
-    }      
+    }
 }
