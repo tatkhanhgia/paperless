@@ -65,50 +65,44 @@ public class QryptoService {
         if (!QryptoService.listQryptoSession.containsKey(i)) {
             this.sessionFactory = SessionFactory.getInstance(prop);
             this.session = this.sessionFactory.getSession();
-            QryptoService.listQryptoSession.put(i, session);            
+            QryptoService.listQryptoSession.put(i, session);
             this.session.login();
         } else {
-            this.session = QryptoService.listQryptoSession.get(i);            
-        }                
+            this.session = QryptoService.listQryptoSession.get(i);
+        }
     }
 
-    public void login() throws Exception{
+    public void login() throws Exception {
         this.session.login();
     }
-    
+
     public IssueQryptoWithFileAttachResponse generateQR(
             QRSchema QR,
             vn.mobileid.id.qrypto.object.Configuration configuration,
             String transaction
-    ) {
-        try {
-            IssueQryptoWithFileAttachResponse response = this.session.issueQryptoWithFileAttach(QR, configuration);
+    ) throws Exception{
+        IssueQryptoWithFileAttachResponse response = this.session.issueQryptoWithFileAttach(QR, configuration);
 //            ClaimRequest datas = ProcessClaimRequest.generateClaimRequest(response);
 //            ClaimResponse tan =  this.session.dgci_wallet_claim(datas);
 //            response.setTan(tan.getTan());
-            return response;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
+        return response;
     }
-    
-    public static void main (String[] args) throws Throwable{
-        QRSchema schema = new QRSchema();        
-        
+
+    public static void main(String[] args) throws Throwable {
+        QRSchema schema = new QRSchema();
+
         List<QRSchema.data> listData = new ArrayList<>();
         List<QRSchema.field> listField = new ArrayList<>();
-                
+
         schema.setScheme("QC1");
-                                
+
         QRSchema.data data = new QRSchema.data();
         data.setName("kvalue");
         data.setValue("TATKHANHGIA");
-                       
+
         QRSchema.format format = new QRSchema.format();
         format.setVersion("2");
-        
-        
+
         QRSchema.field field1 = new QRSchema.field();
         field1.setName("Name");
         field1.setType(QRSchema.fieldType.t2);
@@ -116,12 +110,12 @@ public class QryptoService {
         String a = "";
         listField.add(field1);
         listData.add(data);
-        
+
         format.setFields(listField);
-        
+
         schema.setData(listData);
         schema.setFormat(format);
-        
+
         vn.mobileid.id.qrypto.object.Configuration configuration = new vn.mobileid.id.qrypto.object.Configuration();
         configuration.setContextIdentifier("QC1:");
         configuration.setQryptoHeight(1080);
@@ -129,9 +123,9 @@ public class QryptoService {
         configuration.setIsTransparent(true);
         configuration.setQryptoEffectiveDate(
                 new qryptoEffectiveDate("2023-03-22 00:00:00", "2023-04-30 00:00:00"));
-        
+
         String transcation = "1";
         IssueQryptoWithFileAttachResponse res = QryptoService.getInstance(1).generateQR(schema, configuration, transcation);
-        System.out.println("DataL:"+new ObjectMapper().writeValueAsString(res));
+        System.out.println("DataL:" + new ObjectMapper().writeValueAsString(res));
     }
 }

@@ -1266,7 +1266,7 @@ public class ServicesController {
                 workflow_activity_id,
                 appname + "_" + os, //app name
                 ip, //api key
-                "2023.10.13", //version
+                "2023.10.18", //version
                 servicename, //service name
                 url,
                 http,

@@ -119,16 +119,19 @@ public class CreateWorkflowActivity {
      * @param woAc - WorkflowActivity
      * @param user - User
      * @param transaction
-     * @return Message to return it to Client. Data is long of Workflow Activity ID
+     * @return Message to return it to Client. Data is long of Workflow Activity
+     * ID
      * @throws Exception
      */
     public static InternalResponse processingCreateWorkflowActivity(
             WorkflowActivity woAc,
+            String ip_address,
             User user,
             String transaction) throws Exception {
 
         //Data
         long logID = -1;
+        long CSVTask = -1;
         long fileManagementID = -1;
         String transactionID = null;
         long QRUUID = -1;
@@ -157,12 +160,11 @@ public class CreateWorkflowActivity {
                 null,
                 null,
                 user.getIpAddress(),
-                Utils.generateDescription_UserActivity(user,TemplateUserActivity.createWorkflowActivity),
+                Utils.generateDescription_UserActivity(user, TemplateUserActivity.createWorkflowActivity),
                 "",
                 "hmac",
                 user.getName() == null ? user.getEmail() : user.getName(),
                 transactionID);
-        
 
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
@@ -175,18 +177,36 @@ public class CreateWorkflowActivity {
         ObjectType type = null;
         switch (temp.getWorkflow_type()) {
             case 1: {
-                type = ObjectType.QR;
-                response = CreateQR.processingCreateQR(
-                        "metaData",
-                        null,
-                        "HMAC",
-                        user.getName(),
-                        transaction);
+                if (woAc.isCsvEnabled()) {
+                    type = ObjectType.CSV;
+                    response = CreateCSV.createCSV(
+                            "CSV - "+System.currentTimeMillis(),
+                            null,
+                            null, 
+                            0, 
+                            0, 
+                            null, 
+                            null, 
+                            user.getName()==null?user.getEmail():user.getName(), 
+                            transactionID);
+                     if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                        return response;
+                    }
+                     CSVTask = (long) response.getData();
+                } else {
+                    type = ObjectType.QR;
+                    response = CreateQR.processingCreateQR(
+                            "metaData",
+                            null,
+                            "HMAC",
+                            user.getName(),
+                            transaction);
 
-                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return response;
+                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                        return response;
+                    }
+                    QRUUID = (long) response.getData();
                 }
-                QRUUID = (long) response.getData();
                 break;
             }
             case 2: {
@@ -237,13 +257,13 @@ public class CreateWorkflowActivity {
             }
             fileManagementID = (long) response.getData();
         }
-//        System.out.println("ObjectType in Transaction:"+type.name());
+//        System.out.println("ObjectType in Transaction:"+type.name());        
         response = CreateTransaction.createTransaction(
                 user.getEmail(),
                 logID,
-                type.getNumber() == 3 ? fileManagementID : QRUUID,
+                type.getNumber() == 3 ? fileManagementID : type.getNumber() == 1 ?  QRUUID : CSVTask,
                 type.getNumber(),
-                "IP ADDRESS",
+                ip_address,
                 "MetaData",
                 "Create New Transaction",
                 "hmac",
@@ -259,16 +279,16 @@ public class CreateWorkflowActivity {
 
         //Create User Activity
         CreateUserActivity.createUserActivity(
-                user.getEmail(), 
-                user.getAid(), 
-                transaction, 
+                user.getEmail(),
+                user.getAid(),
+                transaction,
                 logID,
-                Category.WorkflowActivity, 
-                EventAction.New, 
-                "hmac", 
-                user.getName()==null?user.getEmail():user.getName(), 
+                Category.WorkflowActivity,
+                EventAction.New,
+                "hmac",
+                user.getName() == null ? user.getEmail() : user.getName(),
                 transactionID);
-        
+
         //Create new Workflow Activity            
         DatabaseV2_WorkflowActivity callDb = new DatabaseImpl_V2_WorkflowActivity();
         DatabaseResponse callDB = callDb.createWorkflowActivity(
@@ -277,7 +297,7 @@ public class CreateWorkflowActivity {
                 user.getEmail(),
                 transaction,
                 Utils.generateUUID(),
-                type.getNumber() == 3 ? DownloadLinkType.PDF : DownloadLinkType.IMAGE,
+                type.getNumber() == 3 ? DownloadLinkType.PDF : type.getNumber() ==1 ? DownloadLinkType.IMAGE : DownloadLinkType.ZIP,
                 woAc.getRemark(),
                 WorkflowActivityProductType.Production,
                 temp.getWorkflow_type(),

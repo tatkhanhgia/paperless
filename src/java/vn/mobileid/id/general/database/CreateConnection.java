@@ -315,15 +315,15 @@ class CreateConnection {
         if (field.getType() == Object.class) {
             return data;
         }
-        if (!getWrapperTypes().contains(field.getClass())) {
-            Class<?> clazz = field.getClass();
-            Object obj = clazz.newInstance();
-            Field[] field_ = clazz.getDeclaredFields();
-            for (Field field__ : field_) {
-                field__.set(obj, cast(field__, data));
-            }
-            return obj;
-        }
+//        if (!getWrapperTypes().contains(field.getClass())) {
+//            Class<?> clazz = field.getClass();
+//            Object obj = clazz.newInstance();
+//            Field[] field_ = clazz.getDeclaredFields();
+//            for (Field field__ : field_) {
+//                field__.set(obj, cast(field__, data));
+//            }
+//            return obj;
+//        }
         return null;
     }
 

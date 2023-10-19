@@ -245,6 +245,7 @@ public class WorkflowTemplateType {
         for (String key : enableObjectMap.keySet()) {
             String temp_key = key.replace("_ENABLED", "");
             temp_key = temp_key.toLowerCase();
+            //Test
             WorkflowAttributeType attributeParent = Resources.getListWorkflowAttributeType().get(temp_key);
             if (attributeParent != null && (enableObjectMap.get(key) == 1) && !temp.contains(temp_key)) {
                 WorkflowAttributeType attribute = (WorkflowAttributeType) attributeParent.clone();

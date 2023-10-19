@@ -36,6 +36,8 @@ public class User {
     private String preferred_username;
     private String given_name;
     private String family_name;
+    
+    @AnnotationORM(columnName = "EMAIL")
     private String email;
     private String azp; //Authorize Party
     private String nbf; //Not before time

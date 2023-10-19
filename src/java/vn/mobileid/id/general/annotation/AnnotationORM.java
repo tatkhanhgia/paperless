@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * @author GiaTK
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.TYPE, ElementType.PARAMETER})
+@Target({ElementType.FIELD, ElementType.TYPE, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
 public @interface AnnotationORM {
     String columnName();
     String aliasName() default "";

@@ -13,12 +13,14 @@ import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.Category;
 import vn.mobileid.id.paperless.objects.StatusOfAccount;
+import vn.mobileid.id.paperless.objects.UserActivity;
+import vn.mobileid.id.paperless.objects.UserActivityLog;
 
 /**
  *
  * @author GiaTK
  */
-public class DatabaseImpl_V2_User implements DatabaseV2_User{
+public class DatabaseImpl_V2_User implements DatabaseV2_User {
 
     @Override
     public DatabaseResponse createUserActivity(
@@ -29,7 +31,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
             String pCATEGORY_NAME,
             String pUSER_ACTIVITY_EVENT,
             String pHMAC,
-            String pCREATED_BY, 
+            String pCREATED_BY,
             String transactionId) throws Exception {
         String nameStore = "{ CALL USP_USER_ACTIVITY_ADD(?,?,?,?,?,?,?,?,?,?)}";
 
@@ -42,7 +44,6 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
         input.put("pUSER_ACTIVITY_EVENT_NAME", pUSER_ACTIVITY_EVENT);
         input.put("pHMAC", pHMAC);
         input.put("pCREATED_BY", pCREATED_BY);
-        
 
         HashMap<String, Integer> output = new HashMap<>();
         output.put("pUSER_ACTIVITY_ID", java.sql.Types.BIGINT);
@@ -70,20 +71,20 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
     @Override
     public DatabaseResponse createUserActivityLog(
-            String pUSER_EMAIL, 
+            String pUSER_EMAIL,
             int pENTERPRISE_ID,
             String pMODULE,
-            String pACTION, 
+            String pACTION,
             String pINFO_KEY,
             String pINFO_VALUE,
-            String pDETAIL, 
-            String pAGENT, 
+            String pDETAIL,
+            String pAGENT,
             String pAGENT_DETAIL,
             String pIP_ADDRESS,
             String pDESCRIPTION,
             String pMETA_DATA,
-            String pHMAC, 
-            String pCREATED_BY, 
+            String pHMAC,
+            String pCREATED_BY,
             String transactionId) throws Exception {
         String nameStore = "{ CALL USP_USER_ACTIVITY_LOG_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 
@@ -102,8 +103,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
         input.put("pMETA_DATA", pMETA_DATA);
         input.put("pHMAC", pHMAC);
         input.put("pCREATED_BY", pCREATED_BY);
-        
-        
+
         HashMap<String, Integer> output = new HashMap<>();
         output.put("pUSER_ACTIVITY_LOG_ID", java.sql.Types.BIGINT);
         output.put("pRESPONSE_CODE", java.sql.Types.NVARCHAR);
@@ -139,7 +139,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
         HashMap<String, Object> input = new HashMap<>();
         input.put("pUSER_EMAIL", pUSER_EMAIL);
         input.put("pDELETED_USER_EMAIL", pDELETED_USER_EMAIL);
-        input.put("pENTERPRISE_ID", pENTERPRISE_ID);        
+        input.put("pENTERPRISE_ID", pENTERPRISE_ID);
 
         DatabaseResponse response = CreateConnection.executeStoreProcedure(
                 nameStore,
@@ -149,24 +149,24 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
-       return response;
+        return response;
     }
 
     @Override
     public DatabaseResponse updateUser(
             String pUSER_EMAIL,
             String pUSER_NAME,
-            String pMOBILE_NUMBER, 
-            Date pPASSWORD_EXPIRED_AT, 
-            int pREMAINING_COUNTER, 
-            String pSTATUS_NAME, 
+            String pMOBILE_NUMBER,
+            Date pPASSWORD_EXPIRED_AT,
+            int pREMAINING_COUNTER,
+            String pSTATUS_NAME,
             int pCHANGE_PASSWORD,
             boolean pLOCKED_ENABLED,
-            Date pLOCKED_AT, 
-            int pBUSINESS_TYPE, 
+            Date pLOCKED_AT,
+            int pBUSINESS_TYPE,
             String pORGANIZATION_WEBSITE,
-            String pHMAC, 
-            String pLAST_MODIFIED_BY, 
+            String pHMAC,
+            String pLAST_MODIFIED_BY,
             String transactionId) throws Exception {
         String nameStore = "{ CALL USP_USER_UPDATE(?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 
@@ -175,16 +175,15 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
         input.put("pUSER_NAME", pUSER_NAME);
         input.put("pMOBILE_NUMBER", pMOBILE_NUMBER);
         input.put("pPASSWORD_EXPIRED_AT", pPASSWORD_EXPIRED_AT);
-        input.put("pREMAINING_COUNTER", pREMAINING_COUNTER <0 ? null : pREMAINING_COUNTER);
+        input.put("pREMAINING_COUNTER", pREMAINING_COUNTER < 0 ? null : pREMAINING_COUNTER);
         input.put("pSTATUS_NAME", pSTATUS_NAME);
-        input.put("pCHANGE_PASSWORD", pCHANGE_PASSWORD <0 ? null : pCHANGE_PASSWORD);
+        input.put("pCHANGE_PASSWORD", pCHANGE_PASSWORD < 0 ? null : pCHANGE_PASSWORD);
         input.put("pLOCKED_ENABLED", pLOCKED_ENABLED);
         input.put("pLOCKED_AT", pLOCKED_AT);
-        input.put("pBUSINESS_TYPE", pBUSINESS_TYPE <0 ? null : pBUSINESS_TYPE);
+        input.put("pBUSINESS_TYPE", pBUSINESS_TYPE < 0 ? null : pBUSINESS_TYPE);
         input.put("pORGANIZATION_WEBSITE", pORGANIZATION_WEBSITE);
         input.put("pHMAC", pHMAC);
         input.put("pLAST_MODIFIED_BY", pLAST_MODIFIED_BY);
-             
 
         DatabaseResponse response = CreateConnection.executeStoreProcedure(
                 nameStore,
@@ -194,13 +193,13 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
-       return response;
+        return response;
     }
 
     @Override
     public DatabaseResponse updateRole(
-            String U_EMAIL, 
-            long pENTERPRISE_ID, 
+            String U_EMAIL,
+            long pENTERPRISE_ID,
             String pROLE_NAME,
             String transactionId) throws Exception {
         String nameStore = "{ CALL USP_USER_UPDATE_ROLE(?,?,?,?)}";
@@ -208,8 +207,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
         HashMap<String, Object> input = new HashMap<>();
         input.put("U_EMAIL", U_EMAIL);
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
-        input.put("pROLE_NAME", pROLE_NAME);        
-             
+        input.put("pROLE_NAME", pROLE_NAME);
 
         DatabaseResponse response = CreateConnection.executeStoreProcedure(
                 nameStore,
@@ -219,13 +217,13 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
-       return response;
+        return response;
     }
 
     @Override
     public DatabaseResponse getUser(
-            String pUSER_EMAIL, 
-            long pUSER_ID, 
+            String pUSER_EMAIL,
+            long pUSER_ID,
             long pENTERPRISE_ID,
             Class clazz,
             String transactionId) throws Exception {
@@ -245,7 +243,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
-       return response;
+        return response;
     }
 
     @Override
@@ -255,7 +253,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
         String nameStore = "{ CALL USP_USER_GET_STATUS(?,?)}";
 
         HashMap<String, Object> input = new HashMap<>();
-        input.put("pUSER_EMAIL", pUSER_EMAIL);        
+        input.put("pUSER_EMAIL", pUSER_EMAIL);
 
         DatabaseResponse response = CreateConnection.executeStoreProcedure(
                 Account.class,
@@ -266,13 +264,12 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
-       return response;
+        return response;
     }
 
     @Override
     public DatabaseResponse getTypeOfStatus() throws Exception {
         String nameStore = "{ CALL USP_USER_STATUS_LIST()}";
-      
 
         DatabaseResponse response = CreateConnection.executeStoreProcedure(
                 StatusOfAccount.class,
@@ -283,7 +280,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
-       return response;
+        return response;
     }
 
     @Override
@@ -293,12 +290,12 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
             int pROW_COUNT,
             String transactionId) throws Exception {
         String nameStore = "{ CALL USP_USER_LIST(?,?,?,?)}";
-      
-         HashMap<String, Object> input = new HashMap<>();
-        input.put("pENTERPRISE_ID", pENTERPRISE_ID);     
-        input.put("pOFFSET", pOFFSET);     
-        input.put("pROW_COUNT", pROW_COUNT);     
-        
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pENTERPRISE_ID", pENTERPRISE_ID);
+        input.put("pOFFSET", pOFFSET);
+        input.put("pROW_COUNT", pROW_COUNT);
+
         DatabaseResponse response = CreateConnection.executeStoreProcedure(
                 Account.class,
                 nameStore,
@@ -308,13 +305,12 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
-       return response;
+        return response;
     }
 
     @Override
     public DatabaseResponse getCategory() throws Exception {
         String nameStore = "{ CALL USP_USER_ACTIVITY_CATEGORY_LIST()}";
-             
 
         DatabaseResponse response = CreateConnection.executeStoreProcedure(
                 Category.class,
@@ -325,7 +321,143 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User{
 
         LogHandler.debug(this.getClass(), response.getDebugString());
 
-       return response;
+        return response;
     }
-    
+
+    @Override
+    public DatabaseResponse getTotalRecordOfUserActivity(
+            String pUSER_EMAIL,
+            String pSEARCH_EMAIL,
+            long pENTERPRISE_ID,
+            String pLIST_CATEGORY,
+            Date pFROM_DATE,
+            Date pTO_DATE,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_USER_ACTIVITY_GET_ROW_COUNT(?,?,?,?,?,?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pUSER_EMAIL", pUSER_EMAIL);
+        input.put("pSEARCH_EMAIL", pSEARCH_EMAIL);
+        input.put("pENTERPRISE_ID", pENTERPRISE_ID);
+        input.put("pLIST_CATEGORY", pLIST_CATEGORY);
+        input.put("pFROM_DATE", pFROM_DATE);
+        input.put("pTO_DATE", pTO_DATE);
+        
+        HashMap<String, Integer> output = new HashMap<>();
+        output.put("pROW_COUNT", java.sql.Types.BIGINT);
+        output.put("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                nameStore,
+                input,
+                output,
+                "Get total records of User Activity");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS && response.getRows() != null) {
+            return response;
+        }
+        List<HashMap<String, Object>> rows = response.getRows();
+        for (HashMap<String, Object> row : rows) {
+            if (row.get("pROW_COUNT") != null) {
+                response.setObject((long) row.get("pROW_COUNT"));
+            }
+        }
+        
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getListOfUserActivity(
+            String pUSER_EMAIL,
+            String pSEARCH_EMAIL, 
+            long pENTERPRISE_ID, 
+            String pLIST_CATEGORY,
+            Date pFROM_DATE,
+            Date pTO_DATE, 
+            int pOFF_SET,
+            int pROW_COUNT,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_USER_ACTIVITY_LIST(?,?,?,?,?,?,?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pUSER_EMAIL", pUSER_EMAIL);
+        input.put("pSEARCH_EMAIL", pSEARCH_EMAIL);
+        input.put("pENTERPRISE_ID", pENTERPRISE_ID);
+        input.put("pLIST_CATEGORY", pLIST_CATEGORY);
+        input.put("pFROM_DATE", pFROM_DATE);
+        input.put("pTO_DATE", pTO_DATE);                
+        input.put("pOFFSET", pOFF_SET);                
+        input.put("pROW_COUNT", pROW_COUNT);                
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                UserActivity.class,
+                nameStore,
+                input,
+                null,
+                "Get list of User Activity");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS && response.getRows() != null) {
+            return response;
+        }        
+        try{
+            response.setObject(CreateConnection.convertObjectToList(response.getObject()));
+        } catch (Exception ex){
+        }
+        
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getUserActivityDetails(
+            long pUSER_ACTIVITY_ID, 
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_USER_ACTIVITY_GET(?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pUSER_ACTIVITY_ID", pUSER_ACTIVITY_ID);                    
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                UserActivity.class,
+                nameStore,
+                input,
+                null,
+                "Get details of User Activity");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS && response.getRows() != null) {
+            return response;
+        }        
+        
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getUserActivityLog(
+            long pUSER_ACTIVITY_LOG_ID, 
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_USER_ACTIVITY_LOG_GET(?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pUSER_ACTIVITY_LOG_ID", pUSER_ACTIVITY_LOG_ID);                    
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                UserActivityLog.class,
+                nameStore,
+                input,
+                null,
+                "Get User Activity Log");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS && response.getRows() != null) {
+            return response;
+        }        
+        
+        return response;
+    }
 }

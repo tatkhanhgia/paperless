@@ -88,7 +88,11 @@ public class CreateWorkflow {
         }
 
         List<WorkflowAttributeType> object2 = WorkflowAttributeType.castTo(template.getMetadata_detail());
+       
+        
         List<WorkflowAttributeType> object3 = template.convertToWorkflowAttributeType(object2);
+        
+        
         res = CreateWorkflowDetails.createWorkflowDetail(
                 workflowId.intValue(), 
                 object3,

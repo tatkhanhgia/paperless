@@ -35,6 +35,7 @@ import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.FileManagement;
 import vn.mobileid.id.paperless.objects.KYC;
 import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_JSNObject;
+import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_CSV_JSNObject;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.paperless.objects.Workflow;
@@ -76,11 +77,19 @@ import vn.mobileid.id.paperless.kernel.GetWorkflowTemplateType;
 import vn.mobileid.id.paperless.kernel_v2.DeleteAsset;
 import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
 import vn.mobileid.id.paperless.kernel_v2.GetFileManagement;
+import vn.mobileid.id.paperless.kernel_v2.GetUserActivity;
+import vn.mobileid.id.paperless.kernel_v2.GetUserActivityLog;
 import vn.mobileid.id.paperless.kernel_v2.UpdateAsset;
 import vn.mobileid.id.paperless.kernel_v2.UploadAsset;
+import vn.mobileid.id.paperless.objects.Category;
 import vn.mobileid.id.paperless.objects.GenerationType;
+
 import vn.mobileid.id.paperless.objects.Transaction;
+import vn.mobileid.id.paperless.objects.UserActivity;
+import vn.mobileid.id.paperless.objects.UserActivityLog;
 import vn.mobileid.id.paperless.objects.WorkflowType;
+import vn.mobileid.id.paperless.serializer.CustomListUserActivitySerializer;
+import vn.mobileid.id.paperless.serializer.CustomUserActivitySerializer;
 import vn.mobileid.id.utils.TaskV2;
 import vn.mobileid.id.utils.Utils;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
@@ -266,7 +275,7 @@ public class PaperlessService {
     public static InternalResponse createWorkflowActivity(
             final HttpServletRequest request,
             String payload,
-            String transactionID) throws Exception {
+            String transactionID) throws Exception {                
         //Check valid token
         InternalResponse response = verifyToken(request, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
@@ -314,6 +323,7 @@ public class PaperlessService {
         //Processing
         response = CreateWorkflowActivity.processingCreateWorkflowActivity(
                 workflow,
+                request.getRemoteAddr(),
                 user_info,
                 transactionID);
         response.setUser(user_info);
@@ -321,6 +331,67 @@ public class PaperlessService {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Create Workflow Activity for CSV">
+    public static InternalResponse createWorkflowActivity_forCSV(
+            final HttpServletRequest request,
+            String payload,
+            String transactionID) throws Exception {                
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        if (Utils.isNullOrEmpty(payload)) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
+                            "en",
+                            null));
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        WorkflowActivity workflow = new WorkflowActivity();
+        try {
+            workflow = mapper.readValue(payload, WorkflowActivity.class);
+            workflow.setCsvEnabled(true);
+        } catch (Exception e) {
+            LogHandler.error(
+                    PaperlessService.class,
+                    transactionID,
+                    "Cannot parse payload",
+                    e);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            PaperlessMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+
+        //Check valid data 
+        InternalResponse result = null;
+        result = CreateWorkflowActivity.checkDataWorkflowActivity(workflow);
+        if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return result;
+        }
+
+        //Processing
+        response = CreateWorkflowActivity.processingCreateWorkflowActivity(
+                workflow,
+                request.getRemoteAddr(),
+                user_info,
+                transactionID);
+        response.setUser(user_info);
+        return response;
+    }
+    //</editor-fold>
+    
     //<editor-fold defaultstate="collapsed" desc="Verify Token">
     public static InternalResponse verifyToken(
             final HttpServletRequest request,
@@ -360,7 +431,7 @@ public class PaperlessService {
 
         //Mapper Object
         ObjectMapper mapper = new ObjectMapper();
-        ProcessWorkflowActivity_JSNObject data = new ProcessWorkflowActivity_JSNObject();
+        ProcessWorkflowActivity_JSNObject data = null;
         try {
             data = mapper.readValue(payload, ProcessWorkflowActivity_JSNObject.class);
         } catch (Exception e) {
@@ -449,7 +520,7 @@ public class PaperlessService {
 
         //Mapper Object
         ObjectMapper mapper = new ObjectMapper();
-        ProcessWorkflowActivity_JSNObject data = new ProcessWorkflowActivity_JSNObject();
+        ProcessWorkflowActivity_JSNObject data = null;
         try {
             if (!Utils.isNullOrEmpty(payload)) {
                 data = mapper.readValue(payload, ProcessWorkflowActivity_JSNObject.class);
@@ -496,7 +567,7 @@ public class PaperlessService {
         return res;
     }
 
-    //Processing data activity
+    //<editor-fold defaultstate="collapsed" desc="Process Workflow Activity">
     public static InternalResponse processWorkflowActivity(
             final HttpServletRequest request,
             String payload,
@@ -523,7 +594,7 @@ public class PaperlessService {
 
         //Mapper Object
         ObjectMapper mapper = new ObjectMapper();
-        ProcessWorkflowActivity_JSNObject data = new ProcessWorkflowActivity_JSNObject();
+        ProcessWorkflowActivity_JSNObject data = null;
         try {
             data = mapper.readValue(payload, ProcessWorkflowActivity_JSNObject.class);
         } catch (Exception e) {
@@ -561,6 +632,74 @@ public class PaperlessService {
         response.setUser(user_info);
         return response;
     }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Process Workflow Activity for CSV">
+    public static InternalResponse processWorkflowActivity_forCSV(
+            final HttpServletRequest request,
+            String payload,
+            int id,
+            String transactionID) throws Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Check Data
+        if (Utils.isNullOrEmpty(payload)) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
+                            "en",
+                            null));
+        }
+
+        //Mapper Object
+        ObjectMapper mapper = new ObjectMapper();
+        ProcessWorkflowActivity_CSV_JSNObject data = new ProcessWorkflowActivity_CSV_JSNObject();
+        try {
+            data = mapper.readValue(payload, ProcessWorkflowActivity_CSV_JSNObject.class);
+        } catch (Exception e) {
+            LogHandler.error(
+                    PaperlessService.class,
+                    transactionID,
+                    "Cannot parse payload",
+                    e);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            PaperlessMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+
+        //Get Data header
+        String x_file_name = Utils.getRequestHeader(request, "x-file-name");
+        String headerJWT = Utils.getRequestHeader(request, "eid-jwt");
+        JWT_Authenticate JWT = new JWT_Authenticate();
+        JWT.setMath_result(false);
+        if (headerJWT != null) {
+            JWT = (JWT_Authenticate) ProcessEID_JWT.getInfoJWT(headerJWT).getData();
+        }
+        //Processing                
+        response = ProcessWorkflowActivity.process_forCSV(
+                id,
+                x_file_name,
+                JWT,
+                user_info,
+                data,
+                false,
+                transactionID);
+        response.setUser(user_info);
+        return response;
+    }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Download Document">
     public static InternalResponse downloadsDocument(
@@ -628,8 +767,8 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        List<WorkflowAttributeType> list1 = (List<WorkflowAttributeType>) response.getData();
-
+        List<WorkflowAttributeType> list1 = (List<WorkflowAttributeType>) response.getData();     
+        
         //Get Workflow
         response = GetWorkflow.getWorkflow(id, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -638,12 +777,12 @@ public class PaperlessService {
         Workflow workflow = (Workflow) response.getData();
 
         //Get WorkflowTemplate Type
-        response = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(workflow.getWorkflow_type(), transactionID);
+        response = GetWorkflowTemplateType.getWorkflowTemplateTypeFromDB(workflow.getWorkflowTemplate_type(), transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
         WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
-        List<WorkflowAttributeType> listFinal = templateType.convertToWorkflowAttributeType(list1);
+        List<WorkflowAttributeType> listFinal = templateType.convertToWorkflowAttributeType(list1);              
 
         CustomWorkflowDetailsSerializer custom = new CustomWorkflowDetailsSerializer(listFinal);
 
@@ -801,7 +940,7 @@ public class PaperlessService {
         hashmap.forEach((key, value) -> {
             ObjectNode child = new ObjectMapper().createObjectNode();
             child.put("workflow_template_type_id", key);
-            child.put("workflow_template_type_name", value.getName());
+            child.put("workflow_template_type_name", value.getRemark());
             child.put("workflow_template_type_name_vn", value.getRemark_vn());
             node.add(child);
         });
@@ -835,7 +974,7 @@ public class PaperlessService {
         hashmap.forEach((key, value) -> {
             ObjectNode child = new ObjectMapper().createObjectNode();
             child.put("generation_type_id", key);
-            child.put("generation_type_name", value.getGeneration_type_name());
+            child.put("generation_type_name", value.getRemark());
             child.put("generation_type_name_vn", value.getRemark_vn());
             node.add(child);
         });
@@ -869,7 +1008,7 @@ public class PaperlessService {
         hashmap.forEach((key, value) -> {
             ObjectNode child = new ObjectMapper().createObjectNode();
             child.put("workflow_type_id", key);
-            child.put("workflow_type_name", value.getWorkflow_type_name());
+            child.put("workflow_type_name", value.getRemark());
             child.put("workflow_type_name_vn", value.getRemark_vn());
             node.add(child);
         });
@@ -931,7 +1070,7 @@ public class PaperlessService {
         }
 
         //Processing        
-        int i = convertStringIntoAssetType(x_file_type);
+        int i = convertStringIntoAssetType(x_file_type, x_file_name);
         if (i == -1) {
             String message = PaperlessMessageResponse.getErrorMessage(
                     PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
@@ -986,23 +1125,28 @@ public class PaperlessService {
         Asset temp = new Asset();
         temp = new ObjectMapper().readValue(payload, Asset.class);
 
+        //Decode to get File data
         byte[] temp2;
         try {
             temp2 = Base64.getDecoder().decode(temp.getBase64().getBytes());
         } catch (Exception ex) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-                    "{INVALID_FILE}");
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_ASSET, 
+                            PaperlessConstant.SUBCODE_INVALID_FILE_DATA,
+                            "en",
+                            transactionID));
         }
 
-        //Processing
-        int i = convertStringIntoAssetType(x_file_type);
+        //Check Asset Type is valid + extension in file name
+        int i = convertStringIntoAssetType(x_file_type, x_file_name);
         if (i == -1) {
             String message = PaperlessMessageResponse.getErrorMessage(
                     PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
                     PaperlessConstant.SUBCODE_INVALID_FILE_TYPE,
                     "en",
-                    null);
+                    transactionID);
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     message);
@@ -1045,20 +1189,9 @@ public class PaperlessService {
 
         User user_info = response.getUser();
 
-//        //Get header
-//        int id = 0;
-//        try {
-//            String temp = request.getRequestURI();
-//            temp = temp.replace("/paperless/v1/asset/", "");
-//            id = Integer.parseInt(temp);
-//        } catch (Exception ex) {
-//            String message = "{\"message\":\"Cannot parse id from url\"}";
-//            return new InternalResponse(
-//                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    message);
-//        }
+        //Get header
         String x_file_type = Utils.getRequestHeader(request, "x-file-type");
-//        String x_file_name = Utils.getRequestHeader(request, "x-file-name");
+        String x_file_name = Utils.getRequestHeader(request, "x-file-name");
         ByteArrayOutputStream outputStream;
         try {
             final ServletInputStream input = request.getInputStream();
@@ -1072,13 +1205,21 @@ public class PaperlessService {
             outputStream.flush();
             outputStream.close();
         } catch (IOException ex) {
-            outputStream = null;
+            return new InternalResponse(
+                    
+            );
         }
-
+        
+        //Check Exist fileData and Name
+        if(Utils.isNullOrEmpty(x_file_name)){
+            
+        }
+        
+        
         //Processing
         int i = 0;
         if (x_file_type != null) {
-            i = convertStringIntoAssetType(x_file_type);
+            i = convertStringIntoAssetType(x_file_type, x_file_name);
             if (i == -1) {
                 String message = PaperlessMessageResponse.getErrorMessage(
                         PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
@@ -1129,20 +1270,9 @@ public class PaperlessService {
 
         User user_info = response.getUser();
 
-//        //Get header
-//        int id = 0;
-//        try {
-//            String temp = request.getRequestURI();
-//            temp = temp.replace("/paperless/v1/asset/", "");
-//            temp = temp.replace("/base64", "");
-//            id = Integer.parseInt(temp);
-//        } catch (Exception ex) {
-//            String message = "{\"message\":\"Cannot parse id from url\"}";
-//            return new InternalResponse(
-//                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    message);
-//        }
+        //Get header
         String x_file_type = Utils.getRequestHeader(request, "x-file-type");
+        String x_file_name = Utils.getRequestHeader(request, "x-file-name");
         String payload = Utils.getPayload(request);
         if (Utils.isNullOrEmpty(payload)) {
             return new InternalResponse(
@@ -1172,7 +1302,7 @@ public class PaperlessService {
         //Processing
         int i = 0;
         if (x_file_type != null) {
-            i = convertStringIntoAssetType(x_file_type);
+            i = convertStringIntoAssetType(x_file_type,x_file_name);
             if (i == -1) {
                 String message = PaperlessMessageResponse.getErrorMessage(
                         PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
@@ -1954,6 +2084,7 @@ public class PaperlessService {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Deactive Workflow">
     public static InternalResponse deactiveWorkflow(
             final HttpServletRequest request,
             int id,
@@ -1978,7 +2109,10 @@ public class PaperlessService {
         response.setUser(user_info);
         return response;
     }
+    //</editor-fold>
+    
 
+    //<editor-fold defaultstate="collapsed" desc="Reactive Workflow">
     public static InternalResponse reactiveWorkflow(
             final HttpServletRequest request,
             int id,
@@ -2003,6 +2137,7 @@ public class PaperlessService {
         response.setUser(user_info);
         return response;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Update Workflow Details">
     public static InternalResponse updateWorkflowDetail_option(
@@ -2202,9 +2337,20 @@ public class PaperlessService {
 
         User user_info = response.getUser();
 
-        //Get Header
+        //Get Header anh process JWT
         HashMap<String, String> headers = Utils.getHashMapRequestHeader(request);
         String headerJWT = headers.get("eid-jwt");
+        System.out.println("JWT in header (PaperlessService):"+headerJWT);
+        if( headerJWT == null || headerJWT.isEmpty()){
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_JWT, 
+                            PaperlessConstant.SUBCODE_MISSING_JWT,
+                            payload,
+                            transactionID)
+            );
+        }
         JWT_Authenticate jwt = new JWT_Authenticate();
         if (headerJWT != null) {
             InternalResponse data = ProcessEID_JWT.getInfoJWT(headerJWT);
@@ -2216,7 +2362,7 @@ public class PaperlessService {
 
         //Mapper Object
         ObjectMapper mapper = new ObjectMapper();
-        ProcessWorkflowActivity_JSNObject data = new ProcessWorkflowActivity_JSNObject();
+        ProcessWorkflowActivity_JSNObject data = null;
         try {
             if (!Utils.isNullOrEmpty(payload)) {
                 data = mapper.readValue(payload, ProcessWorkflowActivity_JSNObject.class);
@@ -2668,6 +2814,7 @@ public class PaperlessService {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Reactive Asset">
     public static InternalResponse reactiveAsset(
             final HttpServletRequest request,
             int id,
@@ -2691,6 +2838,7 @@ public class PaperlessService {
         }
         return response;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Asset Type">
     public static InternalResponse getAssetType(
@@ -2952,22 +3100,447 @@ public class PaperlessService {
         User user_info = response.getUser();
 
         //Processing
-        HashMap<Integer, GenerationType> hashmap = Resources.getListGenerationType();
+        HashMap<Integer, Category> hashmap = Resources.getListCategory();
         if (hashmap == null || hashmap.isEmpty()) {
-            Resources.reloadListWorkflowTemplateType();
-            hashmap = Resources.getListGenerationType();
+            Resources.reloadListCategory();
+            hashmap = Resources.getListCategory();
         }
         ArrayNode node = new ObjectMapper().createArrayNode();
         hashmap.forEach((key, value) -> {
             ObjectNode child = new ObjectMapper().createObjectNode();
-            child.put("generation_type_id", key);
-            child.put("generation_type_name", value.getGeneration_type_name());
-            child.put("generation_type_name_vn", value.getRemark_vn());
+            child.put("category_id", key);
+            child.put("category_name", value.getCategory_name());
+            child.put("category_name_vn", value.getRemark_vn());
             node.add(child);
         });
         response =  new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 node);
+        response.setUser(user_info);
+        return response;
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get Total Records User Activity">
+    public static InternalResponse getTotalRecordsUserActivity(
+            final HttpServletRequest request,
+            String transactionID) throws JsonProcessingException, Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Process header        
+        String URI = request.getRequestURI();
+        URI = URI.replaceFirst(".*useractivity/gettotal/", "");
+        String[] data = URI.split("/");
+        String status = data[0];
+        String search = "1,2,3,4";
+        if (status != null) {
+            if (status.contains("ACTIVE")) {
+                search = "1";
+            } else if (status.contains("HIDDEN")) {
+                search = "2";
+            } else if (status.contains("EXPIRED")) {
+                search = "3";
+            } else if (status.contains("REVOKE")) {
+                search = "4";
+            } else if (status.contains("ALL")) {
+                search = "1,2,3,4";
+            }
+        }
+
+        int page_no;
+        int record;
+        int numberOfRecords = PaperlessConstant.DEFAULT_ROW_COUNT;
+        try {
+            page_no = (data[1] == null ? 0 : Integer.parseInt(data[1]));
+            record = (data[2] == null ? 0 : Integer.parseInt(data[2]));
+        } catch (Exception e) {
+            page_no = 0;
+            record = 0;
+        }
+        try {
+            numberOfRecords = Integer.parseInt(Utils.getRequestHeader(request, "x-number-records"));
+            page_no = 0;
+            record = 0;
+        } catch (Exception ex) {
+        }
+
+        //Search type
+        String email_search = Utils.getRequestHeader(request, "x-search-email");
+        String start_ = Utils.getRequestHeader(request, "x-search-start");
+        String stop_ = Utils.getRequestHeader(request, "x-search-stop");
+        Date start = null, stop = null;
+        try {
+            if (start_ != null) {
+                SimpleDateFormat format = new SimpleDateFormat(PolicyConfiguration
+                        .getInstant()
+                        .getSystemConfig()
+                        .getAttributes()
+                        .get(0)
+                        .getDateFormat());
+                start = format.parse(start_);
+            }
+            if (stop_ != null) {
+                SimpleDateFormat format = new SimpleDateFormat(PolicyConfiguration
+                        .getInstant()
+                        .getSystemConfig()
+                        .getAttributes()
+                        .get(0)
+                        .getDateFormat());
+                stop = format.parse(stop_);
+            }
+        } catch (Exception ex) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    "{\"error\":\"INVALID DATE\",\"error_description\":\"Please follow this format of Date:" + PolicyConfiguration
+                            .getInstant()
+                            .getSystemConfig()
+                            .getAttributes()
+                            .get(0)
+                            .getDateFormat() + "\"}"
+            );
+        }
+
+        //Thread Pool to check template
+        String category = "1,2,3,4,5,6";
+        String categorySearch = Utils.getRequestHeader(request, "x-search-category");
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        TaskV2 templateType1 = new TaskV2(new Object[]{categorySearch}, transactionID) {
+            @Override
+            public Object call() {
+                try {
+                    String result = null;
+                    String template = (String) this.get()[0];
+                    if (template != null) {
+                        template = new String(Base64.getDecoder().decode(template));
+                        switch (template) {
+                            case "Accounts": {
+                                result = "1";
+                                break;
+                            }
+                            case "Workflows": {
+                                result = "2";
+                                break;
+                            }
+                            case "File Stamping Processing": {
+                                result = "3";
+                                break;
+                            }
+                            case "Assets": {
+                                result = "4";
+                                break;
+                            }
+                            case "Settings": {
+                                result = "5";
+                                break;
+                            } 
+                            case "Workflow Activity": {
+                                result = "6";
+                                break;
+                            }                            
+                            default: {
+                                result = "1,2,3,4,5,6";
+                                break;
+                            }
+                        }
+                    }
+                    return result;
+                } catch (Exception ex) {
+                    return null;
+                }
+            }
+        };
+
+        TaskV2 templateType2 = new TaskV2(new Object[]{categorySearch}, transactionID) {
+            @Override
+            public Object call() {
+                try {
+                    String template = new String(Base64.getDecoder().decode((String) this.get()[0]));
+                    String[] temps = template.split(",");
+                    for (String temp : temps) {
+                        Integer.valueOf(temp);
+                    }
+                    return template.isEmpty() ? null : template;
+                } catch (Exception ex) {
+                    try {
+                        String[] temps = categorySearch.split(",");
+                        for (String temp : temps) {
+                            Integer.valueOf(temp);
+                        }
+                        return categorySearch;
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+            }
+        };
+
+        //Get future
+        Future<?> future1 = executor.submit(templateType1);
+        Future<?> future2 = executor.submit(templateType2);
+        executor.shutdown();
+
+        category
+                = (future1.get() == null)
+                ? (future2.get() == null
+                ? category
+                : (String) future2.get())
+                : (String) future1.get();
+
+        //Processing
+        InternalResponse res = GetUserActivity.getTotalRecordsUserActivity(
+                user_info.getEmail(),
+                email_search,
+                user_info.getAid(),
+                category,
+                start,
+                stop,
+                transactionID);
+
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return res;
+        }
+        res.setMessage("{\"x-total-records\":" + res.getData() + "}");
+        res.setUser(user_info);
+        return res;
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get List of User Activity">
+    public static InternalResponse getListUserActivity(
+            final HttpServletRequest request,
+            String transactionID) throws JsonProcessingException, Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Process header        
+        String URI = request.getRequestURI();
+        URI = URI.replaceFirst(".*useractivity/", "");
+        String[] data = URI.split("/");
+        String status = data[0];
+        String search = "1,2,3,4";
+        if (status != null) {
+            if (status.contains("ACTIVE")) {
+                search = "1";
+            } else if (status.contains("HIDDEN")) {
+                search = "2";
+            } else if (status.contains("EXPIRED")) {
+                search = "3";
+            } else if (status.contains("REVOKE")) {
+                search = "4";
+            } else if (status.contains("ALL")) {
+                search = "1,2,3,4";
+            }
+        }
+
+        int page_no;
+        int record;
+        int numberOfRecords = PaperlessConstant.DEFAULT_ROW_COUNT;
+        try {
+            page_no = (data[1] == null ? 0 : Integer.parseInt(data[1]));
+            record = (data[2] == null ? 0 : Integer.parseInt(data[2]));
+        } catch (Exception e) {
+            page_no = 0;
+            record = 0;
+        }
+        try {
+            numberOfRecords = Integer.parseInt(Utils.getRequestHeader(request, "x-number-records"));
+            page_no = 0;
+            record = 0;
+        } catch (Exception ex) {
+        }
+
+        //Search type
+        String email_search = Utils.getRequestHeader(request, "x-search-email");
+        String start_ = Utils.getRequestHeader(request, "x-search-start");
+        String stop_ = Utils.getRequestHeader(request, "x-search-stop");
+        Date start = null, stop = null;
+        try {
+            if (start_ != null) {
+                SimpleDateFormat format = new SimpleDateFormat(PolicyConfiguration
+                        .getInstant()
+                        .getSystemConfig()
+                        .getAttributes()
+                        .get(0)
+                        .getDateFormat());
+                start = format.parse(start_);
+            }
+            if (stop_ != null) {
+                SimpleDateFormat format = new SimpleDateFormat(PolicyConfiguration
+                        .getInstant()
+                        .getSystemConfig()
+                        .getAttributes()
+                        .get(0)
+                        .getDateFormat());
+                stop = format.parse(stop_);
+            }
+        } catch (Exception ex) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    "{\"error\":\"INVALID DATE\",\"error_description\":\"Please follow this format of Date:" + PolicyConfiguration
+                            .getInstant()
+                            .getSystemConfig()
+                            .getAttributes()
+                            .get(0)
+                            .getDateFormat() + "\"}"
+            );
+        }
+
+        //Thread Pool to check template
+        String category = "1,2,3,4,5,6";
+        String categorySearch = Utils.getRequestHeader(request, "x-search-category");
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        TaskV2 templateType1 = new TaskV2(new Object[]{categorySearch}, transactionID) {
+            @Override
+            public Object call() {
+                try {
+                    String result = null;
+                    String template = (String) this.get()[0];
+                    if (template != null) {
+                        template = new String(Base64.getDecoder().decode(template));
+                        switch (template) {
+                            case "Accounts": {
+                                result = "1";
+                                break;
+                            }
+                            case "Workflows": {
+                                result = "2";
+                                break;
+                            }
+                            case "File Stamping Processing": {
+                                result = "3";
+                                break;
+                            }
+                            case "Assets": {
+                                result = "4";
+                                break;
+                            }
+                            case "Settings": {
+                                result = "5";
+                                break;
+                            } 
+                            case "Workflow Activity": {
+                                result = "6";
+                                break;
+                            }                            
+                            default: {
+                                result = "1,2,3,4,5,6";
+                                break;
+                            }
+                        }
+                    }
+                    return result;
+                } catch (Exception ex) {
+                    return null;
+                }
+            }
+        };
+
+        TaskV2 templateType2 = new TaskV2(new Object[]{categorySearch}, transactionID) {
+            @Override
+            public Object call() {
+                try {
+                    String template = new String(Base64.getDecoder().decode((String) this.get()[0]));
+                    String[] temps = template.split(",");
+                    for (String temp : temps) {
+                        Integer.valueOf(temp);
+                    }
+                    return template.isEmpty() ? null : template;
+                } catch (Exception ex) {
+                    try {
+                        String[] temps = categorySearch.split(",");
+                        for (String temp : temps) {
+                            Integer.valueOf(temp);
+                        }
+                        return categorySearch;
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+            }
+        };
+
+        //Get future
+        Future<?> future1 = executor.submit(templateType1);
+        Future<?> future2 = executor.submit(templateType2);
+        executor.shutdown();
+
+        category
+                = (future1.get() == null)
+                ? (future2.get() == null
+                ? category
+                : (String) future2.get())
+                : (String) future1.get();
+
+        //Processing
+        InternalResponse res = GetUserActivity.getListUserActivities(
+                user_info.getEmail(),
+                email_search,
+                user_info.getAid(),
+                category,
+                start,
+                stop,
+                (page_no <= 1) ? 0 : (page_no - 1) * record, //offset
+                record == 0 ? numberOfRecords : record, //rowcount
+                transactionID);
+
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return res;
+        }
+        CustomListUserActivitySerializer custom = new CustomListUserActivitySerializer((List<UserActivity>)res.getData(), page_no, record);
+        res.setMessage(new ObjectMapper().writeValueAsString(custom));
+        res.setUser(user_info);
+        return res;
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get User Activity Details">
+    public static InternalResponse getUserActivityDetail(
+            final HttpServletRequest request,
+            int id,
+            String transactionID) throws JsonProcessingException, Exception {
+        //Check valid token
+        InternalResponse response = verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+
+        User user_info = response.getUser();
+
+        //Get User Activity Details
+        response = GetUserActivity.getUserActivitiesDetails(id, transactionID);
+
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+        
+        UserActivity UserActivity = (UserActivity)response.getData();
+        
+        //Get User Activity Log
+        response = GetUserActivityLog.getUserActivityLog(UserActivity.getLog_id(), transactionID);
+
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+        
+        UserActivityLog UserActivityLog = (UserActivityLog)response.getData();
+        
+        CustomUserActivitySerializer custom = new CustomUserActivitySerializer(UserActivityLog);
+
+        response = new InternalResponse(
+                response.getStatus(),
+                new ObjectMapper()
+                        .writeValueAsString(custom));
         response.setUser(user_info);
         return response;
     }
@@ -3142,12 +3715,13 @@ public class PaperlessService {
 
     //<editor-fold defaultstate="collapsed" desc="Convert String into Asset Type">
     /**
-     * Convert từ chuỗi asset Type đưa về dạng int của asset Type đó
+     * Convert từ chuỗi asset Type đưa về dạng int của asset Type đó.
+     * Ngoài ra check extension dựa trên asset Type
      *
      * @param assetType chuỗi cần đưa về
      * @return trả về số của assetType tương ứng. Nếu không tồn tại sẽ trả về -1
      */
-    private static int convertStringIntoAssetType(String assetType) throws Exception {
+    private static int convertStringIntoAssetType(String assetType, String name) throws Exception {
         if (Resources.getListAssetType().isEmpty()) {
             Resources.reloadListAssetType();
         }

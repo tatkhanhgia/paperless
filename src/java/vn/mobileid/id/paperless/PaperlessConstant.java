@@ -170,10 +170,12 @@ public class PaperlessConstant {
     final public static int SUBCODE_INVALID_FILE_TYPE = 3;
     final public static int SUBCODE_THIS_TYPE_IS_NOT_AN_ASSET = 4;
     final public static int SUBCODE_MISSING_FILE_DATA = 5;
+    final public static int SUBCODE_INVALID_FILE_DATA = 6;
 
     //SUBCODE INVALID JWT - 5005
-    final public static int SUBCODE_INVALID_JWT_TOKEN = 2;
+    final public static int SUBCODE_INVALID_JWT_TOKEN = 2;    
     final public static int SUBCODE_MISSING_EMAIL_IN_JWT = 3;
+    final public static int SUBCODE_MISSING_JWT = 4;
     
     //SUBCODE INVALID FMS - 5006
     final public static int SUBCODE_ERROR_WHILE_UPLOADING_TO_FMS = 2;

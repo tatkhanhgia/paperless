@@ -407,7 +407,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 transactionId = debugRequestLOG("Create woAc", req, null, 0);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                InternalResponse response = PaperlessService.createWorkflowActivity(req, Utils.getPayload(req), transactionId);
+                String payload = Utils.getPayload(req);
+                InternalResponse response = PaperlessService.createWorkflowActivity(req, payload, transactionId);
 
                 Long id = (long) response.getData();
                 ServicesController.logIntoDB(
@@ -416,7 +417,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         response.getUser()==null?0:response.getUser().getAid(),
                         id.intValue(),
                         response.getStatus(),
-                        "",
+                        payload,
                         response.getMessage(),
                         "Create workflow Activity",
                         transactionId
@@ -431,13 +432,44 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
             }
             //</editor-fold>
 
+            //<editor-fold defaultstate="collapsed" desc="Create Workflow Activity for CSVs">
+            if (req.getRequestURI().matches("^/paperless/v2/workflowactivity/csv$")) {
+                transactionId = debugRequestLOG("Create woAc", req, null, 0);
+                LogHandler.request(WorkflowActivityServiceController_V2.class,
+                        transactionId);
+                String payload = Utils.getPayload(req);
+                InternalResponse response = PaperlessService.createWorkflowActivity_forCSV(req, payload, transactionId);
+
+                Long id = (long) response.getData();
+                ServicesController.logIntoDB(
+                        req,
+                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
+                        response.getUser()==null?0:response.getUser().getAid(),
+                        id.intValue(),
+                        response.getStatus(),
+                        payload,
+                        response.getMessage(),
+                        "Create workflow Activity",
+                        transactionId
+                );
+
+                Utils.sendMessage(
+                        res,
+                        response.getStatus(),
+                        "application/json",
+                        response.getMessage());
+                return;
+            }
+            //</editor-fold>
+            
             //<editor-fold defaultstate="collapsed" desc="Assign ">
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/assign$")) {
                 int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/assign", ""));
                 transactionId = debugRequestLOG("Assign woAc", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                InternalResponse response = PaperlessService.assignDataIntoWorkflowActivity(req, Utils.getPayload(req), id, transactionId);
+                String payload = Utils.getPayload(req);
+                InternalResponse response = PaperlessService.assignDataIntoWorkflowActivity(req, payload , id, transactionId);
 
                 ServicesController.logIntoDB(
                         req,
@@ -445,7 +477,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         response.getUser()==null?0:response.getUser().getAid(),
                         id,
                         response.getStatus(),
-                        "",
+                        payload,
                         response.getMessage(),
                         "Assign workflow Activity",
                         transactionId
@@ -479,8 +511,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 transactionId = debugRequestLOG("Get hash", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-
-                InternalResponse response = PaperlessService.generateHashDocument(req, Utils.getPayload(req), id, transactionId);
+                String payload = Utils.getPayload(req);
+                InternalResponse response = PaperlessService.generateHashDocument(req, payload, id, transactionId);
 
                 ServicesController.logIntoDB(
                         req,
@@ -488,7 +520,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         response.getUser()==null?0:response.getUser().getAid(),
                         id,
                         response.getStatus(),
-                        "",
+                        payload,
                         response.getMessage(),
                         "Get Hash workflow Activity",
                         transactionId
@@ -517,7 +549,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 transactionId = debugRequestLOG("Process woAc", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-                InternalResponse response = PaperlessService.processWorkflowActivityWithAuthen(req, Utils.getPayload(req), id, transactionId);
+                String payload = Utils.getPayload(req);
+                InternalResponse response = PaperlessService.processWorkflowActivityWithAuthen(req,payload , id, transactionId);
 
                 ServicesController.logIntoDB(
                         req,
@@ -525,7 +558,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         response.getUser()==null?0:response.getUser().getAid(),
                         id,
                         response.getStatus(),
-                        "",
+                        payload,
                         response.getMessage(),
                         "Process workflow Activity",
                         transactionId
@@ -554,14 +587,14 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
             }
             //</editor-fold>
 
-            //<editor-fold defaultstate="collapsed" desc="Process without Authentication">
-            if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/process")) {
-                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/process", ""));
+            //<editor-fold defaultstate="collapsed" desc="Process without Authentication For CSV">
+            if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/process/csv")) {
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/process/csv", ""));
                 transactionId = debugRequestLOG("Process woAc", req, null, id);
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
-
-                InternalResponse response = PaperlessService.processWorkflowActivity(req, Utils.getPayload(req), id, transactionId);
+                String payload = Utils.getPayload(req);
+                InternalResponse response = PaperlessService.processWorkflowActivity_forCSV(req, payload, id, transactionId);
 
                 ServicesController.logIntoDB(
                         req,
@@ -569,7 +602,49 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         response.getUser()==null?0:response.getUser().getAid(),
                         id,
                         response.getStatus(),
-                        "",
+                        payload,
+                        response.getMessage(),
+                        "Process workflow Activity",
+                        transactionId
+                );
+                if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    createUserActivity_withTransaction(
+                            req,
+                            response,
+                            "Process Workflow Activity",
+                            "Workflow Activity",
+                            id,
+                            EventAction.Run,
+                            ((WorkflowActivity) response.getData()).getTransaction(),
+                            "Process Workflow Activity",
+                            "Process Workflow Activity",
+                            Category.WorkflowActivity);
+                }
+                Utils.sendMessage(
+                        res,
+                        response.getStatus(),
+                        "application/json",
+                        response.getMessage());
+                return;
+            }
+            //</editor-fold>
+            
+            //<editor-fold defaultstate="collapsed" desc="Process without Authentication">
+            if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/process")) {
+                int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/process", ""));
+                transactionId = debugRequestLOG("Process woAc", req, null, id);
+                LogHandler.request(WorkflowActivityServiceController_V2.class,
+                        transactionId);
+                String payload = Utils.getPayload(req);
+                InternalResponse response = PaperlessService.processWorkflowActivity(req, payload, id, transactionId);
+
+                ServicesController.logIntoDB(
+                        req,
+                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
+                        response.getUser()==null?0:response.getUser().getAid(),
+                        id,
+                        response.getStatus(),
+                        payload,
                         response.getMessage(),
                         "Process workflow Activity",
                         transactionId
@@ -601,6 +676,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         null);
             }
             //</editor-fold>
+        
         } catch (Exception ex) {
             LogHandler.error(WorkflowActivityServiceController_V2.class,
                     transactionId,

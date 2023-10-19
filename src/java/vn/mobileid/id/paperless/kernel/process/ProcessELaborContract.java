@@ -380,7 +380,7 @@ public class ProcessELaborContract {
         KYC objects = new ObjectMapper().readValue(object, KYC.class);
         try {
             //Assign JWT Data
-            if (jwt != null && jwt.isMath_result()) {                
+            if (jwt != null) {        
                 objects.setFullName(jwt.getName());
                 objects.setNationality(jwt.getNationality());
                 objects.setPersonalNumber(jwt.getDocument_number());
@@ -405,8 +405,9 @@ public class ProcessELaborContract {
                 }
                 listPhoto.add(photo);
             }
+            System.out.println("Name:"+objects.getFullName());
             result1 = SigningService.hashDocument(
-                    name,
+                    objects.getFullName(),
                     pdf,
                     listPhoto,
                     signing,

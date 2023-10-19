@@ -22,6 +22,7 @@ public class DatabaseDefaultObject {
     private String created_by;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
+    
     @AnnotationORM(columnName="LAST_MODIFIED_AT")
     private Date modified_at;
     

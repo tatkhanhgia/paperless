@@ -33,9 +33,9 @@ public class UserServiceController_V2 extends HttpServlet {
                 new UserServiceController_V2().doGet(req, res);
                 break;
             }
-            case "PUT": {
-
-            }
+//            case "PUT": {
+//
+//            }
 //            case "POST": {
 //                new AccountServiceController().doPost(req, res);
 //                break;

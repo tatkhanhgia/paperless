@@ -248,18 +248,7 @@ public class ProcessESignCloud {
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
-
-//        WorkflowActivity get = Resources.getListWorkflowActivity().get(String.valueOf(id));
-//        get.getFile().setData(result2.get(0));
-//        get.getFile().setName(file.getName());
-//        get.setRequestData(new ObjectMapper().writeValueAsString(objects));
-//        Resources.getListWorkflowActivity().replace(String.valueOf(get.getId()), get);                
-//        res = UpdateWorkflowActivity.updateStatus(
-//                id,
-//                null,
-//                true,
-//                user.getName() == null ? user.getEmail() : user.getName(),
-//                transactionID);        
+ 
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 ""
         );
@@ -324,7 +313,8 @@ public class ProcessESignCloud {
     ) throws NullPointerException, Exception {
         if (jwt.getDocument_number() != null) {
             if (!SigningService.getInstant(3).checkExist(jwt.getDocument_number(), "")) {
-                SigningService.getInstant(3).createOwner(jwt.getDocument_number(),
+                SigningService.getInstant(3).createOwner(
+                        jwt.getDocument_number(),
                         user.getEmail(),
                         jwt.getPhone_number(),
                         jwt.getDocument_number());

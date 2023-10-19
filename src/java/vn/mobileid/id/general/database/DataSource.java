@@ -33,13 +33,14 @@ public class DataSource {
         bds.setPassword(DB_PASSWORD);
 
         bds.setInitialSize(INIT_CONN);
+        System.out.println("DataSource:setInitialSize:"+INIT_CONN);
         bds.setMinIdle(MIN_IDLE);
         bds.setMaxIdle(MAX_IDLE);
         bds.setMaxTotal(CONN_POOL_SIZE);
         bds.setTestWhileIdle(true);
         bds.setValidationQuery("SELECT 1;");
         bds.setValidationQueryTimeout(1);
-        bds.setTimeBetweenEvictionRunsMillis(60000);
+        bds.setTimeBetweenEvictionRunsMillis(10000);
         bds.setDefaultAutoCommit(true);
         bds.setMaxWaitMillis(3000);
     }

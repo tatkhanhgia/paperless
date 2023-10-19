@@ -29,8 +29,9 @@ public class UploadToFMS {
                 HTTPUtils.ContentType.JSON, 
                 data,
                 "pdf");
-        System.out.println("Status:"+response.getHttpCode());
-        System.out.println("Mess:"+response.getMsg());
+        System.out.println("====FMS====");
+        System.out.println("\tStatus:"+response.getHttpCode());
+        System.out.println("\tMess:"+response.getMsg());
         if(response.getHttpCode()!=200){
             LogHandler.error(
                     UpdateFileManagement.class,
@@ -44,7 +45,8 @@ public class UploadToFMS {
                             "en",
                             transactionID));
         }
-        System.out.println("Message get From FMS:"+response.getMsg());
+        System.out.println("\tMessage get From FMS:"+response.getMsg());
+        System.out.println("==========");
         String uuid = Utils.getFromJson("UUID", response.getMsg());
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,uuid);
     }

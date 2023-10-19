@@ -811,7 +811,7 @@ public class ServerSession implements IServerSession {
     public boolean preLogin(String username) throws Throwable {
         preLoginRequest request = new preLoginRequest();
         request.setUser(username);
-        request.setType(UserType.PERSONAL_ID);
+        request.setType(UserType.USERNAME);
         //Console.WriteLine(loginRequest);
 
         String jsonReq = Utils.gsTmp.toJson(request);
@@ -851,10 +851,5 @@ public class ServerSession implements IServerSession {
             return false;
         }        
         return false;
-    }
-
-    public static void main(String[] args) throws Throwable{
-        ServerSession session = new ServerSession(null, null);
-        List<ICertificate> list =  session.listCertificates("as");        
     }
 }

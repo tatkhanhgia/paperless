@@ -24,8 +24,10 @@ import vn.mobileid.id.utils.Utils;
  *
  * @author ADMIN
  */
-public class PaperlessMessageResponse {
-
+public class PaperlessMessageResponse implements ErrorMessageBuilder{
+    private StringBuilder builder = new StringBuilder();
+    private boolean isHaveDescription =false;
+    
     private static final Logger LOG = LogManager.getLogger(PaperlessMessageResponse.class);
 
     final private static ObjectMapper objectMapper = new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -39,7 +41,6 @@ public class PaperlessMessageResponse {
                 lang = "en";
             }
         } catch (Exception e) {
-
         }
         return lang;
     }
@@ -158,6 +159,36 @@ public class PaperlessMessageResponse {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public ErrorMessageBuilder sendErrorMessage(String message) {
+        builder.append("{");
+        builder.append("\"error_message\":\"");
+        builder.append(message).append("\",");
+        return this;
+    }
+
+    @Override
+    public ErrorMessageBuilder sendErrorDescriptionMessage(String description) {
+        builder.append("\"error_description\":\"");
+        builder.append(description).append("\"");
+        isHaveDescription = true;
+        return this;
+    }
+
+    @Override
+    public String build() {
+        builder.append("}");
+        if(!isHaveDescription){
+            builder.deleteCharAt(builder.lastIndexOf(","));
+        }
+        return builder.toString();
+    }
+    
+    public static void main(String[] args) {
+        PaperlessMessageResponse response = new PaperlessMessageResponse();
+        System.out.println(response.sendErrorMessage("gello").build());
     }
 
 }

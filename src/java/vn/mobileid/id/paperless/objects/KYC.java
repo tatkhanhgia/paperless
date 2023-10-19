@@ -7,6 +7,9 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.lang.reflect.Field;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -201,5 +204,11 @@ public class KYC {
 
     public void setHeight(float height) {
         this.height = height;
+    }
+    
+    public static void main(String[] args) throws Exception{
+        String payload = "{\"items\":[{\"field\":\"FullName\",\"mandatory_enable\":false,\"type\":1,\"value\":\"Tat Khanh Gia\",\"remark\":\"text\"},{\"field\":\"BirthDate\",\"mandatory_enable\":false,\"type\":1,\"value\":\"07092000\",\"remark\":\"date\"},{\"field\":\"Nationality\",\"mandatory_enable\":false,\"type\":1,\"value\":\"\",\"remark\":\"text\"},{\"field\":\"PersonalNumber\",\"mandatory_enable\":false,\"type\":1,\"value\":\"\",\"remark\":\"text\"},{\"field\":\"IssuanceDate\",\"mandatory_enable\":false,\"type\":1,\"value\":\"\",\"remark\":\"date\"},{\"field\":\"PlaceOfResidence\",\"mandatory_enable\":false,\"type\":1,\"value\":\"\",\"remark\":\"text\"}]}";
+        KYC object = new ObjectMapper().enable(DeserializationFeature.UNWRAP_ROOT_VALUE).readValue(payload, KYC.class);
+        System.out.println("Objects:"+object.getFullName());
     }
 }

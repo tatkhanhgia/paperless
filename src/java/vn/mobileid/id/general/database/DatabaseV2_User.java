@@ -96,4 +96,36 @@ public interface DatabaseV2_User {
     )throws Exception;
     
     public DatabaseResponse getCategory()throws Exception;
+    
+    public DatabaseResponse getTotalRecordOfUserActivity(
+            String pUSER_EMAIL,
+            String pSEARCH_EMAIL,
+            long pENTERPRISE_ID,
+            String pLIST_CATEGORY,
+            Date pFROM_DATE,
+            Date pTO_DATE,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getListOfUserActivity(
+            String pUSER_EMAIL,
+            String pSEARCH_EMAIL,
+            long pENTERPRISE_ID,
+            String pLIST_CATEGORY,
+            Date pFROM_DATE,
+            Date pTO_DATE,
+            int pOFF_SET,
+            int pROW_COUNT,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getUserActivityDetails(
+            long pUSER_ACTIVITY_ID,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getUserActivityLog(
+            long pUSER_ACTIVITY_LOG_ID,
+            String transactionId
+    )throws Exception;
 }

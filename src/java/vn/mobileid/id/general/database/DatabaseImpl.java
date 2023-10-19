@@ -1937,9 +1937,9 @@ public class DatabaseImpl implements Database {
                 rs.next();
                 User user = new User();
                 user.setEmail(rs.getString("EMAIL"));
-                user.setMobile(rs.getString("MOBILE_NUMBER"));
-                user.setId(rs.getInt("ID"));
-                user.setName(rs.getString("USER_NAME"));
+//                user.setMobile(rs.getString("MOBILE_NUMBER"));
+//                user.setId(rs.getInt("ID"));
+//                user.setName(rs.getString("USER_NAME"));
                 user.setPasswordExpiredAt(new Date(cals.getTimestamp("pPASSWORD_EXPIRED_AT").getTime()));
                 response.setObject(user);
                 response.setStatus(PaperlessConstant.CODE_SUCCESS);

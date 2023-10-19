@@ -6,24 +6,22 @@
 package vn.mobileid.id.general.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
 import java.util.Base64;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import vn.mobileid.id.general.LogHandler;
-import static vn.mobileid.id.general.api.ServicesController.createUserActivity;
-import static vn.mobileid.id.general.api.ServicesController.logIntoDB;
 import vn.mobileid.id.general.objects.InternalResponse;
-import vn.mobileid.id.paperless.PaperlessAdminService;
 import vn.mobileid.id.paperless.PaperlessConstant;
-import vn.mobileid.id.paperless.object.enumration.Category;
-import vn.mobileid.id.paperless.object.enumration.EventAction;
+import vn.mobileid.id.paperless.PaperlessService;
 import vn.mobileid.id.utils.Utils;
 
 /**
@@ -31,89 +29,179 @@ import vn.mobileid.id.utils.Utils;
  * @author GiaTK
  */
 //@WebServlet("/hello")
-@Path("/")
 public class UserActivityController extends HttpServlet {
 
-    //<editor-fold defaultstate="collapsed" desc="Create Account">
-    @POST
-    @Path("/v1/admin/accounts")
-    public Response createAccount(
-            @Context final HttpServletRequest request,
-            String payload) {
-        String transactionID = "";
-        try {
-            InternalResponse response;
-
-            transactionID = debugRequestLOG(
-                    "Create Account",
-                    request,
-                    payload,
-                    0);
-
-            if (request.getContentType() == null) {
-                return Response.status(400).entity("{Missing Content-Type}").build();
+    public static void service_(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
+        String method = req.getMethod();
+        switch (method) {
+            case "GET": {
+                new UserActivityController().doGet(req, res);
+                break;
             }
-            response = PaperlessAdminService.createAccount(
-                    request,
-                    payload,
-                    transactionID);
-            debugResponseLOG("Create Account", response);
+//            case "POST": {
+//                new AccountServiceController().doPost(req, res);
+//                break;
+//            }
+            default: {
+                res.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                res.addHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
+            }
+        }
+    }
 
-            Long id = (long) response.getData();
-            logIntoDB(
-                    request,
-                    response.getEnterprise() == null ? "anonymous" : response.getEnterprise().getName(),
-                    response.getEnterprise() == null ? 0 : response.getEnterprise().getId(),
-                    id.intValue(),
+    @Override
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        //<editor-fold defaultstate="collapsed" desc="Get Category">
+        try{
+        if (req.getRequestURI().matches("^/paperless/v2/useractivity/category$")) {
+            String transactionId = debugRequestLOG("Get Category", req, null, 0);
+            LogHandler.request(
+                    UserActivityController.class,
+                    transactionId);
+
+            InternalResponse response = PaperlessService.getCategory(req, transactionId);
+
+            ServicesController.logIntoDB(
+                    req,
+                    response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                    response.getUser() == null ? 0 : response.getUser().getAid(),
+                    0,
                     response.getStatus(),
-                    payload,
+                    "",
                     response.getMessage(),
-                    "Create Account",
-                    transactionID
+                    "Get Category",
+                    transactionId
             );
 
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-                createUserActivity(
-                        request,
-                        response,
-                        "Create new User",
-                        "User",
-                        id,
-                        EventAction.New,
-                        "Create new User",
-                        "Create new User",
-                        Category.Account);
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode node = mapper.createObjectNode();
+
+                node.put("categories", (ArrayNode) response.getData());
+                Utils.sendMessage(
+                        res,
+                        response.getStatus(),
+                        "application/json",
+                        mapper.writeValueAsString(node));
+            } else {
+                Utils.sendMessage(
+                        res,
+                        response.getStatus(),
+                        "application/json",
+                        response.getMessage());
             }
+            return;
+        }
+        //</editor-fold>
 
-            return Response
-                    .status(response.getStatus())
-                    .entity(response.getMessage())
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .build();
-        } catch (Exception e) {
-            LogHandler.error(
-                    this.getClass(),
-                    transactionID,
-                    "Error while create Account",
-                    e);
-            return Response
-                    .status(PaperlessConstant.HTTP_CODE_500)
-                    .entity("{Internal Server Error}")
-                    .build();
+        //<editor-fold defaultstate="collapsed" desc="Get total record User Activity">
+        if (req.getRequestURI().matches("^/paperless/v2/useractivity/gettotal.*$")) {
+            String transactionId = debugRequestLOG("Get Total record UserActivity", req, null, 0);
+            LogHandler.request(
+                    UserActivityController.class,
+                    transactionId);
+            InternalResponse response = PaperlessService.getTotalRecordsUserActivity(req, transactionId);
+
+            ServicesController.logIntoDB(
+                    req,
+                    response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                    response.getUser() == null ? 0 : response.getUser().getAid(),
+                    0,
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "Get total records of User Activity",
+                    transactionId
+            );
+
+            Utils.sendMessage(
+                    res,
+                    response.getStatus(),
+                    "application/json",
+                    response.getMessage());
+            return;
+        }
+        //</editor-fold>
+        
+        //<editor-fold defaultstate="collapsed" desc="Get details of User Activity">
+        if (req.getRequestURI().matches("^/paperless/v2/useractivity/[0-9]+/details*$")) {
+            int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v2/useractivity/", "").replace("/details", ""));
+            String transactionId = debugRequestLOG("Get details of UserActivity", req, null, id);
+            LogHandler.request(
+                    UserActivityController.class,
+                    transactionId);
+            InternalResponse response = PaperlessService.getUserActivityDetail(req, id, transactionId);
+
+            ServicesController.logIntoDB(
+                    req,
+                    response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                    response.getUser() == null ? 0 : response.getUser().getAid(),
+                    0,
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "Get details of User Activity",
+                    transactionId
+            );
+
+            Utils.sendMessage(
+                    res,
+                    response.getStatus(),
+                    "application/json",
+                    response.getMessage());
+            return;
+        }
+        //</editor-fold>
+        
+        //<editor-fold defaultstate="collapsed" desc="Get total record User Activity">
+        if (req.getRequestURI().matches("^/paperless/v2/useractivity/.*$")) {
+            String transactionId = debugRequestLOG("Get List of UserActivity", req, null, 0);
+            LogHandler.request(
+                    UserActivityController.class,
+                    transactionId);
+            InternalResponse response = PaperlessService.getListUserActivity(req, transactionId);
+
+            ServicesController.logIntoDB(
+                    req,
+                    response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                    response.getUser() == null ? 0 : response.getUser().getAid(),
+                    0,
+                    response.getStatus(),
+                    "",
+                    response.getMessage(),
+                    "Get list User Activity",
+                    transactionId
+            );
+
+            Utils.sendMessage(
+                    res,
+                    response.getStatus(),
+                    "application/json",
+                    response.getMessage());
+            return;
+        }
+        //</editor-fold>
+        
+        Utils.sendMessage(
+                res,
+                PaperlessConstant.HTTP_CODE_METHOD_NOT_ALLOWED,
+                "application/json",
+                null);
+        } catch(Exception ex){
+            LogHandler.error(UserActivityController.class,
+                    "Error while \"GET\" in User Activity Controller",
+                    ex);
+            Utils.sendMessage(
+                    res,
+                    PaperlessConstant.HTTP_CODE_500,
+                    "application/json",
+                    null);
         }
     }
-    //</editor-fold>
+    
 
-
-    //========================INTERNAL METHOD==========================
-    private static String conclusionString(String payload, int id) {
-        String pattern = "\"value\":.*";
-        if (payload == null) {
-            return String.valueOf(id);
-        }
-        return payload.replaceAll(pattern, "\"value\":\"base64\"}]}");
-    }
-
+//========================INTERNAL METHOD==========================   
+    //<editor-fold defaultstate="collapsed" desc="Get User">
     private static String getUser(String payload) {
         String[] chunks = payload.split("\\.");
 
@@ -136,8 +224,11 @@ public class UserActivityController extends HttpServlet {
         int end = payload.indexOf("azp");
         return payload.substring(begin + 8, end - 3);
     }
+    //</editor-fold>
 
-    private static String debugRequestLOG(String function, @Context final HttpServletRequest request, String payload, int id) {
+    //<editor-fold defaultstate="collapsed" desc="Debug Request LOG">
+    private static String debugRequestLOG(String function, @Context
+final HttpServletRequest request, String payload, int id) {
         String data = "\n--------------------------\n" + function + " request:\n" + "\tMETHOD:" + request.getMethod()
                 + "\n\tContentType:" + request.getContentType();
         String user = "";
@@ -154,13 +245,33 @@ public class UserActivityController extends HttpServlet {
         if (request.getHeader("x-send-mail") != null) {
             data += "\n\tSendMail:" + request.getHeader("x-send-mail");
         }
-        data += "\n\tBody (or ID):" + conclusionString(payload, id);
+        data += "\n\tBody (or ID):" + ServicesController.conclusionString(payload, id);
 
-        LogHandler.request(ServicesController.class, data);
+        LogHandler
+
+.request(ServicesController.class  
+
+, data);
         return transaction;
     }
+    //</editor-fold>
 
-    private static void debugResponseLOG(String function, InternalResponse response) {
-        LogHandler.request(UserActivityController.class, "\nRESPONSE:\n" + "\tStatus:" + response.getStatus() + "\n\tMessage:" + response.getMessage());
+    //<editor-fold defaultstate="collapsed" desc="Populate Http Servlet Response">
+    private static HttpServletResponse populateHttpServletResponse(
+            Response response,
+            HttpServletResponse res) throws IOException {
+        if (response != null) {
+            MultivaluedMap<String, Object> headers = response.getHeaders();
+            headers.forEach((key, value) -> {
+                res.setHeader(key, String.valueOf(value));
+            });
+            res.setStatus(response.getStatus());
+            res.getWriter().write((String) response.getEntity());
+            return res;
+        } else {
+            res.sendError(404);
+            return res;
+        }
     }
+    //</editor-fold>
 }

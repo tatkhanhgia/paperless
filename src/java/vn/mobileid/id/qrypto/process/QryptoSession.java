@@ -7,21 +7,20 @@ package vn.mobileid.id.qrypto.process;
 import vn.mobileid.id.qrypto.object.Property;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import restful.sdk.API.HTTPUtils;
 import restful.sdk.API.HttpPostMultiPart2;
-import restful.sdk.API.HttpPostMultipart;
 import restful.sdk.API.HttpResponse;
 import restful.sdk.API.Utils;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.qrypto.object.Configuration;
+import vn.mobileid.id.paperless.exception.LoginException;
 import vn.mobileid.id.qrypto.object.QRSchema;
+import vn.mobileid.id.paperless.exception.QryptoException;
 import vn.mobileid.id.qrypto.request.ClaimRequest;
 import vn.mobileid.id.qrypto.request.GetTokenRequest;
-import vn.mobileid.id.qrypto.request.IssueQryptoWithFileAttachRequest;
 import vn.mobileid.id.qrypto.response.ClaimResponse;
 import vn.mobileid.id.qrypto.response.GetTokenResponse;
 import vn.mobileid.id.qrypto.response.IssueQryptoWithFileAttachResponse;
@@ -46,16 +45,16 @@ public class QryptoSession implements ISession {
 //        System.out.println("____________auth/login____________");
         String authHeader = null;
 
-        if (refreshToken != null) {
-            authHeader = refreshToken;
-        } else {
+//        if (refreshToken != null) {
+//            authHeader = refreshToken;
+//        } else {
             try {
                 retryLogin++;
                 authHeader = prop.getAuthorization();
             } catch (Throwable ex) {
                 Logger.getLogger(QryptoSession.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+//        }
         GetTokenRequest loginRequest = new GetTokenRequest();
 //        loginRequest.setRefresh_token(QryptoConstant.RefreshTokenTest);
 
@@ -65,7 +64,7 @@ public class QryptoSession implements ISession {
 
         if (!response.isStatus()) {
             try {
-                throw new Exception(response.getMsg());
+                throw new QryptoException(response.getMsg());
             } catch (Exception ex) {
                 LogHandler.info(QryptoSession.class, "Error - Detail:" + ex);
             }
@@ -88,7 +87,7 @@ public class QryptoSession implements ISession {
                     "Err code: " + qryptoResp.getCode()
                     + "\nProblem: " + qryptoResp.getProblem()
                     + "\nDetails:" + qryptoResp.getDetails());
-            throw new Exception(qryptoResp.getProblem() + " - " + qryptoResp.getDetails());
+            throw new QryptoException(qryptoResp.getProblem() + " - " + qryptoResp.getDetails());
         } else {
             this.bearerToken =  "Bearer "+qryptoResp.getAccess_token();
 
@@ -186,8 +185,11 @@ public class QryptoSession implements ISession {
         String message = sb.toString();
         IssueQryptoWithFileAttachResponse responses = new IssueQryptoWithFileAttachResponse();
         responses = new ObjectMapper().readValue(message, IssueQryptoWithFileAttachResponse.class);
+        if(responses.getStatus() == 1009 && response.getStatusLine().getStatusCode() == 401){
+            throw new LoginException(responses.getStatus() + "\n" + responses.getData() + "\n" + responses.getMessage());
+        }
         if (response.getStatusLine().getStatusCode() != 200) {
-            throw new Exception(responses.getStatus() + "\n" + responses.getData() + "\n" + responses.getMessage());
+            throw new QryptoException(responses.getStatus() + "\n" + responses.getData() + "\n" + responses.getMessage());
         }
         return responses;
     }

@@ -57,7 +57,8 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.RefreshToken;
 import vn.mobileid.id.utils.Crypto;
 import vn.mobileid.id.utils.Utils;
-
+import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
+import vn.mobileid.id.paperless.kernel_v2.GetUser;
 /**
  *
  * @author GiaTK
@@ -310,7 +311,7 @@ public class ManageTokenWithDB {
         Database db = new DatabaseImpl();
         //Login
         DatabaseResponse res = db.login(email, pass, transactionID);
-
+        
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             String message = PaperlessMessageResponse.getErrorMessage(
                     PaperlessConstant.CODE_FAIL,
@@ -334,7 +335,7 @@ public class ManageTokenWithDB {
                     "en",
                     null)
             );
-        }
+        }                
 
         InternalResponse res2 = GetEnterpriseInfo.getEnterpriseInfo(
                 info.getEmail(),
@@ -345,6 +346,18 @@ public class ManageTokenWithDB {
         Enterprise enterprise = (Enterprise) res2.getData();
 
         try {
+            //Get User information
+            res2 = GetUser.getUser(
+                    info.getEmail(),
+                    0,
+                    enterprise.getId(),
+                    transactionID,
+                    true);
+            if( res2.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+                return res2;
+            }
+            info = (User)res2.getData();
+            
             String[] temp = createAccess_RefreshToken(info, enterprise);
 
             String accessToken = temp[0];
@@ -384,7 +397,13 @@ public class ManageTokenWithDB {
             result.setUser(info);
             return result;
         } catch (Exception e) {
-            throw new Exception("Cannot create token!", e);
+            LogHandler.error(ManageTokenWithDB.class, 
+                    "Cannot Create Token!", 
+                    e);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
+                    "{\"error_description\":\"Cannot create Token. Please try again\"}"
+            );
         }
     }
     //</editor-fold>

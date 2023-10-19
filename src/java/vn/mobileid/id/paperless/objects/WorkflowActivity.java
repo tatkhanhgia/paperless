@@ -98,7 +98,11 @@ public class WorkflowActivity {
     private String workflow_template_type_name_vn;
 
     private FileManagement file; 
+    private CSVTask csv;
+    
     private String CSV_id;     
+    
+    private boolean csvEnabled; 
     
     public WorkflowActivity() {
         enterprise_name = null;
@@ -373,6 +377,24 @@ public class WorkflowActivity {
     public void setGeneration_type_name_vn(String generation_type_name_vn) {
         this.generation_type_name_vn = generation_type_name_vn;
     }
+
+    @JsonProperty("csv_enabled")
+    public boolean isCsvEnabled() {
+        return csvEnabled;
+    }
+
+    public void setCsvEnabled(boolean csvEnabled) {
+        this.csvEnabled = csvEnabled;
+    }
+
+    public CSVTask getCsv() {
+        return csv;
+    }
+
+    public void setCsv(CSVTask csv) {
+        this.csv = csv;
+    }
+    
     
     
     public static void main(String[] args) throws JsonProcessingException {

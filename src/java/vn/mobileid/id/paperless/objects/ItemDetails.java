@@ -7,6 +7,7 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 
 /**
  *
@@ -118,6 +119,8 @@ public class ItemDetails {
             return true;
         if( i ==3 )
             return 1;
+        if( i==4)
+            return new Date();
         return null;
     }
 }

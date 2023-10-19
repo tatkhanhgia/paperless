@@ -857,6 +857,7 @@ public class SigningService {
             boolean check = session.preLogin(user);
             return check;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         } catch (Throwable ex) {
             return false;
@@ -954,31 +955,8 @@ public class SigningService {
         return response;
     }
 
-    public static void main(String[] arhs) throws IOException {
-//        String filename = "resul.pdf";
-//        String CombineImage = "D:\\NetBean\\QryptoServices\\file\\file\\CombineImage.png";
-//        String base64Envidence = Base64.getEncoder().encodeToString(
-//                                        Files.readAllBytes(
-//                                                new File(CombineImage).toPath()));
-//        SigningService.getInstant(3).signHashWitness("gia", base64Envidence, filename);
-//        
-//        SigningService.getInstant(3).signHashBussiness(filename, 
-//                                    Files.readAllBytes(
-//                                            new File("D:\\NetBean\\QryptoServices\\file\\signed.resul.pdf").toPath()));
-//        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-////            InputStream input = loader.getResourceAsStream("resources/verdana.ttf");
-//        System.out.println(loader.getResource("resources/verdana.ttf").getPath());
-//        File a = new File(loader.getResource("resources/verdana.ttf").getPath());
-
-//        SigningService.getInstant(3).createOwner(
-//                "giatk@mobile-id.vn",
-//                "0566477847",
-//                "079200011188");
-//        SigningService.getInstant(3).issueCertificate(
-//                "giatk@mobile-id.vn",
-//                "giatk@mobile-id.vn",
-//                "0566477847",
-//                "Quận 11",
-//                "VN");
+    public static void main(String[] arhs) throws Exception {
+        System.out.println(SigningService.getInstant(3).checkExist("035195006147", ""));
+       SigningService.getInstant(3).createOwner("035195006147", "nghiatranthi130295@gmail.com", "84977913295", "035195006147");
     }
 }

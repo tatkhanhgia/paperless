@@ -37,11 +37,11 @@ public class ProcessEID_JWT {
             payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8"); //Data - User
             signature = chunks[2];
         } catch (Exception e) {
-            LogHandler.error(
-                    ProcessEID_JWT.class,
-                    "transaction",
-                    "Cannot decode token!!",
-                    e);
+//            LogHandler.error(
+//                    ProcessEID_JWT.class,
+//                    "transaction",
+//                    "Cannot decode token!!",
+//                    e);
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
@@ -53,11 +53,11 @@ public class ProcessEID_JWT {
         try {
             jwtData = new ObjectMapper().readValue(payload, JWT_Authenticate.class);
         } catch (Exception e) {
-            LogHandler.error(
-                    ProcessEID_JWT.class,
-                    "transaction",
-                    "Error while mapping JWT data!!",
-                    e);
+//            LogHandler.error(
+//                    ProcessEID_JWT.class,
+//                    "transaction",
+//                    "Error while mapping JWT data!!",
+//                    e);
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
