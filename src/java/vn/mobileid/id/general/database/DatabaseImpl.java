@@ -2066,7 +2066,6 @@ public class DatabaseImpl implements Database {
 
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
-//                    
             debugString += "\t[SQL] " + cals.toString();
 
             rs = cals.executeQuery();
@@ -3309,8 +3308,8 @@ public class DatabaseImpl implements Database {
             cals = conn.prepareCall(str);
 
             cals.setString("pUSER_EMAIL", email);
-            cals.setString("NEW_PASS", new_password);
-            cals.setString("OLD_PASS", old_password);
+            cals.setString("pNEW_PASSWORD", new_password);
+            cals.setString("pOLD_PASSWORD", old_password);
 
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 

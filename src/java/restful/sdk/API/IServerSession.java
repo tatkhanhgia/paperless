@@ -90,5 +90,5 @@ public interface IServerSession extends ISession {
     //import certificate
     ICertificate importCertificate(String agreementUUID, String credentialID, String cert) throws Throwable;
 
-    public boolean preLogin(String username) throws Throwable;
+    public boolean preLogin(Types.UserType type, String username) throws Throwable;
 }

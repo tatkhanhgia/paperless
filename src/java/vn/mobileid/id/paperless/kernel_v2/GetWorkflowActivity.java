@@ -144,6 +144,76 @@ public class GetWorkflowActivity {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get Row count of Workflow Activity based on Workflow Id">
+    /**
+     * Get row count of Workflow Activity based on Workflow Id
+     * @param workflowId
+     * @param transactionId
+     * @return long Row Count
+     * @throws Exception 
+     */
+    public static InternalResponse getRowCountWorkflowActivity_basedOnWorkflow(
+            int workflowId,
+            String transactionId
+    )throws Exception{
+        DatabaseV2_WorkflowActivity callDb = new DatabaseImpl_V2_WorkflowActivity();
+        DatabaseResponse response = callDb.getTotalRecordsWorkflowActivity_basedOnWorkflow(workflowId, transactionId);
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            response.getStatus(),
+                            "en",
+                            transactionId));
+        }
+
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                (Object) response.getObject()
+        );
+    }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="Get Lists of Workflow Activity based on Workflow Id">
+    /**
+     * Get Lists of Workflow Activity based on Workflow Id
+     * @param workflowId
+     * @param offset
+     * @param rowcount
+     * @param transactionId
+     * @return List<WorkflowActivity>
+     * @throws Exception 
+     */
+    public static InternalResponse getListWorkflowActivity_basedOnWorkflow(
+            int workflowId,
+            int offset,
+            int rowcount,
+            String transactionId
+    )throws Exception{
+        DatabaseV2_WorkflowActivity callDb = new DatabaseImpl_V2_WorkflowActivity();
+        DatabaseResponse response = callDb.getListsWorkflowActivity_basedOnWorkflow(
+                workflowId,
+                offset,
+                rowcount,
+                transactionId);
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            response.getStatus(),
+                            "en",
+                            transactionId));
+        }
+
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                (Object) response.getObject()
+        );
+    }
+    //</editor-fold>
+    
     public static void main(String[] args) throws Exception {
 //        InternalResponse response = GetWorkflowActivity.getWorkflowActivity(
 //                650,
@@ -183,26 +253,37 @@ public class GetWorkflowActivity {
 //            System.out.println("Row:"+response.getData());
 //        }
         //======================================================================
-        InternalResponse response = GetWorkflowActivity.getListWorkflowActivity(
-                "khanhpx@mobile-id.vn",
-                3,
-                null,
-                null,
-                "1,2,3,4,5,6,7,8",
-                "1,2",
-                "1,2,3",
-                false,
-                null,
-                null,
-                0,
-                100,
-                "transactionId");
+//        InternalResponse response = GetWorkflowActivity.getListWorkflowActivity(
+//                "khanhpx@mobile-id.vn",
+//                3,
+//                null,
+//                null,
+//                "1,2,3,4,5,6,7,8",
+//                "1,2",
+//                "1,2,3",
+//                false,
+//                null,
+//                null,
+//                0,
+//                100,
+//                "transactionId");
+//
+//        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+//            System.out.println("Mess:" + response.getMessage());
+//        } else {
+//            for (WorkflowActivity wo : (List<WorkflowActivity>) response.getData()) {
+//                System.out.println("Id:" + wo.getWorkflow_label());
+//            }
+//        }
 
-        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-            System.out.println("Mess:" + response.getMessage());
-        } else {
-            for (WorkflowActivity wo : (List<WorkflowActivity>) response.getData()) {
-                System.out.println("Id:" + wo.getWorkflow_label());
+        //======================================================================
+        InternalResponse response = GetWorkflowActivity.getListWorkflowActivity_basedOnWorkflow(507, 0,100,"transactionId");
+        if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+            System.out.println("Mess:"+response.getMessage());
+        } else { 
+            List<WorkflowActivity> lists = (List<WorkflowActivity>)response.getData();
+            for(WorkflowActivity a : lists){
+                System.out.println("Id:"+a.getId());
             }
         }
     }

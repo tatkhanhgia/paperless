@@ -27,6 +27,7 @@ import restful.sdk.API.ISessionFactory;
 import restful.sdk.API.IUserSession;
 import restful.sdk.API.Property;
 import restful.sdk.API.SigningMethodAsyncImp;
+import restful.sdk.API.Types;
 import restful.sdk.API.Types.AuthMode;
 import restful.sdk.API.Types.IdentificationType;
 import restful.sdk.API.Types.SharedMode;
@@ -854,8 +855,9 @@ public class SigningService {
 
     public boolean checkExist(String user, String pass) {
         try {
-            boolean check = session.preLogin(user);
-            return check;
+            boolean check = session.preLogin(Types.UserType.PERSONAL_ID,user);
+            boolean check2 = session.preLogin(Types.UserType.USERNAME,user);
+            return (check&&check2)&&check;
         } catch (Exception e) {
             e.printStackTrace();
             return false;

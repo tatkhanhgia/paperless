@@ -12,13 +12,13 @@ import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.utils.Utils;
-
 /**
  *
  * @author GiaTK
  */
 public class ManageUser {
 
+    //<editor-fold defaultstate="collapsed" desc="Forgot Password">
     /**
      * Forgot password of user
      *
@@ -47,8 +47,9 @@ public class ManageUser {
 
         //Get email template
         response = GetEmailTemplate.getEmailTemplate(
-                (language < 1 || language > 2) ? PaperlessConstant.LANGUAGE_EN : language,
-                PaperlessConstant.EMAIL_FORGOT_PASSWORD,
+                (language < 1 || language > 2) ? 
+                        PaperlessConstant.LANGUAGE_EN : language,
+                vn.mobileid.id.paperless.object.enumration.EmailTemplate.EMAIL_FORGOT_PASSWORD.getName(),
                 transactionID);
 
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -79,7 +80,10 @@ public class ManageUser {
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 "");
     }
+    //</editor-fold>
+    
 
+    //<editor-fold defaultstate="collapsed" desc="Set new Password">
     /**
      * Set new password to user with OTP from user
      *
@@ -116,4 +120,6 @@ public class ManageUser {
         Resources.getQueueForgotPassword().remove(otp);
         return response;
     }
+    //</editor-fold>
+    
 }

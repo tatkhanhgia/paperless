@@ -307,8 +307,8 @@ public class ProcessSecureQRTemplate {
         String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(now.getTime());
         now.add(Calendar.YEAR, 1);
         String timeStamp2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(now.getTime());
-        effectiveDate.setNotValidBefore(timeStamp2);
-        effectiveDate.setNotValidAfter(timeStamp);
+        effectiveDate.setNotValidBefore(timeStamp);
+        effectiveDate.setNotValidAfter(timeStamp2);
 
         config.setQryptoEffectiveDate(effectiveDate);
 

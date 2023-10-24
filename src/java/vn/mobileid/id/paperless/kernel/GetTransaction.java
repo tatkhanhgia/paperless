@@ -36,7 +36,6 @@ public class GetTransaction {
                 transactionID);
 
         if (responseDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            System.out.println("Lỗi: code từ DB:"+responseDB.getStatus());
             String message = PaperlessMessageResponse.getErrorMessage(
                     PaperlessConstant.CODE_FAIL,
                     responseDB.getStatus(),

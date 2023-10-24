@@ -76,7 +76,7 @@ public class EnterpriseServiceController_V2 extends HttpServlet {
                         req,
                         response.getUser()==null?"anonymous":response.getUser().getAzp(),
                         response.getUser()==null?0:response.getUser().getAid(),
-                        response.getUser().getId(),
+                        0,
                         response.getStatus(),
                         "",
                         response.getMessage(),

@@ -75,14 +75,18 @@ import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.paperless.kernel.GetTransaction;
 import vn.mobileid.id.paperless.kernel.GetWorkflowTemplateType;
 import vn.mobileid.id.paperless.kernel_v2.DeleteAsset;
+import vn.mobileid.id.paperless.kernel_v2.GetCSVTask;
 import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
 import vn.mobileid.id.paperless.kernel_v2.GetFileManagement;
+import vn.mobileid.id.paperless.kernel_v2.GetQR;
 import vn.mobileid.id.paperless.kernel_v2.GetUserActivity;
 import vn.mobileid.id.paperless.kernel_v2.GetUserActivityLog;
 import vn.mobileid.id.paperless.kernel_v2.UpdateAsset;
 import vn.mobileid.id.paperless.kernel_v2.UploadAsset;
+import vn.mobileid.id.paperless.objects.CSVTask;
 import vn.mobileid.id.paperless.objects.Category;
 import vn.mobileid.id.paperless.objects.GenerationType;
+import vn.mobileid.id.paperless.objects.QR;
 
 import vn.mobileid.id.paperless.objects.Transaction;
 import vn.mobileid.id.paperless.objects.UserActivity;
@@ -275,7 +279,7 @@ public class PaperlessService {
     public static InternalResponse createWorkflowActivity(
             final HttpServletRequest request,
             String payload,
-            String transactionID) throws Exception {                
+            String transactionID) throws Exception {
         //Check valid token
         InternalResponse response = verifyToken(request, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
@@ -335,7 +339,7 @@ public class PaperlessService {
     public static InternalResponse createWorkflowActivity_forCSV(
             final HttpServletRequest request,
             String payload,
-            String transactionID) throws Exception {                
+            String transactionID) throws Exception {
         //Check valid token
         InternalResponse response = verifyToken(request, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
@@ -391,7 +395,7 @@ public class PaperlessService {
         return response;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Verify Token">
     public static InternalResponse verifyToken(
             final HttpServletRequest request,
@@ -629,11 +633,20 @@ public class PaperlessService {
                 data,
                 false,
                 transactionID);
+        if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+            //Send mail
+            sendMail(id,
+                    user_info,
+                    user_info.getEmail(),
+                    null,
+                    "QR",
+                    transactionID);
+        }
         response.setUser(user_info);
         return response;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Process Workflow Activity for CSV">
     public static InternalResponse processWorkflowActivity_forCSV(
             final HttpServletRequest request,
@@ -696,6 +709,15 @@ public class PaperlessService {
                 data,
                 false,
                 transactionID);
+        if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+//            //Send mail
+            sendMail(id,
+                    user_info,
+                    user_info.getEmail(),
+                    null,
+                    response.getMessage(),
+                    transactionID);
+        }
         response.setUser(user_info);
         return response;
     }
@@ -767,8 +789,8 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        List<WorkflowAttributeType> list1 = (List<WorkflowAttributeType>) response.getData();     
-        
+        List<WorkflowAttributeType> list1 = (List<WorkflowAttributeType>) response.getData();
+
         //Get Workflow
         response = GetWorkflow.getWorkflow(id, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -782,7 +804,7 @@ public class PaperlessService {
             return response;
         }
         WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
-        List<WorkflowAttributeType> listFinal = templateType.convertToWorkflowAttributeType(list1);              
+        List<WorkflowAttributeType> listFinal = templateType.convertToWorkflowAttributeType(list1);
 
         CustomWorkflowDetailsSerializer custom = new CustomWorkflowDetailsSerializer(listFinal);
 
@@ -815,7 +837,7 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        response =  new InternalResponse(
+        response = new InternalResponse(
                 response.getStatus(),
                 new ObjectMapper()
                         .writeValueAsString(response.getData()));
@@ -871,6 +893,7 @@ public class PaperlessService {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Download Asset Base64">
     public static InternalResponse downloadsAssetBase64(
             final HttpServletRequest request,
             int id,
@@ -917,6 +940,7 @@ public class PaperlessService {
                 PaperlessConstant.HTTP_CODE_FORBIDDEN,
                 "{NOT PROVIDED}");
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Workflow Template Type">
     public static InternalResponse getWorkflowTemplateType(
@@ -978,7 +1002,7 @@ public class PaperlessService {
             child.put("generation_type_name_vn", value.getRemark_vn());
             node.add(child);
         });
-        response =  new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 node);
         response.setUser(user_info);
@@ -1133,7 +1157,7 @@ public class PaperlessService {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
-                            PaperlessConstant.CODE_INVALID_PARAMS_ASSET, 
+                            PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
                             PaperlessConstant.SUBCODE_INVALID_FILE_DATA,
                             "en",
                             transactionID));
@@ -1205,17 +1229,14 @@ public class PaperlessService {
             outputStream.flush();
             outputStream.close();
         } catch (IOException ex) {
-            return new InternalResponse(
-                    
-            );
+            return new InternalResponse();
         }
-        
+
         //Check Exist fileData and Name
-        if(Utils.isNullOrEmpty(x_file_name)){
-            
+        if (Utils.isNullOrEmpty(x_file_name)) {
+
         }
-        
-        
+
         //Processing
         int i = 0;
         if (x_file_type != null) {
@@ -1302,7 +1323,7 @@ public class PaperlessService {
         //Processing
         int i = 0;
         if (x_file_type != null) {
-            i = convertStringIntoAssetType(x_file_type,x_file_name);
+            i = convertStringIntoAssetType(x_file_type, x_file_name);
             if (i == -1) {
                 String message = PaperlessMessageResponse.getErrorMessage(
                         PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
@@ -1314,6 +1335,7 @@ public class PaperlessService {
                         message);
             }
         }
+        asset.setName(x_file_name);
         asset.setId(id);
         asset.setType(i);
         if (asset.getBinaryData() != null) {
@@ -1679,6 +1701,11 @@ public class PaperlessService {
 
         //Search type
         String email_search = Utils.getRequestHeader(request, "x-search-email");
+        int workflowId = 0;
+        try {
+            workflowId = Integer.parseInt(Utils.getRequestHeader(request, "x-search-workflow"));
+        } catch (Exception ex) {
+        }
         String start_ = Utils.getRequestHeader(request, "x-search-start");
         String stop_ = Utils.getRequestHeader(request, "x-search-stop");
         Date start = null, stop = null;
@@ -1808,19 +1835,28 @@ public class PaperlessService {
                 : (String) future1.get();
 
         //Processing
-        InternalResponse res = GetWorkflowActivity.getListWorkflowActivity(user_info.getEmail(),
-                user_info.getAid(),
-                email_search,
-                null,
-                searchTemplate,
-                search,
-                "1,2,3",
-                (start != null || stop != null),
-                start,
-                stop,
-                (page_no <= 1) ? 0 : (page_no - 1) * record,
-                record == 0 ? numberOfRecords : record,
-                transactionID);
+        InternalResponse res = null;
+        if (workflowId != 0) {
+            res = GetWorkflowActivity.getListWorkflowActivity_basedOnWorkflow(
+                    workflowId,
+                    (page_no <= 1) ? 0 : (page_no - 1) * record,
+                    record == 0 ? numberOfRecords : record,
+                    transactionID);
+        } else {
+            res = GetWorkflowActivity.getListWorkflowActivity(user_info.getEmail(),
+                    user_info.getAid(),
+                    email_search,
+                    null,
+                    searchTemplate,
+                    search,
+                    "1,2,3",
+                    (start != null || stop != null),
+                    start,
+                    stop,
+                    (page_no <= 1) ? 0 : (page_no - 1) * record,
+                    record == 0 ? numberOfRecords : record,
+                    transactionID);
+        }
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
@@ -1839,13 +1875,14 @@ public class PaperlessService {
     public static InternalResponse getTotalRecordsWorkflowAc(
             final HttpServletRequest request,
             String transactionID) throws JsonProcessingException, Exception {
-        //Check valid token
+        //<editor-fold defaultstate="collapsed" desc="Check valid Token">
         InternalResponse response = verifyToken(request, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
 
         User user_info = response.getUser();
+        //</editor-fold>
 
         //Process header        
         String URI = request.getRequestURI();
@@ -1886,6 +1923,11 @@ public class PaperlessService {
 
         //Search type
         String email_search = Utils.getRequestHeader(request, "x-search-email");
+        int workflowId = 0;
+        try {
+            workflowId = Integer.parseInt(Utils.getRequestHeader(request, "x-search-workflow"));
+        } catch (Exception ex) {
+        }
         String start_ = Utils.getRequestHeader(request, "x-search-start");
         String stop_ = Utils.getRequestHeader(request, "x-search-stop");
         Date start = null, stop = null;
@@ -2011,21 +2053,25 @@ public class PaperlessService {
                 : (String) future1.get();
 
         //Processing
-        InternalResponse res = GetWorkflowActivity.getRowCountWorkflowActivity(
-                user_info.getEmail(),
-                user_info.getAid(),
-                email_search,
-                null,
-                searchTemplate,
-                search,
-                "1,2,3",
-                (start != null && stop != null),
-                start != null ? start : null,
-                stop != null ? stop : null,
-                (page_no <= 1) ? 0 : (page_no - 1) * record,
-                record == 0 ? numberOfRecords : record,
-                transactionID);
-
+        InternalResponse res = null;
+        if (workflowId != 0) {
+            res = GetWorkflowActivity.getRowCountWorkflowActivity_basedOnWorkflow(workflowId, transactionID);
+        } else {
+            res = GetWorkflowActivity.getRowCountWorkflowActivity(
+                    user_info.getEmail(),
+                    user_info.getAid(),
+                    email_search,
+                    null,
+                    searchTemplate,
+                    search,
+                    "1,2,3",
+                    (start != null && stop != null),
+                    start != null ? start : null,
+                    stop != null ? stop : null,
+                    (page_no <= 1) ? 0 : (page_no - 1) * record,
+                    record == 0 ? numberOfRecords : record,
+                    transactionID);
+        }
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
@@ -2110,7 +2156,6 @@ public class PaperlessService {
         return response;
     }
     //</editor-fold>
-    
 
     //<editor-fold defaultstate="collapsed" desc="Reactive Workflow">
     public static InternalResponse reactiveWorkflow(
@@ -2340,12 +2385,12 @@ public class PaperlessService {
         //Get Header anh process JWT
         HashMap<String, String> headers = Utils.getHashMapRequestHeader(request);
         String headerJWT = headers.get("eid-jwt");
-        System.out.println("JWT in header (PaperlessService):"+headerJWT);
-        if( headerJWT == null || headerJWT.isEmpty()){
+        System.out.println("JWT in header (PaperlessService):" + headerJWT);
+        if (headerJWT == null || headerJWT.isEmpty()) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
-                            PaperlessConstant.CODE_INVALID_PARAMS_JWT, 
+                            PaperlessConstant.CODE_INVALID_PARAMS_JWT,
                             PaperlessConstant.SUBCODE_MISSING_JWT,
                             payload,
                             transactionID)
@@ -3113,14 +3158,14 @@ public class PaperlessService {
             child.put("category_name_vn", value.getRemark_vn());
             node.add(child);
         });
-        response =  new InternalResponse(
+        response = new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
                 node);
         response.setUser(user_info);
         return response;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Get Total Records User Activity">
     public static InternalResponse getTotalRecordsUserActivity(
             final HttpServletRequest request,
@@ -3238,11 +3283,11 @@ public class PaperlessService {
                             case "Settings": {
                                 result = "5";
                                 break;
-                            } 
+                            }
                             case "Workflow Activity": {
                                 result = "6";
                                 break;
-                            }                            
+                            }
                             default: {
                                 result = "1,2,3,4,5,6";
                                 break;
@@ -3310,7 +3355,7 @@ public class PaperlessService {
         return res;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Get List of User Activity">
     public static InternalResponse getListUserActivity(
             final HttpServletRequest request,
@@ -3428,11 +3473,11 @@ public class PaperlessService {
                             case "Settings": {
                                 result = "5";
                                 break;
-                            } 
+                            }
                             case "Workflow Activity": {
                                 result = "6";
                                 break;
-                            }                            
+                            }
                             default: {
                                 result = "1,2,3,4,5,6";
                                 break;
@@ -3497,13 +3542,13 @@ public class PaperlessService {
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
-        CustomListUserActivitySerializer custom = new CustomListUserActivitySerializer((List<UserActivity>)res.getData(), page_no, record);
+        CustomListUserActivitySerializer custom = new CustomListUserActivitySerializer((List<UserActivity>) res.getData(), page_no, record);
         res.setMessage(new ObjectMapper().writeValueAsString(custom));
         res.setUser(user_info);
         return res;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Get User Activity Details">
     public static InternalResponse getUserActivityDetail(
             final HttpServletRequest request,
@@ -3523,18 +3568,18 @@ public class PaperlessService {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
-        
-        UserActivity UserActivity = (UserActivity)response.getData();
-        
+
+        UserActivity UserActivity = (UserActivity) response.getData();
+
         //Get User Activity Log
         response = GetUserActivityLog.getUserActivityLog(UserActivity.getLog_id(), transactionID);
 
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
-        
-        UserActivityLog UserActivityLog = (UserActivityLog)response.getData();
-        
+
+        UserActivityLog UserActivityLog = (UserActivityLog) response.getData();
+
         CustomUserActivitySerializer custom = new CustomUserActivitySerializer(UserActivityLog);
 
         response = new InternalResponse(
@@ -3545,8 +3590,9 @@ public class PaperlessService {
         return response;
     }
     //</editor-fold>
-    
+
     //=================== INTERNAL FUNCTION - METHOD============================
+    //<editor-fold defaultstate="collapsed" desc="Check Template Type in Request">
     /**
      * Hàm check workflow_template_type từ chuỗi payload truyền vào
      *
@@ -3570,6 +3616,7 @@ public class PaperlessService {
         }
         return result;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Send Mail">
     /**
@@ -3582,12 +3629,14 @@ public class PaperlessService {
             JWT_Authenticate jwt,
             String typeProcess,
             String transactionID) {
+        System.out.println("Send email!");
         Thread temp = new Thread() {
             @Override
             public void run() {
                 try {
                     //Get data from RAM first . If not existed => get from DB
-                    FileManagement filemanagement = null;
+                    byte[] file = null;
+                    String nameFile = null;
                     if (Resources.getListWorkflowActivity().containsKey(String.valueOf(woAcId))) {
                         //Get WorkflowActivity from RAM
                         WorkflowActivity woAc = Resources.getWorkflowActivity(String.valueOf(woAcId));
@@ -3602,17 +3651,56 @@ public class PaperlessService {
                         }
                         Transaction transaction = (Transaction) response.getData();
 
-                        //GetFileManagement
-                        response = GetFileManagement.getFileManagement(transaction.getObject_id(), transactionID);
-                        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                            LogHandler.error(
-                                    PaperlessService.class,
-                                    transactionID,
-                                    "Processing successfully but can't send mail!! Error while getting FileManagement in Workflow Activity");
-                            return;
+                        //GetFileManagement or QR or CSV 
+                        switch (transaction.getObject_type().getNumber()) {
+                            case 1: { //QR
+                                response = GetQR.getQR(transaction.getObject_id(), transactionID);
+                                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                                    LogHandler.error(
+                                            PaperlessService.class,
+                                            transactionID,
+                                            "Processing successfully but can't send mail!! Error while getting FileManagement in Workflow Activity");
+                                    return;
+                                }
+                                QR qr = (QR) response.getData();
+                                file = Base64.getDecoder().decode(qr.getImage());
+                                nameFile = "QR.png";
+                                break;
+                            }
+                            case 2: { //CSV
+                                response = GetCSVTask.getCSVTask(transaction.getObject_id(), transactionID);
+                                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                                    LogHandler.error(
+                                            PaperlessService.class,
+                                            transactionID,
+                                            "Processing successfully but can't send mail!! Error while getting FileManagement in Workflow Activity");
+                                    return;
+                                }
+                                CSVTask csv = (CSVTask) response.getData();
+                                file = csv.getBinary_data();
+                                nameFile = csv.getUuid() + ".zip";
+                                break;
+                            }
+                            case 3: { //PDF
+                                response = GetFileManagement.getFileManagement(transaction.getObject_id(), transactionID);
+                                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                                    LogHandler.error(
+                                            PaperlessService.class,
+                                            transactionID,
+                                            "Processing successfully but can't send mail!! Error while getting FileManagement in Workflow Activity");
+                                    return;
+                                }
+
+                                FileManagement filemanagement = (FileManagement) response.getData();
+                                file = filemanagement.getData();
+                                nameFile = filemanagement.getName();
+                                break;
+                            }
+                            default: {
+                                return;
+                            }
                         }
 
-                        filemanagement = (FileManagement) response.getData();
                     } else {
                         try {
                             //Get WorkflowActivity from DB
@@ -3635,17 +3723,55 @@ public class PaperlessService {
                                 return;
                             }
                             Transaction transaction = (Transaction) response.getData();
-                            //GetFileManagement
-                            response = GetFileManagement.getFileManagement(transaction.getObject_id(), transactionID);
-                            if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                                LogHandler.error(
-                                        PaperlessService.class,
-                                        transactionID,
-                                        "Processing successfully but can't send mail!! Error while getting transaction in Workflow Activity");
-                                return;
-                            }
+                            //GetFileManagement or QR or CSV 
+                            switch (transaction.getObject_type().getNumber()) {
+                                case 1: { //QR
+                                    response = GetQR.getQR(transaction.getObject_id(), transactionID);
+                                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                                        LogHandler.error(
+                                                PaperlessService.class,
+                                                transactionID,
+                                                "Processing successfully but can't send mail!! Error while getting FileManagement in Workflow Activity");
+                                        return;
+                                    }
+                                    QR qr = (QR) response.getData();
+                                    file = Base64.getDecoder().decode(qr.getImage());
+                                    nameFile = "QR.png";
+                                    break;
+                                }
+                                case 2: { //CSV
+                                    response = GetCSVTask.getCSVTask(transaction.getObject_id(), transactionID);
+                                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                                        LogHandler.error(
+                                                PaperlessService.class,
+                                                transactionID,
+                                                "Processing successfully but can't send mail!! Error while getting FileManagement in Workflow Activity");
+                                        return;
+                                    }
+                                    CSVTask csv = (CSVTask) response.getData();
+                                    file = csv.getBinary_data();
+                                    nameFile = csv.getUuid() + ".zip";
+                                    break;
+                                }
+                                case 3: { //PDF
+                                    response = GetFileManagement.getFileManagement(transaction.getObject_id(), transactionID);
+                                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                                        LogHandler.error(
+                                                PaperlessService.class,
+                                                transactionID,
+                                                "Processing successfully but can't send mail!! Error while getting FileManagement in Workflow Activity");
+                                        return;
+                                    }
 
-                            filemanagement = (FileManagement) response.getData();
+                                    FileManagement filemanagement = (FileManagement) response.getData();
+                                    file = filemanagement.getData();
+                                    nameFile = filemanagement.getName();
+                                    break;
+                                }
+                                default: {
+                                    return;
+                                }
+                            }
                         } catch (Exception ex) {
                             LogHandler.error(
                                     PaperlessService.class,
@@ -3654,25 +3780,7 @@ public class PaperlessService {
                             return;
                         }
                     }
-//                if (!filemanagement.isIsSigned()) {
-//                    InternalResponse temp = null;
-//                    try {
-//                        temp = GetDocument.getDocument(
-//                                woAc.getId(),
-//                                transactionID);
-//                    } catch (Exception ex) {
-//                        Logger.getLogger(PaperlessService.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//
-//                    if (temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-//                        LogHandler.error(
-//                                PaperlessService.class,
-//                                transactionID,
-//                                "Processing successfully but can't send mail!!");
-//                        return;
-//                    }
-//                    filemanagement = (FileManagement) temp.getData();
-//                }
+                    System.out.println("Get Thanh cong");
                     String name = "";
                     String CCCD = "";
                     if (jwt != null
@@ -3688,6 +3796,7 @@ public class PaperlessService {
                         CCCD = "NonCheckJWT";
                     }
 
+                    System.out.println("Check1");
                     LogHandler.request(
                             PaperlessService.class,
                             "SendToMail:" + email);
@@ -3696,11 +3805,12 @@ public class PaperlessService {
                             user_info.getAid(),
                             name,
                             CCCD,
-                            filemanagement.getData(),
-                            filemanagement.getName()
+                            file,
+                            nameFile
                     );
                     mail.appendTypeProcess(typeProcess);
                     mail.send();
+                    System.out.println(" Gui cho " + email);
                 } catch (Exception ex) {
                     LogHandler.error(
                             PaperlessService.class,
@@ -3715,8 +3825,8 @@ public class PaperlessService {
 
     //<editor-fold defaultstate="collapsed" desc="Convert String into Asset Type">
     /**
-     * Convert từ chuỗi asset Type đưa về dạng int của asset Type đó.
-     * Ngoài ra check extension dựa trên asset Type
+     * Convert từ chuỗi asset Type đưa về dạng int của asset Type đó. Ngoài ra
+     * check extension dựa trên asset Type
      *
      * @param assetType chuỗi cần đưa về
      * @return trả về số của assetType tương ứng. Nếu không tồn tại sẽ trả về -1

@@ -40,7 +40,7 @@ public class DataSource {
         bds.setTestWhileIdle(true);
         bds.setValidationQuery("SELECT 1;");
         bds.setValidationQueryTimeout(1);
-        bds.setTimeBetweenEvictionRunsMillis(10000);
+        bds.setTimeBetweenEvictionRunsMillis(60000);
         bds.setDefaultAutoCommit(true);
         bds.setMaxWaitMillis(3000);
     }

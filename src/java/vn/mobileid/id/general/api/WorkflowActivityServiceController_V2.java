@@ -409,13 +409,15 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         transactionId);
                 String payload = Utils.getPayload(req);
                 InternalResponse response = PaperlessService.createWorkflowActivity(req, payload, transactionId);
-
-                Long id = (long) response.getData();
+                Long id = null;
+                if(response.getStatus() ==  PaperlessConstant.HTTP_CODE_SUCCESS){
+                    id = (long) response.getData();
+                }
                 ServicesController.logIntoDB(
                         req,
                         response.getUser()==null?"anonymous":response.getUser().getEmail(),
                         response.getUser()==null?0:response.getUser().getAid(),
-                        id.intValue(),
+                        id == null ? 0 : id.intValue(),
                         response.getStatus(),
                         payload,
                         response.getMessage(),

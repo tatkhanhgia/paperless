@@ -247,4 +247,67 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
         return response;
     }
 
+    @Override
+    public DatabaseResponse getTotalRecordsWorkflowActivity_basedOnWorkflow(
+            long workflowId,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_WORKFLOW_ACTIVITY_LOG_GET_ROW_COUNT(?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pWORKFLOW_ID", workflowId);
+
+        HashMap<String, Integer> output = new HashMap<>();
+        output.put("pROW_COUNT", java.sql.Types.BIGINT);
+        output.put("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                nameStore,
+                input,
+                output,
+                "Get Total Records of Workflow Activity based on Workflow");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS && response.getRows() != null) {
+            return response;
+        }
+        List<HashMap<String, Object>> rows = response.getRows();
+        for (HashMap<String, Object> row : rows) {
+            if (row.get("pROW_COUNT") != null) {
+                response.setObject((long) row.get("pROW_COUNT"));
+            }
+        }
+        
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getListsWorkflowActivity_basedOnWorkflow(
+            long workflowId,
+            int pOFFSET, 
+            int pROW_COUNT,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_WORKFLOW_ACTIVITY_LOG_GET(?,?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pWORKFLOW_ID", workflowId);        
+        input.put("pOFFSET", pOFFSET);
+        input.put("pROW_COUNT", pROW_COUNT);
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                WorkflowActivity.class,
+                nameStore,
+                input,
+                null,
+                "Get List of Workflow Activity based on Workflow");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        if(response.getStatus() == PaperlessConstant.CODE_SUCCESS){
+            response.setObject(CreateConnection.convertObjectToList(response.getObject()));
+        }
+        
+        return response;
+    }
+
 }

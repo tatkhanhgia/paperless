@@ -29,10 +29,7 @@ public class PaperlessConstant {
     final public static String TOKEN_TYPE_REFRESH = "Refresh";
 
     final public static int LANGUAGE_VN = 1;
-    final public static int LANGUAGE_EN = 2;
-    
-    final public static String EMAIL_SEND_PASSWORD = "email_send_password";
-    final public static String EMAIL_FORGOT_PASSWORD = "email_forgot_password";
+    final public static int LANGUAGE_EN = 2;        
     
     //AccessToken Data
     final public static String alg = PolicyConfiguration

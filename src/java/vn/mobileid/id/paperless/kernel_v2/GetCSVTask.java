@@ -45,6 +45,43 @@ public class GetCSVTask {
     }
     //</editor-fold>        
     
+    //<editor-fold defaultstate="collapsed" desc="Get CSV Task">
+    /**
+     * Get CSV Task data
+     * @param pCSV_ID
+     * @param transactionId
+     * @return CSV
+     * @throws Exception 
+     */
+    public static InternalResponse getCSVTask(
+            long pCSV_ID,
+            String transactionId
+    )throws Exception{
+        DatabaseV2_CSV callDb = new DatabaseImpl_V2_CSV();
+        DatabaseResponse response = callDb.getCSVTask(pCSV_ID, transactionId);
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            response.getStatus(),
+                            "en",
+                            transactionId)
+            );
+        }
+        
+        CSVTask csv = (CSVTask) response.getObject();
+        //Get CSV File from FMSs
+        InternalResponse result = DownloadFromFMS.download(csv.getUuid(), transactionId);
+        
+        if(result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){return result;}
+        
+        csv.setBinary_data((byte[])result.getData());
+        
+        return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, csv);
+    }
+    //</editor-fold>  
+    
     public static void main(String[] args) throws Exception{
         InternalResponse response = GetCSVTask.getCSVTask_noneGetFromFMS(3, "");
         if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){

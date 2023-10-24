@@ -73,7 +73,6 @@ public class Email {
 //        DatabaseResponse dpresp = db.getP2PLogID();
 //        String billCode = Utils.generateBillCode(emailReq.getEntityName(), dpresp.getLogId(), dpresp.getLogDatetime());
         String billCode = Utils.generateBillCode(emailReq.getEntityName(), 123, Date.from(Instant.now()));
-        System.out.println("BillCode:" + billCode);
         try {
             final Properties props = new Properties(SMTPProperties.getProp());
             // parsing properties

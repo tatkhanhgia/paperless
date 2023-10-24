@@ -303,11 +303,11 @@ public class ManageTokenWithDB {
     //==============================INTERNAL MIDDLE METHOD=============================
     
     //<editor-fold defaultstate="collapsed" desc="Login">
-    private static InternalResponse login(
+    private static synchronized InternalResponse login(
             String email,
             String pass,
             boolean remember_me,
-            String transactionID) throws Exception {
+            String transactionID) throws Exception {        
         Database db = new DatabaseImpl();
         //Login
         DatabaseResponse res = db.login(email, pass, transactionID);
@@ -437,11 +437,11 @@ public class ManageTokenWithDB {
             int typ = header.indexOf("typ");
             alg = header.substring(pos + 6, typ - 3);
         } catch (Exception e) {
-            LogHandler.error(
-                    ManageTokenWithDB.class,
-                    transactionID,
-                    "Error while decode token!",
-                    e);
+//            LogHandler.error(
+//                    ManageTokenWithDB.class,
+//                    transactionID,
+//                    "Error while decode token!",
+//                    e);
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
                     PaperlessMessageResponse.getErrorMessage(
@@ -461,11 +461,11 @@ public class ManageTokenWithDB {
         try {
             data = new ObjectMapper().readValue(payload, User.class);
         } catch (Exception e) {
-            LogHandler.error(
-                    ManageTokenWithDB.class,
-                    transactionID,
-                    "Error while parsing Data!",
-                    e);
+//            LogHandler.error(
+//                    ManageTokenWithDB.class,
+//                    transactionID,
+//                    "Error while parsing Data!",
+//                    e);
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
                     PaperlessMessageResponse.getErrorMessage(

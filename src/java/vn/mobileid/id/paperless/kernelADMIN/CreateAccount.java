@@ -33,9 +33,10 @@ public class CreateAccount {
     //<editor-fold defaultstate="collapsed" desc="Check Data Account">
     /**
      * Kiểm tra thông tin của Account
+     *
      * @param account
      * @param isJWTTokenExisted
-     * @return 
+     * @return
      */
     public static InternalResponse checkDataAccount(
             Account account,
@@ -82,11 +83,11 @@ public class CreateAccount {
 
     }
     //</editor-fold>
-    
 
     //<editor-fold defaultstate="collapsed" desc="Create Account">
     /**
      * Tạo mới một Account - User
+     *
      * @param email
      * @param password
      * @param mobile_number
@@ -100,7 +101,7 @@ public class CreateAccount {
      * @param org_web
      * @param transactionID
      * @return String email of User
-     * @throws Exception 
+     * @throws Exception
      */
     public static InternalResponse createAccount(
             String email,
@@ -140,7 +141,7 @@ public class CreateAccount {
             return res;
         }
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="Processing create User">
         res = CreateUser.createUser(
                 ((User) res.getData()).getEmail(),
@@ -159,11 +160,10 @@ public class CreateAccount {
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
-        List<Object> objects = (List<Object>)res.getData();
-        String status = (String)objects.get(0);
-        long idUser = (long)objects.get(1);
+        List<Object> objects = (List<Object>) res.getData();
+        String status = (String) objects.get(0);
+        long idUser = (long) objects.get(1);
         //</editor-fold>
-        
 
         EmailTemplate template;
 
@@ -197,12 +197,12 @@ public class CreateAccount {
 //            } else {
         res = GetEmailTemplate.getEmailTemplate(
                 PaperlessConstant.LANGUAGE_EN,
-                PaperlessConstant.EMAIL_SEND_PASSWORD,
+                vn.mobileid.id.paperless.object.enumration.EmailTemplate.EMAIL_SEND_PASSWORD.getName(),
                 transactionID);
-        if(res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+        if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
-        
+
         template = (EmailTemplate) res.getData();
         String authorizeCode = Utils.generateOneTimePassword(6);
         //Send mail
@@ -221,13 +221,12 @@ public class CreateAccount {
         }
         send.start();
         Resources.getQueueAuthorizeCode().put(email, authorizeCode);
-        
+
         return new InternalResponse(
                 PaperlessConstant.HTTP_CODE_SUCCESS,
-                (Object)idUser);
+                (Object) idUser);
     }
     //</editor-fold>
-    
 
     private static class CreateUser {
 

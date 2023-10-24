@@ -175,12 +175,12 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User {
         input.put("pUSER_NAME", pUSER_NAME);
         input.put("pMOBILE_NUMBER", pMOBILE_NUMBER);
         input.put("pPASSWORD_EXPIRED_AT", pPASSWORD_EXPIRED_AT);
-        input.put("pREMAINING_COUNTER", pREMAINING_COUNTER < 0 ? null : pREMAINING_COUNTER);
+        input.put("pREMAINING_COUNTER", pREMAINING_COUNTER <= 0 ? null : pREMAINING_COUNTER);
         input.put("pSTATUS_NAME", pSTATUS_NAME);
-        input.put("pCHANGE_PASSWORD", pCHANGE_PASSWORD < 0 ? null : pCHANGE_PASSWORD);
+        input.put("pCHANGE_PASSWORD", pCHANGE_PASSWORD <= 0 ? null : pCHANGE_PASSWORD);
         input.put("pLOCKED_ENABLED", pLOCKED_ENABLED);
         input.put("pLOCKED_AT", pLOCKED_AT);
-        input.put("pBUSINESS_TYPE", pBUSINESS_TYPE < 0 ? null : pBUSINESS_TYPE);
+        input.put("pBUSINESS_TYPE", pBUSINESS_TYPE <= 0 ? null : pBUSINESS_TYPE);
         input.put("pORGANIZATION_WEBSITE", pORGANIZATION_WEBSITE);
         input.put("pHMAC", pHMAC);
         input.put("pLAST_MODIFIED_BY", pLAST_MODIFIED_BY);

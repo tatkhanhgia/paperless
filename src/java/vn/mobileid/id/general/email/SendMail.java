@@ -34,9 +34,7 @@ public class SendMail extends Thread {
     private String fileName;
 
     public SendMail() {
-    }
-
-    ;
+    };
     
     /**
      * Contructor for custom
@@ -104,20 +102,29 @@ public class SendMail extends Thread {
             String CCCD,
             byte[] file,
             String filename) {
+        System.out.println("Check2");
         this.sendTo = sendTo;
         this.file = file;
         this.fileName = filename;
         EmailTemplate template = getTemplate(enterprise_id);
+        System.out.println("Template:"+template.getBody());
         if (template == null) {
             this.Subject = "eLaborContract - " + name + " - " + CCCD;
             this.Content = "Dear " + name;
             this.Content += "<br /><br /> Paperless service would like to thank you for trusting and using our services";
             this.Content += "<br /><br /> Your eLaborContract has been created successfully.";
         } else {
+            System.out.println("Sub"+template.getSubject());
+            System.out.println("Body:"+template.getBody());
+            System.out.println("Name:"+name);
             this.Subject = template.getSubject().replace(AnnotationJWT.Name.getNameAnnot(), name);
+            System.out.println("Subject1:"+this.Subject);
             this.Subject = this.Subject.replace(AnnotationJWT.DocNumber.getNameAnnot(), CCCD);
+            System.out.println("Subject2:"+this.Subject);
             this.Content = template.getBody().replace(AnnotationJWT.Name.getNameAnnot(), name);
+            System.out.println("Hello");
         }
+        System.out.println("Check4");
 //        System.out.println("Subject:"+this.Subject);
     }
 
@@ -147,6 +154,7 @@ public class SendMail extends Thread {
 
     public void appendTypeProcess(String type) {
         this.Subject = this.Subject.replace(AnnotationJWT.Type.getNameAnnot(), type);
+        this.Content = this.Content.replace(AnnotationJWT.Type.getNameAnnot(), type);
     }
 
     public String getSendTo() {
@@ -224,8 +232,12 @@ public class SendMail extends Thread {
         }
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Get Template ">
+    
+//</editor-fold>
     private EmailTemplate getTemplate(int enterprise_id) {
         try {
+            System.out.println("Check3");
             String email_notification = "";
             Database db = new DatabaseImpl();
             DatabaseResponse res = db.getEnterpriseInfo(enterprise_id, null);
@@ -244,8 +256,10 @@ public class SendMail extends Thread {
                 return null;
             }
             EmailTemplate email_template = (EmailTemplate) res.getObject();
+            System.out.println("Check33");
             return email_template;
         } catch (Exception ex) {
+            ex.printStackTrace();
             LogHandler.error(
                     SendMail.class,
                     "transaction",

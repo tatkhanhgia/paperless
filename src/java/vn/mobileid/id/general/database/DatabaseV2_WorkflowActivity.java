@@ -81,4 +81,16 @@ public interface DatabaseV2_WorkflowActivity {
             String last_modified_by,
             String transactionID
     ) throws Exception;
+    
+    public DatabaseResponse getTotalRecordsWorkflowActivity_basedOnWorkflow(
+            long workflowId,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getListsWorkflowActivity_basedOnWorkflow(
+            long workflowId,
+            int pOFFSET,
+            int pROW_COUNT,
+            String transactionId
+    )throws Exception;
 }

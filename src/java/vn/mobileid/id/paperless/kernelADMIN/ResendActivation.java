@@ -6,14 +6,11 @@ package vn.mobileid.id.paperless.kernelADMIN;
 
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
-import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.email.SendMail;
-import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.kernel.GetEmailTemplate;
-import vn.mobileid.id.paperless.kernel.GetUser;
+import vn.mobileid.id.paperless.kernel_v2.GetUser;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
@@ -66,7 +63,7 @@ public class ResendActivation {
 
             res = GetEmailTemplate.getEmailTemplate(
                     PaperlessConstant.LANGUAGE_EN,
-                    PaperlessConstant.EMAIL_SEND_PASSWORD,
+                    vn.mobileid.id.paperless.object.enumration.EmailTemplate.EMAIL_SEND_PASSWORD.getName(),
                     transactionID);
 
             if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {

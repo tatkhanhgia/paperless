@@ -100,6 +100,10 @@ class CreateConnection {
             e.printStackTrace();
             throw new Exception("Error while " + nameFunction, e);
         } finally {
+            try{
+            rs.close();
+            cals.close();
+            } catch(Exception ex){}
             DatabaseConnectionManager.getInstance().close(conn);
         }
         return response;
@@ -186,7 +190,7 @@ class CreateConnection {
                             if (aliasName != null && rows.get(i).get(aliasName) != null) {
                                 Object datas = cast(field, rows.get(i).get(aliasName));
                                 field.set(result, datas);
-                            } 
+                            }
 //                            else {
 //                                    field.set(result, test(field, rows.get(i)));
 //                            }
@@ -217,6 +221,11 @@ class CreateConnection {
             e.printStackTrace();
             throw new Exception("Error while " + nameFunction, e);
         } finally {
+            try {
+                rs.close();
+                cals.close();
+            } catch (Exception ex) {
+            }
             DatabaseConnectionManager.getInstance().close(conn);
         }
         return response;
@@ -356,33 +365,33 @@ class CreateConnection {
     }
 
     //test
-    private static Object test(Field fieldss,  HashMap<String, Object> data){
-        try{
-        Class<?> a = fieldss.getDeclaringClass();
-        if(a.isPrimitive()){
-            return null;
-        }
-        Object result = a.newInstance();
-        Field[] fields = a.getDeclaredFields();
-        for (Field child_field : fields) {
-            child_field.setAccessible(true);
-            AnnotationORM temp = child_field.getDeclaredAnnotation(AnnotationORM.class);
-            String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::columnName).orElse(null);
-            String aliasName = Optional.ofNullable(temp).map(AnnotationORM::aliasName).orElse(null);
-            if (nameInDb != null && data.get(nameInDb) != null) {
-                Object datas = cast(child_field, data);
-                child_field.set(result, datas);
-            } else {
-                if (aliasName != null && data.get(aliasName) != null) {
+    private static Object test(Field fieldss, HashMap<String, Object> data) {
+        try {
+            Class<?> a = fieldss.getDeclaringClass();
+            if (a.isPrimitive()) {
+                return null;
+            }
+            Object result = a.newInstance();
+            Field[] fields = a.getDeclaredFields();
+            for (Field child_field : fields) {
+                child_field.setAccessible(true);
+                AnnotationORM temp = child_field.getDeclaredAnnotation(AnnotationORM.class);
+                String nameInDb = Optional.ofNullable(temp).map(AnnotationORM::columnName).orElse(null);
+                String aliasName = Optional.ofNullable(temp).map(AnnotationORM::aliasName).orElse(null);
+                if (nameInDb != null && data.get(nameInDb) != null) {
                     Object datas = cast(child_field, data);
                     child_field.set(result, datas);
                 } else {
-                    child_field.set(result, test(child_field, data));
+                    if (aliasName != null && data.get(aliasName) != null) {
+                        Object datas = cast(child_field, data);
+                        child_field.set(result, datas);
+                    } else {
+                        child_field.set(result, test(child_field, data));
+                    }
                 }
             }
-        }
-        return result;
-        }catch (Exception ex){
+            return result;
+        } catch (Exception ex) {
             return null;
         }
     }

@@ -13,6 +13,7 @@ import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.eid.object.TokenResponse;
 import vn.mobileid.id.everification.object.CreateOwnerResponse;
 import vn.mobileid.id.everification.object.DataCreateOwner;
+import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
@@ -20,6 +21,7 @@ import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.EIDService;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.PaperlessService;
 import vn.mobileid.id.paperless.kernel.process.ProcessESignCloud;
 import vn.mobileid.id.paperless.kernel.process.ProcessPDFGenerator;
 import vn.mobileid.id.paperless.kernel.process.ProcessSecureQRTemplate;
@@ -516,7 +518,9 @@ public class ProcessWorkflowActivity {
                 return response;
             }
             default: {
-                return new InternalResponse(500, "{NOT PROVIDED YET}");
+                return new InternalResponse(
+                        500, 
+                        "{NOT PROVIDED YET}");
             }
         }
     }
@@ -546,10 +550,10 @@ public class ProcessWorkflowActivity {
             boolean isAssigned,
             String transactionID) throws Exception {
         //Get Data from request
-        System.out.println("Process CSV");
         List<Buffer> fileItem = request.getItem();
 
         //<editor-fold defaultstate="collapsed" desc="Check data of request">
+        try{
         for (int i = 0; i < fileItem.size(); i++) {
             for (ItemDetails item : fileItem.get(i).getItemDetails()) {
                 InternalResponse response = CheckWorkflowTemplate.checkDataWorkflowTemplate(item);
@@ -557,6 +561,19 @@ public class ProcessWorkflowActivity {
                     return response;
                 }
             }
+        } } catch(Exception ex){
+            LogHandler.error(
+                    PaperlessService.class,
+                    transactionID,
+                    "Cannot parse payload",
+                    ex);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            "en",
+                            null));
         }
         //</editor-fold>
         
@@ -567,7 +584,6 @@ public class ProcessWorkflowActivity {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        System.out.println("Get Ưorkflow activity success");
         WorkflowActivity woAc = (WorkflowActivity) response.getData();
         //</editor-fold>
 
@@ -578,7 +594,6 @@ public class ProcessWorkflowActivity {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        System.out.println("Get Ưorkflow template ttoe success");
 
         WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
         switch (templateType.getId()) {
@@ -593,14 +608,11 @@ public class ProcessWorkflowActivity {
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="Get Transaction to get CSV Task">
-        System.out.println("bat dau get transaction");
         response = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
-        System.out.println("Get trấnction");
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
         Transaction transaction = (Transaction) response.getData();
-        System.out.println("Get transaction success");
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="Get Type Object for each type of Transaction">
@@ -623,7 +635,6 @@ public class ProcessWorkflowActivity {
             }
             woAc.setCsv(csv);
         }
-        System.out.println("Get trấnctuib success 22");
         //</editor-fold>
 
         switch (templateType.getId()) {
@@ -648,6 +659,7 @@ public class ProcessWorkflowActivity {
                 } else {
                     Resources.putIntoRAM(String.valueOf(woAc.getId()), woAc);
                 }
+                response.setMessage("CSV");
                 response.setData(woAc);
                 return response;
             }
