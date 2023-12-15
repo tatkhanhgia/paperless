@@ -471,6 +471,9 @@ public class ProcessELaborContract {
         System.out.println("Metadata:" + object);
         Item_JSNObject items = new ObjectMapper().readValue(object, Item_JSNObject.class);
         KYC_V2.Component component = new ObjectMapper().readValue(object, KYC_V2.Component.class);
+        //test
+        System.out.println("A:"+component.getDateAfterOneYear());
+        System.out.println("B:"+component.getCurrentDate());
         try {
             //Assign JWT Data
 //            if (jwt != null && jwt.isMath_result()) {

@@ -11,7 +11,7 @@ package vn.mobileid.id.paperless.object.enumration;
 public enum QRBackground {
     White("White", "WHITE"),
     Transparent("Transparent", "TRANSPARENT");
-    
+
     private String[] name;
 
     private QRBackground(String name, String name2) {
@@ -23,13 +23,11 @@ public enum QRBackground {
     public String[] getName() {
         return name;
     }
-    
-    public static boolean isTransparent(String qrBackground){
-        for(QRBackground background : values()){
-            if(background.getName()[0].equals(qrBackground) ||
-                    background.getName()[1].equals(qrBackground)){
-                return true;
-            }
+
+    public static boolean isTransparent(String qrBackground) {
+        if (Transparent.getName()[0].equals(qrBackground)
+                || Transparent.getName()[1].equals(qrBackground)) {
+            return true;
         }
         return false;
     }

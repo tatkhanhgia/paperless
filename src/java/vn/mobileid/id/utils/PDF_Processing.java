@@ -7,6 +7,7 @@ package vn.mobileid.id.utils;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -215,11 +216,10 @@ public class PDF_Processing {
                 x = temp[0];
                 y = temp[1];
             }
-            System.out.println("X_final:"+x);
-            System.out.println("Y_final:"+y);
-            System.out.println("Page:"+page);
+            System.out.println("X_final:" + x);
+            System.out.println("Y_final:" + y);
+            System.out.println("Page:" + page);
             ImageData imgData = ImageDataFactory.create(img);
-            
 
             //Read Font
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -229,10 +229,11 @@ public class PDF_Processing {
             if (!isAllPage) {
                 System.out.println("Not all page!");
                 Image image = new Image(imgData)
-                    .setFixedPosition(page > maxPage ? maxPage : page, x, y) // Sign the last page if pageSign is greater than maxPage
-                    .setHeight(height)
-                    .setWidth(width);
-                
+                        .setFixedPosition(page > maxPage ? maxPage : page, x, y) // Sign the last page if pageSign is greater than maxPage
+                        .setHeight(height)
+                        .setBackgroundColor(new DeviceRgb(100, 100, 100))
+                        .setWidth(width);
+
                 Table table = new Table(1);
                 table.setFixedPosition(page > maxPage ? maxPage : page, x, (y - height / 4), width);
                 table.setHeight(height / 4);
@@ -283,10 +284,10 @@ public class PDF_Processing {
             } else {
                 for (int numberPage = 1; numberPage <= pdfDoc.getNumberOfPages(); numberPage++) {
                     Image image = new Image(imgData)
-                    .setFixedPosition(numberPage, x, y) // Sign the last page if pageSign is greater than maxPage
-                    .setHeight(height)
-                    .setWidth(width);
-                    
+                            .setFixedPosition(numberPage, x, y) // Sign the last page if pageSign is greater than maxPage
+                            .setHeight(height)
+                            .setWidth(width);
+
                     Table table = new Table(1);
                     table.setFixedPosition(numberPage, x, (y - height / 4), width);
                     table.setHeight(height / 4);
@@ -344,47 +345,47 @@ public class PDF_Processing {
 
     //<editor-fold defaultstate="collapsed" desc="Get Page of PDF">
     public static List<Integer> getPages(
-            byte[] pdf, 
-            boolean isLastPage){
-        try{
+            byte[] pdf,
+            boolean isLastPage) {
+        try {
             PdfReader reader = new PdfReader(new ByteArrayInputStream(pdf));
             PdfDocument pdfDoc = new PdfDocument(reader);
 
-            if(isLastPage){
+            if (isLastPage) {
                 return Arrays.asList(pdfDoc.getNumberOfPages());
-            } 
+            }
             List<Integer> pages = new ArrayList<>();
-            for(int i=1; i<=pdfDoc.getNumberOfPages(); i++){
+            for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
                 pages.add(i);
             }
             return pages;
-        } catch(Exception ex){
+        } catch (Exception ex) {
             return null;
         }
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Get Dimension of page PDF">
-    public static Rectangle getPageSize(byte[] pdf){
-        try{
+    public static Rectangle getPageSize(byte[] pdf) {
+        try {
             PdfReader reader = new PdfReader(new ByteArrayInputStream(pdf));
             PdfDocument pdfDoc = new PdfDocument(reader);
             Rectangle rect = null;
-            
-            for(int i=1; i<=pdfDoc.getNumberOfPages(); i++){
+
+            for (int i = 1; i <= pdfDoc.getNumberOfPages(); i++) {
                 rect = pdfDoc.getPage(i).getPageSize();
             }
             return rect;
-        } catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
             return null;
         }
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Add Text into PDF">
     public static byte[] addText(
-            byte[] pdf,            
+            byte[] pdf,
             int page,
             boolean isAllPage,
             boolean isLastPage,
@@ -414,14 +415,15 @@ public class PDF_Processing {
 
             if (!isAllPage) {
                 System.out.println("Not all page!");
-                
+
                 Table table = new Table(1);
-                table.setFixedPosition(page > maxPage ? maxPage : page, x, (y - height / 4), width);
+                table.setFixedPosition(page > maxPage ? maxPage : page, x + width * 20 / 100, (y - height / 4), width * 60 / 100);
                 table.setHeight(height / 4);
 
                 Cell cell = new Cell();
                 cell.setBorder(Border.NO_BORDER);
-                cell.setTextAlignment(TextAlignment.CENTER);
+                cell.setVerticalAlignment(VerticalAlignment.TOP);
+                cell.setHorizontalAlignment(HorizontalAlignment.CENTER);
 
                 Paragraph par = new Paragraph();
 
@@ -440,7 +442,7 @@ public class PDF_Processing {
                 IRenderer renderer = par.createRendererSubTree().setParent(
                         cell.createRendererSubTree().setParent(
                                 table.createRendererSubTree().setParent(document.getRenderer())));
-                LayoutArea layoutArea = new LayoutArea(page > maxPage ? maxPage : page, new Rectangle(width, height / 6));
+                LayoutArea layoutArea = new LayoutArea(page > maxPage ? maxPage : page, new Rectangle(width * 60 / 100, height / 6));
 
                 float lFontSize = 0.0001f, rFontSize = 10000;
 
@@ -457,20 +459,22 @@ public class PDF_Processing {
 
                 float finalFontSize = lFontSize;
                 par.setFontSize(finalFontSize);
+                par.setTextAlignment(TextAlignment.CENTER);
 
                 cell.add(par);
                 table.addCell(cell);
                 document.add(table);
             } else {
                 for (int numberPage = 1; numberPage <= pdfDoc.getNumberOfPages(); numberPage++) {
-                    
+
                     Table table = new Table(1);
-                    table.setFixedPosition(numberPage, x, (y - height / 4), width);
+                    table.setFixedPosition(numberPage, x + width * 20 / 100, (y - height / 4), width * 60 / 100);
                     table.setHeight(height / 4);
 
                     Cell cell = new Cell();
                     cell.setBorder(Border.NO_BORDER);
-                    cell.setTextAlignment(TextAlignment.CENTER);
+                    cell.setVerticalAlignment(VerticalAlignment.TOP);
+                    cell.setHorizontalAlignment(HorizontalAlignment.CENTER);
 
                     Paragraph par = new Paragraph();
 
@@ -489,7 +493,7 @@ public class PDF_Processing {
                     IRenderer renderer = par.createRendererSubTree().setParent(
                             cell.createRendererSubTree().setParent(
                                     table.createRendererSubTree().setParent(document.getRenderer())));
-                    LayoutArea layoutArea = new LayoutArea(numberPage, new Rectangle(width, height / 6));
+                    LayoutArea layoutArea = new LayoutArea(numberPage, new Rectangle(width * 60 / 100, height / 6));
 
                     float lFontSize = 0.0001f, rFontSize = 10000;
 
@@ -506,6 +510,7 @@ public class PDF_Processing {
 
                     float finalFontSize = lFontSize;
                     par.setFontSize(finalFontSize);
+                    par.setTextAlignment(TextAlignment.CENTER);
 
                     cell.add(par);
                     table.addCell(cell);
@@ -517,7 +522,7 @@ public class PDF_Processing {
         return os.toByteArray();
     }
     //</editor-fold>
-    
+
     public static void main(String[] args) throws Exception {
 //        byte[] back = Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\KHUNG GIAY CHUNG NHAN KHACH HANG.pdf"));
 //        byte[] ori = Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\Template Course of Hong Bang University.pdf"));
@@ -528,33 +533,32 @@ public class PDF_Processing {
 //        fos.close();
 
 //<editor-fold defaultstate="collapsed" desc="Add Image Test">
-//        byte[] pdf = Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\unsign.pdf"));
-//        byte[] img = Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\qr2.png"));
-//        String text = "validation.qrypto.ee\nhttps://www.mobile-id.vn\nhelllo";
-//
-//        byte[] result = addImage_test(
-//                pdf,
-//                img,
-//                3,
-//                false,
-//                false,
-//                20,
-//                1000,
-//                100,
-//                100,
-//                text,
-//                false);
-//        FileOutputStream fos = new FileOutputStream("C:\\Users\\Admin\\Downloads\\temp.pdf");
-//        fos.write(result);
-//        fos.close();
+        byte[] pdf = Files.readAllBytes(Paths.get("D:\\response22.pdf"));
+        byte[] img = Files.readAllBytes(Paths.get("D:\\download.png"));
+        String text = "validation.qrypto.ee";
+
+        byte[] result = addImage_test(
+                pdf,
+                img,
+                1,
+                false,
+                false,
+                10,
+                68,
+                150,
+                150,
+                text,
+                true);
+        FileOutputStream fos = new FileOutputStream("D:\\temp.pdf");
+        fos.write(result);
+        fos.close();
 //</editor-fold>
-        
+
 //<editor-fold defaultstate="collapsed" desc="Get Dimension Page">
-    Rectangle rect = getPageSize(Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\response.pdf")));
-        System.out.println("W:"+rect.getWidth());
-        System.out.println("H:"+rect.getHeight());
-        System.out.println(parseBoxCoordinate("0,0,20,30", Math.round(rect.getWidth()), Math.round(rect.getHeight()), ""));
-        
+//    Rectangle rect = getPageSize(Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\response.pdf")));
+//        System.out.println("W:"+rect.getWidth());
+//        System.out.println("H:"+rect.getHeight());
+//        System.out.println(parseBoxCoordinate("0,0,20,30", Math.round(rect.getWidth()), Math.round(rect.getHeight()), ""));
 //</editor-fold>
     }
 }

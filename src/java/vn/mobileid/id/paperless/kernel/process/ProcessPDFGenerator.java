@@ -11,12 +11,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -24,8 +23,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.general.keycloak.obj.User;
 import vn.mobileid.id.general.objects.InternalResponse;
@@ -485,7 +482,7 @@ public class ProcessPDFGenerator {
 
         //<editor-fold defaultstate="collapsed" desc="If enable URL">
         byte[] finalPdf = (byte[]) response.getData();
-        FileOutputStream fos = new FileOutputStream("C:\\Users\\Admin\\Downloads\\response22.pdf");
+        FileOutputStream fos = new FileOutputStream("D:\\response22.pdf");
         fos.write(finalPdf);
         fos.close();
         if (enableURL) {
