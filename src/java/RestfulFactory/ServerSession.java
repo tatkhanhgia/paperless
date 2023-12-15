@@ -838,7 +838,7 @@ public class ServerSession implements IServerSession {
                             "Err code: " + signCloudResp.getError() +
                             "\nErr Desscription: " + signCloudResp.getErrorDescription());
                 } 
-            throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
+//            throw new APIException(signCloudResp.getError(), signCloudResp.getErrorDescription());
         } else {
             if(LogHandler.isShowInfoLog()){                    
                     LogHandler.info(ServerSession.class,

@@ -73,4 +73,9 @@ public interface DatabaseV2_Asset {
 	String pLAST_MODIFIED_BY,
         String transactionId
     ) throws Exception;
+    
+    public DatabaseResponse getMetadataOfAsset(
+            long pASSET_ID,
+            String transactionId
+    )throws Exception;
 }

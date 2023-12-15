@@ -4,14 +4,17 @@
  */
 package vn.mobileid.id.paperless.object.enumration;
 
+import vn.mobileid.id.general.PolicyConfiguration;
+
 /**
  *
  * @author GiaTK
  */
 public enum TemplateUserActivity {
     createWorkflow("createWorkflow"),
-    createWorkflowActivity("createWorkflowActivity");
-    
+    createWorkflowActivity("createWorkflowActivity"),
+    createChildWoAcOfCSV("childCSV");
+
     private String name;
 
     private TemplateUserActivity(String name) {
@@ -20,5 +23,18 @@ public enum TemplateUserActivity {
 
     public String getName() {
         return name;
+    }
+
+    public static String getTemplateUserActivity(TemplateUserActivity tmp) {
+        switch (tmp.getName()) {
+            case "createWorkflowActivity": {
+                return PolicyConfiguration.getInstant().getTemplateUserActivity().getAttributes().get(0).getCreateWorkflowActivity();
+            }
+            case "childCSV":{
+                return PolicyConfiguration.getInstant().getTemplateUserActivity().getAttributes().get(0).getCreateChildOfWorkflowActivityCSV();
+            }
+            default :
+                return "";
+        }
     }
 }

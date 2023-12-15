@@ -52,7 +52,7 @@ public class UpdateWorkflowDetail {
         int flag = 1;
         String flag_name = "";
         for (WorkflowAttributeType type : types) {
-            for (WorkflowAttributeType check : listFinal) {                                
+            for (WorkflowAttributeType check : listFinal) {   
                 if (type.getId() == check.getId()) {
                     flag = 0;
                 } 

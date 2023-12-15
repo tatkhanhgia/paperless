@@ -12,6 +12,7 @@ import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.Category;
+import vn.mobileid.id.paperless.objects.Role;
 import vn.mobileid.id.paperless.objects.StatusOfAccount;
 import vn.mobileid.id.paperless.objects.UserActivity;
 import vn.mobileid.id.paperless.objects.UserActivityLog;
@@ -20,7 +21,7 @@ import vn.mobileid.id.paperless.objects.UserActivityLog;
  *
  * @author GiaTK
  */
-public class DatabaseImpl_V2_User implements DatabaseV2_User {
+ public class DatabaseImpl_V2_User implements DatabaseV2_User {
 
     @Override
     public DatabaseResponse createUserActivity(
@@ -286,13 +287,15 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User {
     @Override
     public DatabaseResponse getListUser(
             long pENTERPRISE_ID,
+            String pENTERPRISE_ROLE_LIST,
             int pOFFSET,
             int pROW_COUNT,
             String transactionId) throws Exception {
-        String nameStore = "{ CALL USP_USER_LIST(?,?,?,?)}";
+        String nameStore = "{ CALL USP_USER_LIST(?,?,?,?,?)}";
 
         HashMap<String, Object> input = new HashMap<>();
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
+        input.put("pENTERPRISE_ROLE_LIST", pENTERPRISE_ROLE_LIST);
         input.put("pOFFSET", pOFFSET);
         input.put("pROW_COUNT", pROW_COUNT);
 
@@ -339,7 +342,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User {
         input.put("pUSER_EMAIL", pUSER_EMAIL);
         input.put("pSEARCH_EMAIL", pSEARCH_EMAIL);
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
-        input.put("pLIST_CATEGORY", pLIST_CATEGORY);
+        input.put("pCATEGORY_LIST", pLIST_CATEGORY);
         input.put("pFROM_DATE", pFROM_DATE);
         input.put("pTO_DATE", pTO_DATE);
         
@@ -385,7 +388,7 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User {
         input.put("pUSER_EMAIL", pUSER_EMAIL);
         input.put("pSEARCH_EMAIL", pSEARCH_EMAIL);
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
-        input.put("pLIST_CATEGORY", pLIST_CATEGORY);
+        input.put("pCATEGORY_LIST", pLIST_CATEGORY);
         input.put("pFROM_DATE", pFROM_DATE);
         input.put("pTO_DATE", pTO_DATE);                
         input.put("pOFFSET", pOFF_SET);                
@@ -458,6 +461,60 @@ public class DatabaseImpl_V2_User implements DatabaseV2_User {
             return response;
         }        
         
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getTotalRecordOfUser(
+            int enterprise_id, 
+            String listRole,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_USER_LIST_GET_ROW_COUNT(?,?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pENTERPRISE_ID", enterprise_id);
+        input.put("pENTERPRISE_ROLE_LIST", listRole);
+        
+        HashMap<String, Integer> output = new HashMap<>();
+        output.put("pROW_COUNT", java.sql.Types.BIGINT);
+        output.put("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                nameStore,
+                input,
+                output,
+                "Get total records of User/Account");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS && response.getRows() != null) {
+            return response;
+        }
+        List<HashMap<String, Object>> rows = response.getRows();
+        for (HashMap<String, Object> row : rows) {
+            if (row.get("pROW_COUNT") != null) {
+                response.setObject((long) row.get("pROW_COUNT"));
+            }
+        }
+        
+        return response; 
+    }
+
+    @Override
+    public DatabaseResponse getListRoleOfEnterprise(
+            int enterprise_id,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_ENTERPRISE_ROLE_LIST(?,?)}";
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                Role.class,
+                nameStore,
+                null,
+                null,
+                "Get All Enterprise Role List");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
         return response;
     }
 }

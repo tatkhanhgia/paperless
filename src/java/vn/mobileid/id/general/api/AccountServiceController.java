@@ -16,6 +16,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.InternalResponse;
+import vn.mobileid.id.paperless.PaperlessAdminService;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.PaperlessService;
 import vn.mobileid.id.paperless.object.enumration.Category;
@@ -48,6 +49,7 @@ public class AccountServiceController extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        
         //<editor-fold defaultstate="collapsed" desc="Get Organization">
         if (req.getRequestURI().matches("^/paperless/v2/account/organization$")) {
             String transactionId = debugRequestLOG("Get Organization", req, null, 0);
@@ -86,8 +88,46 @@ public class AccountServiceController extends HttpServlet {
                         null);
             }
             //</editor-fold>
+        }
+        //<editor-fold defaultstate="collapsed" desc="Get Total Records of Account/User">
+        if (req.getRequestURI().matches("^/paperless/v2/account/gettotal")) {
+            String transactionId = debugRequestLOG("Get Total records of Account", req, null, 0);
+            LogHandler.request(
+                    AccountServiceController.class,
+                    transactionId);
+            try {
+                InternalResponse response = PaperlessAdminService.getTotalRecordOfAccounts(req, transactionId);
 
-        } else {
+                ServicesController.logIntoDB(
+                        req,
+                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
+                        response.getUser()==null?0:response.getUser().getAid(),
+                        0,
+                        response.getStatus(),
+                        "",
+                        response.getMessage(),
+                        "Get Organization",
+                        transactionId
+                );                
+
+                Utils.sendMessage(
+                        res,
+                        response.getStatus(),
+                        "application/json",
+                        response.getMessage());
+
+            } catch (Exception ex) {
+                LogHandler.error(AccountServiceController.class,
+                        transactionId,
+                        ex);
+                Utils.sendMessage(
+                        res,
+                        PaperlessConstant.HTTP_CODE_500,
+                        "application/json",
+                        null);
+            }
+        //</editor-fold>
+        }else {
             Utils.sendMessage(
                     res,
                     PaperlessConstant.HTTP_CODE_METHOD_NOT_ALLOWED,

@@ -51,19 +51,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.StringTokenizer;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import restful.sdk.API.Property;
 import vn.mobileid.id.general.PolicyConfiguration;
-import vn.mobileid.id.general.annotation.AnnotationJWT;
-import vn.mobileid.id.general.keycloak.obj.User;
-import vn.mobileid.id.paperless.object.enumration.TemplateUserActivity;
+import vn.mobileid.id.paperless.object.enumration.FileType;
 
 /**
  *
@@ -120,7 +122,7 @@ public class Utils {
             }
         }
     }
-    
+
     public static boolean isNullOrEmpty(String value) {
         if (value == null) {
             return true;
@@ -180,26 +182,6 @@ public class Utils {
         return walk(System.getProperty("jboss.server.base.dir"), fileName);
     }
 
-    /*
-    public static String walk(String path, String fileName) {
-        File root = new File(path);
-        File[] list = root.listFiles();
-        if (list == null) {
-            return null;
-        }
-        for (File f : list) {
-            if (f.isDirectory()) {
-                return walk(f.getAbsolutePath(), fileName);
-            } else {
-                LOG.error("path: "+f.getAbsolutePath()+" file name: "+fileName);
-                if (f.getAbsolutePath().contains(fileName)) {
-                    return f.getAbsolutePath();
-                }
-            }
-        }
-        return null;
-    }
-     */
     public static String walk(String path, String fileName) {
         try ( Stream<Path> walk = Files.walk(Paths.get(path))) {
 
@@ -249,6 +231,26 @@ public class Utils {
             headerValue = request.getHeader(key);
             if (key.compareToIgnoreCase(headerName) == 0) {
                 return headerValue;
+            } else {
+                headerValue = null;
+            }
+        }
+        return headerValue;
+    }
+
+    public static String getRequestHeader(final HttpServletRequest request, String headerName, boolean isDecodeBase64) {
+        String headerValue = null;
+        Enumeration headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String key = (String) headerNames.nextElement();
+            headerValue = request.getHeader(key);
+            if (key.compareToIgnoreCase(headerName) == 0) {
+                try {
+                    byte[] result = Base64.getDecoder().decode(headerValue);
+                    return new String(result, "UTF-8");
+                } catch (Exception ex) {
+                    return headerValue;
+                }
             } else {
                 headerValue = null;
             }
@@ -901,16 +903,28 @@ public class Utils {
         return result;
     }
 
+    //<editor-fold defaultstate="collapsed" desc="Get Date From String">
     public static Date getDateFromString(String source, String format) {
         Date d = null;
         try {
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             d = sdf.parse(source);
         } catch (Exception e) {
-            e.printStackTrace();
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                d = sdf.parse(source);
+            } catch (Exception ex) {
+            }
         }
         return d;
     }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Get Date From String - With Format in Policy">
+    public static Date getDateFromString(String source) {
+        return getDateFromString(source, PolicyConfiguration.getInstant().getSystemConfig().getAttributes().get(0).getDateFormat());
+    }
+    //</editor-fold>
 
     public static long getDifferenceBetweenDatesInMinute(Date date1, Date date2) {
         long diffMs = date2.getTime() - date1.getTime();
@@ -931,47 +945,6 @@ public class Utils {
         return (int) ((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24));
     }
 
-//    public static boolean validateNumberOfOTPGeneration(long ownerID, int maxOTPAllowance, int bySeconds) {
-//        Database db = new DatabaseImpl();
-//        OwnerAttribute ownerAttribute = db.getOwnerAttribute(ownerID, OwnerAttribute.REMAINING_ALLOWED_OTP_GENERATION);
-//        if (ownerAttribute == null) {
-//            // chưa có attr này
-//            db.updateOwnerAttribute(ownerID,
-//                    OwnerAttribute.REMAINING_ALLOWED_OTP_GENERATION,
-//                    String.valueOf(--maxOTPAllowance),
-//                    null);
-//            return true;
-//        } else {
-//            long lastUpdateDt = ownerAttribute.getModifiedDt().getTime();
-//            long currentDt = Calendar.getInstance().getTimeInMillis();
-//            long timeDiff = currentDt - lastUpdateDt;
-//            if (timeDiff > (bySeconds * 1000)) {
-//                int currentCounter = Integer.parseInt(ownerAttribute.getValue());
-//                maxOTPAllowance--;
-//                if (currentCounter != maxOTPAllowance) {
-//                    db.updateOwnerAttribute(ownerID,
-//                            OwnerAttribute.REMAINING_ALLOWED_OTP_GENERATION,
-//                            String.valueOf(maxOTPAllowance),
-//                            null);
-//                }
-//                return true;
-//            } else {
-//                int currentCounter = Integer.parseInt(ownerAttribute.getValue());
-//                if (currentCounter == 0) {
-//                    if (LogAndCacheManager.isShowDebugLog()) {
-//                        LOG.debug("Do not allow to generate OTP for Owner ID " + ownerID + " due to the number of OTP generation excceed.");
-//                    }
-//                    return false;
-//                } else {
-//                    db.updateOwnerAttribute(ownerID,
-//                            OwnerAttribute.REMAINING_ALLOWED_OTP_GENERATION,
-//                            String.valueOf(--currentCounter),
-//                            null);
-//                    return true;
-//                }
-//            }
-//        }
-//    }
     public static String processOTPPolicy(String otpCode, String otpPolicy) {
         //0 number of digit in a group
         //1 character between each group
@@ -1015,78 +988,6 @@ public class Utils {
         return r.nextInt(high - low) + low;
     }
 
-//    public static String preProcessPayloadWithLargeDataLiveMatching(String payload) {
-//        try {
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            LiveMatchingReqJSNObject liveMatchingReqJSNObject = objectMapper.readValue(payload, LiveMatchingReqJSNObject.class);
-//            if (liveMatchingReqJSNObject.getFrames() != null) {
-//                for (int i = 0; i < liveMatchingReqJSNObject.getFrames().length; i++) {
-//                    liveMatchingReqJSNObject.getFrames()[i] = IdentityConstant.LONG_STRING;
-//                }
-//            }
-//            return objectMapper.writeValueAsString(liveMatchingReqJSNObject);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            if (LogAndCacheManager.isShowErrorLog()) {
-//                LOG.error("Error while parsing payload. Details: " + Utils.printStackTrace(e));
-//            }
-//        }
-//        return null;
-//    }
-//    public static String preProcessPayloadWithLargeDataLiveness(String payload) {
-//        try {
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            LiveMatchingReqJSNObject liveMatchingReqJSNObject = objectMapper.readValue(payload, LiveMatchingReqJSNObject.class);
-//            if (liveMatchingReqJSNObject.getFrames() != null) {
-//                for (int i = 0; i < liveMatchingReqJSNObject.getFrames().length; i++) {
-//                    liveMatchingReqJSNObject.getFrames()[i] = IdentityConstant.LONG_STRING;
-//                }
-//            }
-//            return objectMapper.writeValueAsString(liveMatchingReqJSNObject);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            if (LogAndCacheManager.isShowErrorLog()) {
-//                LOG.error("Error while parsing payload. Details: " + Utils.printStackTrace(e));
-//            }
-//        }
-//        return null;
-//    }
-//    public static String preProcessPayloadWithLargeDataFaceMatch(String payload) {
-//        try {
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            LiveMatchingReqJSNObject liveMatchingReqJSNObject = objectMapper.readValue(payload, LiveMatchingReqJSNObject.class);
-//            if (liveMatchingReqJSNObject.getFrames() != null) {
-//                for (int i = 0; i < liveMatchingReqJSNObject.getFrames().length; i++) {
-//                    liveMatchingReqJSNObject.getFrames()[i] = IdentityConstant.LONG_STRING;
-//                }
-//            }
-//            return objectMapper.writeValueAsString(liveMatchingReqJSNObject);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            if (LogAndCacheManager.isShowErrorLog()) {
-//                LOG.error("Error while parsing payload. Details: " + Utils.printStackTrace(e));
-//            }
-//        }
-//        return null;
-//    }
-//    public static String preProcessPayloadWithLargeDataEnroll(String payload) {
-//        try {
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            LiveMatchingReqJSNObject liveMatchingReqJSNObject = objectMapper.readValue(payload, LiveMatchingReqJSNObject.class);
-//            if (liveMatchingReqJSNObject.getFrames() != null) {
-//                for (int i = 0; i < liveMatchingReqJSNObject.getFrames().length; i++) {
-//                    liveMatchingReqJSNObject.getFrames()[i] = IdentityConstant.LONG_STRING;
-//                }
-//            }
-//            return objectMapper.writeValueAsString(liveMatchingReqJSNObject);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            if (LogAndCacheManager.isShowErrorLog()) {
-//                LOG.error("Error while parsing payload. Details: " + Utils.printStackTrace(e));
-//            }
-//        }
-//        return null;
-//    }
     public static Date convertToUTC(Date d) throws ParseException {
         SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         String s = isoFormat.format(d);
@@ -1182,13 +1083,6 @@ public class Utils {
         while (token.hasMoreTokens()) {
             list.add(token.nextToken());
         }
-//        String baseUrl = map.get("mobileid.rssp.baseurl");
-//        String relyingParty = map.get("mobileid.rssp.rp.name");
-//        String relyingPartyUser = map.get("mobileid.rssp.rp.user");
-//        String relyingPartyPassword = map.get("mobileid.rssp.rp.password");
-//        String relyingPartySignature = map.get("mobileid.rssp.rp.signature");
-//        String relyingPartyKeyStore = map.get("mobileid.rssp.rp.keystore.file");
-//        String relyingPartyKeyStorePassword = map.get("mobileid.rssp.rp.keystore.password");
         byte[] relyingPartyKeyStoreData = p12;
 
         return new Property(
@@ -1220,27 +1114,27 @@ public class Utils {
             return null;
         }
     }
-    
+
     public static Object getFromJson_(String name, String json) {
         try {
             JsonNode node = new ObjectMapper().readTree(json);
             JsonNode childNode = node.findValue(name);
-            if(childNode.isBoolean()){
+            if (childNode.isBoolean()) {
                 return childNode.asBoolean();
             }
-            if(childNode.isFloat()){
+            if (childNode.isFloat()) {
                 return childNode.asDouble();
             }
-            if(childNode.isLong()){
+            if (childNode.isLong()) {
                 return childNode.asLong();
             }
-            if(childNode.isInt()){
+            if (childNode.isInt()) {
                 return childNode.asInt();
             }
-            if(childNode.isTextual()){
+            if (childNode.isTextual()) {
                 return childNode.asText();
             }
-            if(childNode.isArray()){
+            if (childNode.isArray()) {
                 return childNode.asToken().asByteArray();
             }
         } catch (Exception ex) {
@@ -1248,7 +1142,7 @@ public class Utils {
         }
         return null;
     }
-    
+
     public static String getPayload(HttpServletRequest request) throws IOException {
         String body = null;
         StringBuilder stringBuilder = new StringBuilder();
@@ -1257,8 +1151,8 @@ public class Utils {
         try {
             InputStream inputStream = request.getInputStream();
             if (inputStream != null) {
-                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                char[] charBuffer = new char[128];
+                bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                char[] charBuffer = new char[1024];
                 int bytesRead = -1;
                 while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
                     stringBuilder.append(charBuffer, 0, bytesRead);
@@ -1277,21 +1171,150 @@ public class Utils {
                 }
             }
         }
-
         body = stringBuilder.toString();
         return body;
     }
-    
-    public static String generateDescription_UserActivity(User user,TemplateUserActivity name){
-        switch (name.getName()){
-            case "createWorkflowActivity":{
-                String template = PolicyConfiguration.getInstant().getTemplateUserActivity().getAttributes().get(0).getCreateWorkflowActivity();
-                template = AnnotationJWT.replaceAnnotation(template, user.getEmail());
-                return template;
-            }
-            default:{
-                return "";
-            }
+
+    //<editor-fold defaultstate="collapsed" desc="Check extension">
+    /**
+     * Check an extension of fileName
+     *
+     * @param fileName
+     * @return
+     */
+    public static boolean checkExtension(String fileName) {
+        String[] splits = fileName.split("\\.");
+        if (splits.length >= 2) {
+            String extension = splits[splits.length - 1];
+            System.out.println("Extension:" + extension);
+            return FileType.isContaint(extension);
         }
+        return false;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Check is Image">
+    public static boolean isImage(String name) {
+        String[] splits = name.split("\\.");
+        if (splits.length >= 2) {
+            String extension = splits[splits.length - 1];
+            return FileType.isImage(extension);
+        }
+        return false;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Check is Image">
+    public static boolean isImage(InputStream is) {
+        try {
+            ImageIO.read(is);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    //</editor-fold> 
+
+    //<editor-fold defaultstate="collapsed" desc="Check is Image">
+    public static boolean isImage(byte[] bytes) {
+        try {
+            ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+            ImageIO.read(is);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    //</editor-fold> 
+
+    //<editor-fold defaultstate="collapsed" desc="Calculate QR Size">
+    public static int calculateQRSize(int qrSize) {
+        return qrSize / 5;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Read font">
+    public static byte[] read(InputStream input) {
+        try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[4];
+            while ((nRead = input.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            buffer.flush();
+            return buffer.toByteArray();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Change Root of PDF">
+    public static float[] changeRoot(
+            float x, //top
+            float y, //left
+            float witdh,
+            float height,
+            float qrSize) {
+        float x_after = y;
+        float y_after = (height - x) - qrSize;
+
+        System.err.println("Top:" + x);
+        System.err.println("Left:" + y);
+        System.err.println("X:" + x_after);
+        System.err.println("Y:" + y_after);
+        System.err.println("Height:" + height);
+        System.err.println("QRSIZE:" + qrSize);
+
+        return new float[]{x_after, y_after};
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Change RootV2 of PDF">
+    public static float[] changeRootPercentage(
+            float x, //left
+            float y, //top
+            float witdh,
+            float height,
+            float qrSize) {
+        float x_after = x / 100 * witdh;
+        float y_after = (1 - y / 100) * height - qrSize;
+
+        System.err.println("Left:" + x);
+        System.err.println("Top:" + y);
+        System.err.println("X:" + x_after);
+        System.err.println("Y:" + y_after);
+        System.out.println("Width:" + witdh);
+        System.err.println("Height:" + height);
+        System.err.println("QRSIZE:" + qrSize);
+
+        return new float[]{x_after, y_after};
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Pixel into Point">
+    public static float convertPixel_to_Point(int pixel) {
+        return pixel * 75 / 100;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Convert Percentage to Point">
+    public static float parseFromPercentage(float percentage, float maxNumber){
+        return percentage * maxNumber / 100;
+    }
+    //</editor-fold>
+    
+    public static void main(String[] args) {
+        int x = 20;
+        int y = 20;
+        int width = 100;
+        int height = 100;
+        int qrSize = 10;
+
+//        int[] changes = changeRoot(x,y, width, height, qrSize);
+//        System.out.println("X:"+changes[0]);
+//        System.out.println("Y:"+changes[1]);
     }
 }

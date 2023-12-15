@@ -4,7 +4,6 @@
  */
 package vn.mobileid.id.general.database;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import vn.mobileid.id.general.LogHandler;
@@ -217,6 +216,26 @@ public class DatabaseImpl_V2_Asset implements DatabaseV2_Asset {
 
         LogHandler.debug(this.getClass(), response.getDebugString());
         
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getMetadataOfAsset(
+            long pASSET_ID, 
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_ASSET_GET_METADATA(?,?)}";
+        
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pASSET_ID", pASSET_ID);
+        
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                Asset.class,
+                nameStore,
+                input,
+                null,
+                "Get Metadata of Asset");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
         return response;
     }
     

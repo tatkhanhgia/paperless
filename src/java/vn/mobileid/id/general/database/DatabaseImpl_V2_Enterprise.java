@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.paperless.objects.Enterprise_SigningInfo;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.Enterprise;
 
@@ -55,6 +56,27 @@ public class DatabaseImpl_V2_Enterprise implements DatabaseV2_Enterprise{
                 input,
                 null,
                 "Get Enterprise Info");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+      
+        return response;
+    }
+
+    @Override
+    public DatabaseResponse getSigningInfoOfEnterprise(
+            int enterprise_id,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_ENTERPRISE_GET_SIGNING_INFRO_PROPERTIES(?,?)}";
+        
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pENTERPRISE_ID", enterprise_id);
+                
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                Enterprise_SigningInfo.class,
+                nameStore,
+                input,
+                null,
+                "Get Data Signing Propeties");
 
         LogHandler.debug(this.getClass(), response.getDebugString());
       

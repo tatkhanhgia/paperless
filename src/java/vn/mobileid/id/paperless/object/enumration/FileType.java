@@ -4,6 +4,8 @@
  */
 package vn.mobileid.id.paperless.object.enumration;
 
+import org.apache.commons.compress.utils.Lists;
+
 /**
  *
  * @author GiaTK
@@ -11,8 +13,17 @@ package vn.mobileid.id.paperless.object.enumration;
  */
 public enum FileType {
     PDF("PDF"),
+    pdf("pdf"),
     WORD("DOCX"),
-    XSLT("XSLT");
+    doc("doc"),
+    XSLT("XSLT"),
+    xslt("xslt"),
+    png("png"),
+    PNG("PNG"),
+    jpeg("jpeg"),
+    jpg("jpg"),
+    JPG("JPG"),
+    JPEG("JPEG");
 
     private String name;
 
@@ -24,4 +35,26 @@ public enum FileType {
         return name;
     }
 
+    public static boolean isContaint(String extension){
+        for(FileType type : values()){
+            System.out.println("TypeName:"+type.getName());
+            System.out.println("ExtensionName:"+extension);
+            if(type.getName().equals(extension)){
+                System.out.println("Equal:true");
+                return true;
+            }
+        }
+        System.out.println("Equal:false");
+        return false;
+    }
+    
+    public static boolean isImage(String extension){
+        FileType[] temp = new FileType[]{FileType.JPEG, FileType.PNG, FileType.jpeg, FileType.png};
+        for(FileType temp_ : temp){
+            if(temp_.getName().equals(extension)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -50,6 +50,10 @@ public class CORSFilter implements Filter {
             return;
         }
 
+        if (servletRequest.getCharacterEncoding() == null) {
+            servletRequest.setCharacterEncoding("UTF-8");
+        }
+
         // pass the request along the filter chain
         chain.doFilter(request, servletResponse);
     }

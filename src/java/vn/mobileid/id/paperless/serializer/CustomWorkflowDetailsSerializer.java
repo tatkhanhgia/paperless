@@ -15,6 +15,7 @@ import java.util.List;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.object.enumration.WorkflowAttributeTypeName;
 
 /**
  *
@@ -42,17 +43,31 @@ public class CustomWorkflowDetailsSerializer implements JsonSerializable {
             if(ob.getValue() instanceof String){
                 try{
                     int value = Integer.parseInt((String)ob.getValue());
-                    if(value == 1){
-                        jg.writeBooleanField(ob.getName(), true);
+                    if(WorkflowAttributeTypeName.getType(ob.getId()) instanceof Boolean){
+                        jg.writeBooleanField(ob.getName(), value==1);
                         continue;
                     }
-                    if(value == 0 
-                            && ob.getId() != PaperlessConstant.ASSET_TYPE_APPEND
-                            && ob.getId() != PaperlessConstant.ASSET_TYPE_BACKGROUND
-                            && ob.getId() != PaperlessConstant.ASSET_TYPE_TEMPLATE){
-                        jg.writeBooleanField(ob.getName(), false);
-                        continue;
-                    }       
+//                    if(value == 1 && ob.getId() != WorkflowAttributeTypeName.ASSET_APPEND.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.ASSET_BACKGROUND.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.ASSET_TEMPLATE.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.PAGE.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.X_COORDINATE.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.Y_COORDINATE.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.STAMP_IN.getId()){
+//                        jg.writeBooleanField(ob.getName(), true);
+//                        continue;
+//                    }
+//                    if(value == 0 
+//                            && ob.getId() != WorkflowAttributeTypeName.ASSET_APPEND.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.ASSET_BACKGROUND.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.ASSET_TEMPLATE.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.PAGE.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.X_COORDINATE.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.Y_COORDINATE.getId()
+//                            && ob.getId() != WorkflowAttributeTypeName.STAMP_IN.getId()){
+//                        jg.writeBooleanField(ob.getName(), false);
+//                        continue;
+//                    }      
                     jg.writeNumberField(ob.getName(), value);
                     continue;
                 }catch(Exception ex){}

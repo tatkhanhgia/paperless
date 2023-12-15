@@ -7,7 +7,6 @@ package vn.mobileid.id.paperless.objects;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,6 +14,7 @@ import java.util.List;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.annotation.AnnotationORM;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.object.enumration.WorkflowAttributeTypeName;
 
 /**
  *
@@ -245,13 +245,16 @@ public class WorkflowTemplateType {
         for (String key : enableObjectMap.keySet()) {
             String temp_key = key.replace("_ENABLED", "");
             temp_key = temp_key.toLowerCase();
+//            System.out.println("Key:"+temp_key);
             //Test
             WorkflowAttributeType attributeParent = Resources.getListWorkflowAttributeType().get(temp_key);
             if (attributeParent != null && (enableObjectMap.get(key) == 1) && !temp.contains(temp_key)) {
                 WorkflowAttributeType attribute = (WorkflowAttributeType) attributeParent.clone();
-                if (attribute.getId() == PaperlessConstant.ASSET_TYPE_APPEND
-                        || attribute.getId() == PaperlessConstant.ASSET_TYPE_BACKGROUND
-                        || attribute.getId() == PaperlessConstant.ASSET_TYPE_TEMPLATE) {
+                if (attribute.getId() == WorkflowAttributeTypeName.ASSET_APPEND.getId()
+                        || attribute.getId() == WorkflowAttributeTypeName.ASSET_BACKGROUND.getId()
+                        || attribute.getId() == WorkflowAttributeTypeName.ASSET_TEMPLATE.getId()
+                        || attribute.getId() == WorkflowAttributeTypeName.ASSET_ESIGN.getId()
+                        || attribute.getId() == WorkflowAttributeTypeName.ASSET_ELABOR.getId()) {
                     if (!temp.contains(attribute.getName())) {
                         attribute.setValue(null);
                         src.add(attribute);

@@ -4,9 +4,12 @@
  */
 package vn.mobileid.id.general.database;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.objects.DatabaseResponse;
+import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 
 /**
@@ -55,7 +58,7 @@ public class DatabaseImpl_V2_WorkflowDetails implements DatabaseV2_WorkflowDetai
                 "Get Workflow Attribute Types");
 
         LogHandler.debug(this.getClass(), response.getDebugString());
-
+        
         return response;
     }
 
@@ -76,6 +79,10 @@ public class DatabaseImpl_V2_WorkflowDetails implements DatabaseV2_WorkflowDetai
                 "Get Workflow Details");
 
         LogHandler.debug(this.getClass(), response.getDebugString());
+        
+        if(response.getStatus() == PaperlessConstant.CODE_SUCCESS){
+            response.setObject(CreateConnection.convertObjectToList(response.getObject()));
+        }
 
         return response;
     }

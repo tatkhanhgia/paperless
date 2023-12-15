@@ -28,16 +28,16 @@ public class DatabaseImpl_V2_Transaction implements DatabaseV2_Transaction{
             String pHMAC, 
             String pCREATED_BY, 
             String transactionId) throws Exception {
-        String nameStore = "{ CALL USP_TRANSACTION_ADD(?,?,?,?,?,?,?,?,?,?,?)}";
+        String nameStore = "{ CALL USP_TRANSACTION_ADD(?,?,?,?,?,?,?,?)}";
 
         HashMap<String, Object> input = new HashMap<>();
-        input.put("U_EMAIL", U_EMAIL);
-        input.put("pLOG_ID", pLOG_ID);
+        input.put("pUSER_EMAIL", U_EMAIL);
+        input.put("pUSER_ACTIVITY_LOG_ID", pLOG_ID);
         input.put("pOBJECT_ID", pOBJECT_ID);
         input.put("pOBJECT_TYPE", pOBJECT_TYPE);
-        input.put("pIP_ADDRESS", pIP_ADDRESS);
-        input.put("pMETADATA", pMETADATA);
-        input.put("pDESCRIPTION", pDESCRIPTION);
+//        input.put("pIP_ADDRESS", pIP_ADDRESS);
+//        input.put("pMETADATA", pMETADATA);
+//        input.put("pDESCRIPTION", pDESCRIPTION);
         input.put("pHMAC", pHMAC);
         input.put("pCREATED_BY", pCREATED_BY);
 

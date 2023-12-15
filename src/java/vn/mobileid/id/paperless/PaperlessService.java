@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itextpdf.kernel.geom.Rectangle;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -72,6 +73,7 @@ import vn.mobileid.id.paperless.serializer.CustomWorkflowDetailsSerializer;
 import vn.mobileid.id.paperless.serializer.CustomWorkflowSerializer;
 import vn.mobileid.id.paperless.serializer.CustomWorkflowTemplateSerializer;
 import vn.mobileid.id.general.PolicyConfiguration;
+import vn.mobileid.id.paperless.kernel.CheckPasswordRule;
 import vn.mobileid.id.paperless.kernel.GetTransaction;
 import vn.mobileid.id.paperless.kernel.GetWorkflowTemplateType;
 import vn.mobileid.id.paperless.kernel_v2.DeleteAsset;
@@ -81,10 +83,13 @@ import vn.mobileid.id.paperless.kernel_v2.GetFileManagement;
 import vn.mobileid.id.paperless.kernel_v2.GetQR;
 import vn.mobileid.id.paperless.kernel_v2.GetUserActivity;
 import vn.mobileid.id.paperless.kernel_v2.GetUserActivityLog;
+import vn.mobileid.id.paperless.kernel_v2.Parsing;
 import vn.mobileid.id.paperless.kernel_v2.UpdateAsset;
 import vn.mobileid.id.paperless.kernel_v2.UploadAsset;
+import vn.mobileid.id.paperless.objects.AssetType;
 import vn.mobileid.id.paperless.objects.CSVTask;
 import vn.mobileid.id.paperless.objects.Category;
+import vn.mobileid.id.paperless.objects.Enterprise_SigningInfo;
 import vn.mobileid.id.paperless.objects.GenerationType;
 import vn.mobileid.id.paperless.objects.QR;
 
@@ -94,6 +99,7 @@ import vn.mobileid.id.paperless.objects.UserActivityLog;
 import vn.mobileid.id.paperless.objects.WorkflowType;
 import vn.mobileid.id.paperless.serializer.CustomListUserActivitySerializer;
 import vn.mobileid.id.paperless.serializer.CustomUserActivitySerializer;
+import vn.mobileid.id.utils.PDF_Processing;
 import vn.mobileid.id.utils.TaskV2;
 import vn.mobileid.id.utils.Utils;
 import vn.mobileid.id.utils.XSLT_PDF_Processing;
@@ -600,6 +606,7 @@ public class PaperlessService {
         ObjectMapper mapper = new ObjectMapper();
         ProcessWorkflowActivity_JSNObject data = null;
         try {
+            System.out.println("Payload:" + payload);
             data = mapper.readValue(payload, ProcessWorkflowActivity_JSNObject.class);
         } catch (Exception e) {
             LogHandler.error(
@@ -633,15 +640,15 @@ public class PaperlessService {
                 data,
                 false,
                 transactionID);
-        if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-            //Send mail
-            sendMail(id,
-                    user_info,
-                    user_info.getEmail(),
-                    null,
-                    "QR",
-                    transactionID);
-        }
+//        if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS && !response.getMessage().equals("Secure QR")) {
+//            //Send mail
+//            sendMail(id,
+//                    user_info,
+//                    user_info.getEmail(),
+//                    null,
+//                    response.getMessage(),
+//                    transactionID);
+//        }
         response.setUser(user_info);
         return response;
     }
@@ -653,15 +660,16 @@ public class PaperlessService {
             String payload,
             int id,
             String transactionID) throws Exception {
-        //Check valid token
+        //<editor-fold defaultstate="collapsed" desc="Check valid token">
         InternalResponse response = verifyToken(request, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
 
         User user_info = response.getUser();
+        //</editor-fold>
 
-        //Check Data
+        //<editor-fold defaultstate="collapsed" desc="Check data in payload">
         if (Utils.isNullOrEmpty(payload)) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
@@ -671,8 +679,9 @@ public class PaperlessService {
                             "en",
                             null));
         }
+        //</editor-fold>
 
-        //Mapper Object
+        //<editor-fold defaultstate="collapsed" desc="Mapping data">
         ObjectMapper mapper = new ObjectMapper();
         ProcessWorkflowActivity_CSV_JSNObject data = new ProcessWorkflowActivity_CSV_JSNObject();
         try {
@@ -691,8 +700,9 @@ public class PaperlessService {
                             PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
+        //</editor-fold>
 
-        //Get Data header
+        //<editor-fold defaultstate="collapsed" desc="Get data in header">
         String x_file_name = Utils.getRequestHeader(request, "x-file-name");
         String headerJWT = Utils.getRequestHeader(request, "eid-jwt");
         JWT_Authenticate JWT = new JWT_Authenticate();
@@ -700,7 +710,9 @@ public class PaperlessService {
         if (headerJWT != null) {
             JWT = (JWT_Authenticate) ProcessEID_JWT.getInfoJWT(headerJWT).getData();
         }
-        //Processing                
+        //</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="Processing">
         response = ProcessWorkflowActivity.process_forCSV(
                 id,
                 x_file_name,
@@ -710,7 +722,7 @@ public class PaperlessService {
                 false,
                 transactionID);
         if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
-//            //Send mail
+            //Send mail
             sendMail(id,
                     user_info,
                     user_info.getEmail(),
@@ -718,6 +730,8 @@ public class PaperlessService {
                     response.getMessage(),
                     transactionID);
         }
+        //</editor-fold>
+
         response.setUser(user_info);
         return response;
     }
@@ -875,7 +889,7 @@ public class PaperlessService {
         KYC temp = new KYC();
         if (value == null || value.equalsIgnoreCase("PDF")) {
             byte[] xslt = XSLT_PDF_Processing.appendData(temp, asset.getBinaryData());
-            byte[] data = XSLT_PDF_Processing.convertHTMLtoPDF(xslt);
+            byte[] data = XSLT_PDF_Processing.convertHTMLtoPDF(xslt, XSLT_PDF_Processing.FontOfTemplate.Elabor_Template);
             response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
             response.setData(data);
             response.setUser(user_info);
@@ -920,7 +934,7 @@ public class PaperlessService {
         KYC temp = new KYC();
         if (value == null || value.equalsIgnoreCase("PDF")) {
             byte[] xslt = XSLT_PDF_Processing.appendData(temp, asset.getBinaryData());
-            byte[] data = XSLT_PDF_Processing.convertHTMLtoPDF(xslt);
+            byte[] data = XSLT_PDF_Processing.convertHTMLtoPDF(xslt, XSLT_PDF_Processing.FontOfTemplate.Elabor_Template);
             response.setStatus(PaperlessConstant.HTTP_CODE_SUCCESS);
             Asset assetTemp = new Asset();
             assetTemp.setBase64(Base64.getEncoder().encodeToString(data));
@@ -1048,15 +1062,16 @@ public class PaperlessService {
     public static InternalResponse uploadAsset(
             final HttpServletRequest request,
             String transactionID) throws Exception {
-        //Check valid token
+        //<editor-fold defaultstate="collapsed" desc="Check valid token">
         InternalResponse response = verifyToken(request, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
 
         User user_info = response.getUser();
+        //</editor-fold>
 
-        //Get header         
+        //<editor-fold defaultstate="collapsed" desc="Get headers data">
         String x_file_type = Utils.getRequestHeader(request, "x-file-type");
         String x_file_name = Utils.getRequestHeader(request, "x-file-name");
         ByteArrayOutputStream outputStream = null;
@@ -1082,7 +1097,9 @@ public class PaperlessService {
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     "{INVALID FILE}");
         }
-        //Check null
+        //</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="Check data">
         if (outputStream == null || outputStream.toByteArray().length <= 0) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
@@ -1093,9 +1110,33 @@ public class PaperlessService {
                             null));
         }
 
-        //Processing        
-        int i = convertStringIntoAssetType(x_file_type, x_file_name);
-        if (i == -1) {
+        if (Utils.isNullOrEmpty(x_file_name)) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                            PaperlessConstant.SUBCODE_MISSING_ASSET_NAME,
+                            "en",
+                            transactionID)
+            );
+        }
+        //</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="From file_type and file_name and binary => Convert into Asset">
+        System.out.println("Name:" + x_file_name);
+        if (!Utils.checkExtension(x_file_name)) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                            PaperlessConstant.SUBCODE_NOT_SUPPORT_EXTENSION,
+                            "en",
+                            transactionID)
+            );
+        }
+
+        AssetType type = convertStringIntoAssetType(x_file_type);
+        if (type == null) {
             String message = PaperlessMessageResponse.getErrorMessage(
                     PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
                     PaperlessConstant.SUBCODE_INVALID_FILE_TYPE,
@@ -1109,7 +1150,7 @@ public class PaperlessService {
         Asset asset = new Asset(
                 0,
                 x_file_name,
-                i,
+                type.getId(),
                 outputStream.toByteArray().length,
                 "",
                 null,
@@ -1120,6 +1161,8 @@ public class PaperlessService {
                 outputStream.toByteArray(),
                 null
         );
+        //</editor-fold>
+
         response = UploadAsset.uploadAsset(user_info, asset, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
@@ -1135,37 +1178,36 @@ public class PaperlessService {
             final HttpServletRequest request,
             String payload,
             String transactionID) throws Exception {
-        //Check valid token
+        //<editor-fold defaultstate="collapsed" desc="Check valid Token">
         InternalResponse response = verifyToken(request, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
 
         User user_info = response.getUser();
+        //</editor-fold>
 
-        //Get header         
+        //<editor-fold defaultstate="collapsed" desc="Get Headers">
         String x_file_type = Utils.getRequestHeader(request, "x-file-type");
-        String x_file_name = Utils.getRequestHeader(request, "x-file-name");
+        String x_file_name = Utils.getRequestHeader(request, "x-file-name", true);
         Asset temp = new Asset();
         temp = new ObjectMapper().readValue(payload, Asset.class);
+        System.out.println("Payload Asset:"+payload);
+        //</editor-fold>
 
-        //Decode to get File data
-        byte[] temp2;
-        try {
-            temp2 = Base64.getDecoder().decode(temp.getBase64().getBytes());
-        } catch (Exception ex) {
+        //<editor-fold defaultstate="collapsed" desc="From File Name - Binary - Asset Type => Convert To Asset">
+        if (!Utils.checkExtension(x_file_name)) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
                             PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
-                            PaperlessConstant.SUBCODE_INVALID_FILE_DATA,
+                            PaperlessConstant.SUBCODE_NOT_SUPPORT_EXTENSION,
                             "en",
-                            transactionID));
+                            transactionID)
+            );
         }
-
-        //Check Asset Type is valid + extension in file name
-        int i = convertStringIntoAssetType(x_file_type, x_file_name);
-        if (i == -1) {
+        AssetType type = convertStringIntoAssetType(x_file_type);
+        if (type == null) {
             String message = PaperlessMessageResponse.getErrorMessage(
                     PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
                     PaperlessConstant.SUBCODE_INVALID_FILE_TYPE,
@@ -1176,10 +1218,117 @@ public class PaperlessService {
                     message);
         }
 
+        //<editor-fold defaultstate="collapsed" desc="Decode base64 to File Data">
+        byte[] temp2;
+        try {
+            temp2 = Base64.getDecoder().decode(temp.getBase64().getBytes("UTF-8"));
+        } catch (Exception ex) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                            PaperlessConstant.SUBCODE_INVALID_FILE_DATA,
+                            "en",
+                            transactionID));
+        }
+        //</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="Check if Asset Type is Elabor - eSign - Template => Get Metadata from payload">
+        String metadata = null;
+        if (type.getId() == 3) {
+            try {
+                Enterprise_SigningInfo qrPosition = new ObjectMapper().readValue(payload, Enterprise_SigningInfo.class);
+                if (qrPosition.getQrProperties() == null || Utils.isNullOrEmpty(qrPosition.getQrProperties().getPages())) {
+                    return new InternalResponse(
+                            PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                            PaperlessMessageResponse.getErrorMessage(
+                                    PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                                    PaperlessConstant.SUBCODE_MISSING_QR_POSITION_PROPERTIES_IN_PAYLOAD,
+                                    "en",
+                                    transactionID)
+                    );
+                }
+                metadata = new ObjectMapper().writeValueAsString(qrPosition);
+            } catch (Exception ex) {
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                                PaperlessConstant.SUBCODE_MISSING_QR_POSITION_PROPERTIES_IN_PAYLOAD,
+                                "en",
+                                transactionID)
+                );
+            }
+        }
+        if (type.getId() == 4 || type.getId() == 5) {
+            try {
+                Enterprise_SigningInfo ent = new ObjectMapper().readValue(payload, Enterprise_SigningInfo.class);
+                if (Utils.isNullOrEmpty(ent.getDataSignature())) {
+                    return new InternalResponse(
+                            PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                            PaperlessMessageResponse.getErrorMessage(
+                                    PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                                    PaperlessConstant.SUBCODE_MISSING_SIGNATURE_POSITION_PROPERTIES_IN_PAYLOAD,
+                                    "en",
+                                    transactionID)
+                    );
+                }
+//                for (Enterprise_SigningInfo.TemplateSignature template : ent.getDataSignature()) {
+//                    try {
+//                        String boxCoordinate_signer = template.getSignerPosition().getBoxCoordinate();
+//                        String boxCoordinate_business = template.getBusinessPosition().getBoxCoordinate();
+//                        Rectangle pageSize = PDF_Processing.getPageSize(temp2);
+////                        if(pageSize == null){
+////                            return
+////                        }
+//                        if (boxCoordinate_signer != null && !boxCoordinate_signer.isEmpty()) {
+//                            String finalBoxCoordinateSigner = Parsing.parseBoxCoordinate(
+//                                    boxCoordinate_signer,
+//                                    Math.round(pageSize.getWidth()),
+//                                    Math.round(pageSize.getHeight()),
+//                                    transactionID);
+//                            template.getSignerPosition().setBoxCoordinate(finalBoxCoordinateSigner);
+//                        }
+//
+//                        if (boxCoordinate_business != null || !boxCoordinate_business.isEmpty()) {
+//                            String finalBoxCoordinateBusiness = Parsing.parseBoxCoordinate(
+//                                    boxCoordinate_business,
+//                                    Math.round(pageSize.getWidth()),
+//                                    Math.round(pageSize.getHeight()),
+//                                    transactionID);
+//                            template.getBusinessPosition().setBoxCoordinate(finalBoxCoordinateBusiness);
+//                        }
+//                    } catch (Exception ex) {
+//                        ex.printStackTrace();
+//                        return new InternalResponse(
+//                                PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+//                                PaperlessMessageResponse.getErrorMessage(
+//                                        PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+//                                        PaperlessConstant.SUBCODE_MISSING_SIGNATURE_POSITION_PROPERTIES_IN_PAYLOAD,
+//                                        "en",
+//                                        transactionID)
+//                        );
+//                    }
+//                }
+                metadata = new ObjectMapper().writeValueAsString(ent);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
+                                PaperlessConstant.SUBCODE_MISSING_SIGNATURE_POSITION_PROPERTIES_IN_PAYLOAD,
+                                "en",
+                                transactionID)
+                );
+            }
+        }
+        //</editor-fold>
+
         Asset asset = new Asset(
                 0,
                 x_file_name,
-                i,
+                type.getId(),
                 temp2.length,
                 "",
                 null,
@@ -1188,8 +1337,10 @@ public class PaperlessService {
                 null,
                 null,
                 temp2,
-                null
+                metadata
         );
+        //</editor-fold>
+
         response = UploadAsset.uploadAsset(user_info, asset, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
@@ -1238,10 +1389,10 @@ public class PaperlessService {
         }
 
         //Processing
-        int i = 0;
+        AssetType type = null;
         if (x_file_type != null) {
-            i = convertStringIntoAssetType(x_file_type, x_file_name);
-            if (i == -1) {
+            type = convertStringIntoAssetType(x_file_type);
+            if (type == null) {
                 String message = PaperlessMessageResponse.getErrorMessage(
                         PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
                         PaperlessConstant.SUBCODE_INVALID_FILE_TYPE,
@@ -1256,7 +1407,7 @@ public class PaperlessService {
         Asset asset = new Asset(
                 id,
                 null,
-                i,
+                type.getId(),
                 outputStream == null ? 0 : Long.valueOf(outputStream.toByteArray().length),
                 "",
                 null,
@@ -1321,10 +1472,10 @@ public class PaperlessService {
         }
 
         //Processing
-        int i = 0;
+        AssetType type = null;
         if (x_file_type != null) {
-            i = convertStringIntoAssetType(x_file_type, x_file_name);
-            if (i == -1) {
+            type = convertStringIntoAssetType(x_file_type);
+            if (type == null) {
                 String message = PaperlessMessageResponse.getErrorMessage(
                         PaperlessConstant.CODE_INVALID_PARAMS_ASSET,
                         PaperlessConstant.SUBCODE_INVALID_FILE_TYPE,
@@ -1334,10 +1485,11 @@ public class PaperlessService {
                         PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                         message);
             }
+            asset.setType(type.getId());
         }
         asset.setName(x_file_name);
         asset.setId(id);
-        asset.setType(i);
+        
         if (asset.getBinaryData() != null) {
             asset.setSize(asset.getBinaryData().length);
         }
@@ -2336,13 +2488,14 @@ public class PaperlessService {
             final HttpServletRequest request,
             String payload,
             String transactionID) throws Exception {
-        //Check valid token
+        //<editor-fold defaultstate="collapsed" desc="Check valid Token">
         InternalResponse response = verifyToken(request, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
             return response;
         }
 
         User user_info = response.getUser();
+        //</editor-fold>
 
         String old_password = Utils.getFromJson("user_old_password", payload);
         String new_password = Utils.getFromJson("user_new_password", payload);
@@ -2356,6 +2509,14 @@ public class PaperlessService {
                             PaperlessMessageResponse.getLangFromJson(payload),
                             null));
         }
+
+        //<editor-fold defaultstate="collapsed" desc="Check complexity of Password">
+        response = CheckPasswordRule.checkComplexOfPassword(new_password);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            response.setUser(user_info);
+            return response;
+        }
+        //</editor-fold>
 
         //Processing
         response = UpdateUser.updateUserPassword(
@@ -2385,7 +2546,7 @@ public class PaperlessService {
         //Get Header anh process JWT
         HashMap<String, String> headers = Utils.getHashMapRequestHeader(request);
         String headerJWT = headers.get("eid-jwt");
-        System.out.println("JWT in header (PaperlessService):" + headerJWT);
+        System.out.println("JWT in header (PaperlessService): " + headerJWT);
         if (headerJWT == null || headerJWT.isEmpty()) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
@@ -2898,7 +3059,7 @@ public class PaperlessService {
         User user_info = response.getUser();
 
         //Processing
-        HashMap<String, Integer> hashmap = Resources.getListAssetType();
+        HashMap<String, AssetType> hashmap = Resources.getListAssetType();
         if (hashmap == null || hashmap.isEmpty()) {
             Resources.reloadListAssetType();
             hashmap = Resources.getListAssetType();
@@ -2906,8 +3067,10 @@ public class PaperlessService {
         ArrayNode node = new ObjectMapper().createArrayNode();
         hashmap.forEach((key, value) -> {
             ObjectNode child = new ObjectMapper().createObjectNode();
-            child.put("asset_type_id", value);
+            child.put("asset_type_id", value.getId());
             child.put("asset_type_name", key);
+            child.put("asset_type_name_vn", value.getRemark_vn());
+            child.put("asset_type_name_en", value.getRemark_en());
             node.add(child);
         });
         response = new InternalResponse(
@@ -3780,7 +3943,7 @@ public class PaperlessService {
                             return;
                         }
                     }
-                    System.out.println("Get Thanh cong");
+
                     String name = "";
                     String CCCD = "";
                     if (jwt != null
@@ -3793,10 +3956,9 @@ public class PaperlessService {
                     if (jwt != null) {
                         CCCD = jwt.getDocument_number();
                     } else {
-                        CCCD = "NonCheckJWT";
+                        CCCD = name == null ? email : name;
                     }
 
-                    System.out.println("Check1");
                     LogHandler.request(
                             PaperlessService.class,
                             "SendToMail:" + email);
@@ -3825,25 +3987,23 @@ public class PaperlessService {
 
     //<editor-fold defaultstate="collapsed" desc="Convert String into Asset Type">
     /**
-     * Convert từ chuỗi asset Type đưa về dạng int của asset Type đó. Ngoài ra
-     * check extension dựa trên asset Type
+     * Convert từ chuỗi asset Type đưa về dạng int của asset Type đó.
      *
      * @param assetType chuỗi cần đưa về
      * @return trả về số của assetType tương ứng. Nếu không tồn tại sẽ trả về -1
      */
-    private static int convertStringIntoAssetType(String assetType, String name) throws Exception {
+    private static AssetType convertStringIntoAssetType(String assetType) throws Exception {
         if (Resources.getListAssetType().isEmpty()) {
             Resources.reloadListAssetType();
         }
-        HashMap<String, Integer> hashmap = Resources.getListAssetType();
+        HashMap<String, AssetType> hashmap = Resources.getListAssetType();
         for (String temp : hashmap.keySet()) {
             String type = temp.split(" ")[temp.split(" ").length - 1];
             if (type.equalsIgnoreCase(assetType) || type.equals(assetType)) {
                 return hashmap.get(temp);
             }
         }
-        return -1;
+        return null;
     }
     //</editor-fold>
-
 }

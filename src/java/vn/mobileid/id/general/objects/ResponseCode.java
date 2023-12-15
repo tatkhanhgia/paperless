@@ -14,6 +14,7 @@ public class ResponseCode {
     private String name;
     private String code;
     private String code_description;
+    private String remark_Name;
 
     public int getId() {
         return id;
@@ -47,5 +48,14 @@ public class ResponseCode {
         this.code_description = code_description;
     }
 
+    public String getRemark_Name() {
+        return remark_Name;
+    }
+
+    public void setRemark_Name(String remark_Name) {
+        this.remark_Name = remark_Name;
+    }
+
+    
    
 }

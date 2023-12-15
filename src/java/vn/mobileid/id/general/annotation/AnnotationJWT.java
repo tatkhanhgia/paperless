@@ -18,7 +18,11 @@ public enum AnnotationJWT {
     Email("@Email"),    
     Link("@Link"),  //Link HTML of Service
     Type("@Type"), //Type of Process 
-    Reason("@Reason");  //Reason of Signing Properties
+    Reason("@Reason"),  //Reason of Signing Properties
+    CSV_id("@CSVID"),
+    Workflow_id("@WorkflowID"),
+    WorkflowTemplateTypeName("@WorkflowTemplateTypeName"),
+    UserEmail("@UserEmail");
     
     private String name;
 
@@ -49,6 +53,13 @@ public enum AnnotationJWT {
                 original = original.replaceAll(annotation.getNameAnnot(), data);
             }
         }
+        return original;
+    }
+    
+    public static String replaceAnnotation(String original, AnnotationJWT annotation,String data){
+            if(original.contains(annotation.getNameAnnot())){
+                original = original.replaceAll(annotation.getNameAnnot(), data);
+            }
         return original;
     }
 }

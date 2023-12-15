@@ -6,6 +6,7 @@ package vn.mobileid.id.qrypto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.List;
 
 /**
  *
@@ -18,6 +19,7 @@ public class IssueQryptoWithFileAttachResponse extends Response{
     private String qryptoBase45;
     private String qryptoBase64;
     private String ci;
+    private List<String> fileTokenList;
 
     public IssueQryptoWithFileAttachResponse() {
     }
@@ -52,6 +54,14 @@ public class IssueQryptoWithFileAttachResponse extends Response{
 
     public void setCi(String ci) {
         this.ci = ci;
+    }
+
+    public List<String> getFileTokenList() {
+        return fileTokenList;
+    }
+
+    public void setFileTokenList(List<String> fileTokenList) {
+        this.fileTokenList = fileTokenList;
     }
     
     

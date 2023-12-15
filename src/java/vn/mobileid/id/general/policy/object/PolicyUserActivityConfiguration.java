@@ -39,14 +39,23 @@ public class PolicyUserActivityConfiguration  extends Attributes{
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class TemplateUserActivityConfiguration {
-
+        private String createChildOfWorkflowActivityCSV;
         private String createWorkflowActivity;
 
-        @JsonProperty("create_workflowactivity")
+        @JsonProperty("createWorkflowActivity")
         public String getCreateWorkflowActivity() {
             return createWorkflowActivity;
         }
 
+        @JsonProperty("createChildOfCSV")
+        public String getCreateChildOfWorkflowActivityCSV() {
+            return createChildOfWorkflowActivityCSV;
+        }
+
+        public void setCreateChildOfWorkflowActivityCSV(String createChildOfWorkflowActivityCSV) {
+            this.createChildOfWorkflowActivityCSV = createChildOfWorkflowActivityCSV;
+        }
+        
         public void setCreateWorkflowActivity(String createWorkflowActivity) {
             this.createWorkflowActivity = createWorkflowActivity;
         }

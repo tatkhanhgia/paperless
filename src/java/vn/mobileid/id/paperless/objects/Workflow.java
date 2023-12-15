@@ -17,7 +17,7 @@ import vn.mobileid.id.general.annotation.AnnotationORM;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-public class Workflow {
+public class Workflow implements Cloneable {
 
     @AnnotationORM(columnName = "ID")
     private int workflow_id;
@@ -47,17 +47,17 @@ public class Workflow {
     private String workflow_type_name;
 
     private String note;
-    
+
     @AnnotationORM(columnName = "CREATED_BY")
     private String created_by;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss a XXX")
     @AnnotationORM(columnName = "CREATED_AT")
     private Date created_at;
-    
+
     @AnnotationORM(columnName = "LAST_MODIFIED_BY")
     private String last_modified_by;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss a XXX")
-    
+
     @AnnotationORM(columnName = "LAST_MODIFIED_AT")
     private Date last_modified_at;
     private String metadata;
@@ -188,7 +188,6 @@ public class Workflow {
         this.template_type_name_vn = template_type_name;
     }
 
-    
     public String getWorkflow_type_name_vn() {
         return workflow_type_name_vn;
     }
@@ -204,8 +203,8 @@ public class Workflow {
 
     public void setInitiator_id(int initiator_id) {
         this.initiator_id = initiator_id;
-    }  
-    
+    }
+
     public String getWorkflowTemplate_type_name() {
         return template_type_name;
     }
@@ -222,7 +221,9 @@ public class Workflow {
     public void setWorkflow_type_name(String workflow_type_name_en) {
         this.workflow_type_name = workflow_type_name_en;
     }
-    
-    
 
+    public Workflow clone() throws CloneNotSupportedException {
+        return (Workflow)super.clone();
+    }
 }
+ 

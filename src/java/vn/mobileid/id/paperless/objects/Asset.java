@@ -4,12 +4,15 @@
  */
 package vn.mobileid.id.paperless.objects;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.Date;
 import vn.mobileid.id.general.annotation.AnnotationORM;
 
@@ -31,7 +34,7 @@ public class Asset extends DatabaseDefaultObject{
     @AnnotationORM(columnName="TYPE")
     private int type;
     
-    @AnnotationORM(columnName="ASSET_TYPE_NAME_EN")
+    @AnnotationORM(columnName="ASSET_TYPE_NAME")
     private String type_name;
     
     @AnnotationORM(columnName="SIZE")
@@ -57,6 +60,15 @@ public class Asset extends DatabaseDefaultObject{
     private String hmac;
     
     private String base64;
+    
+    @AnnotationORM(columnName = "DEFAULT_ENABLED")
+    private boolean isDefault;
+    
+    @AnnotationORM(columnName = "REMARK_EN")
+    private String type_name_en;
+    
+    @AnnotationORM(columnName = "REMARK")
+    private String type_name_vn;
 
     public Asset() {
     }    
@@ -89,6 +101,7 @@ public class Asset extends DatabaseDefaultObject{
         this.metadata = metadata;
     }        
     
+    //=================================GET======================================
     @JsonProperty("id")
     public int getId() {
         return id;
@@ -122,29 +135,54 @@ public class Asset extends DatabaseDefaultObject{
     public String getMetadata() {
         return metadata;
     }
-
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
-    }        
+    
+    public String getDbms() {
+        return dbms;
+    }
+    
+    public String getHmac() {
+        return hmac;
+    }
+    
+    @JsonProperty("file")
+    public String getBase64() {
+        return base64;
+    }
+    
+    @JsonProperty("type_name")
+    public String getType_name() {
+        return type_name;
+    }
 
     public byte[] getBinaryData() {
         return binaryData;
     }
+    
+    public boolean IsDefault() {
+        return isDefault;
+    }
+
+    @JsonProperty("type_name_en")
+    public String getType_name_en() {
+        return type_name_en;
+    }
+
+    @JsonProperty("type_name_vn")
+    public String getType_name_vn() {
+        return type_name_vn;
+    }
+    
+    //=========================SET==============================================
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }        
 
     public void setBinaryData(byte[] binaryData) {
         this.binaryData = binaryData;
     }
 
-    public String getDbms() {
-        return dbms;
-    }
-
     public void setDbms(String dbms) {
         this.dbms = dbms;
-    }
-
-    public String getHmac() {
-        return hmac;
     }
 
     public void setHmac(String hmac) {
@@ -175,21 +213,37 @@ public class Asset extends DatabaseDefaultObject{
         this.used_by = used_by;
     }
 
-    @JsonProperty("file")
-    public String getBase64() {
-        return base64;
-    }
-
     public void setBase64(String base64) {
         this.base64 = base64;
     }
 
-    @JsonProperty("type_name")
-    public String getType_name() {
-        return type_name;
-    }
-
     public void setType_name(String type_name) {
         this.type_name = type_name;
-    }            
+    }          
+
+    public void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
+    public void setType_name_en(String type_name_en) {
+        this.type_name_en = type_name_en;
+    }
+
+    public void setType_name_vn(String type_name_vn) {
+        this.type_name_vn = type_name_vn;
+    }
+    
+    
+    public static void main(String[] args) throws Exception{
+        Asset asset = new Asset();
+        asset.setId(2);
+        asset.setName("Background for Course.pdf");
+        asset.setSize(241204);
+        asset.setType(1);
+        asset.setIsDefault(true);
+        asset.setBase64(Base64.getEncoder().encodeToString(Files.readAllBytes(Paths.get("C:\\Users\\Admin\\Downloads\\bằng.pdf"))));
+        
+        String json = new ObjectMapper().writeValueAsString(asset);
+        System.out.println("Json:"+json);
+    }
 }

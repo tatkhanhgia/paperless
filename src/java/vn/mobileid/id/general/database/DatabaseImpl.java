@@ -28,6 +28,7 @@ import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.object.enumration.FileType;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.Asset;
+import vn.mobileid.id.paperless.objects.AssetType;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.Enterprise;
 import vn.mobileid.id.paperless.objects.FileManagement;
@@ -136,6 +137,7 @@ public class DatabaseImpl implements Database {
                     ResponseCode responseCode = new ResponseCode();
                     responseCode.setName(rs.getString("NAME"));
                     responseCode.setCode_description(rs.getString("ERROR_DESCRIPTION"));
+                    responseCode.setRemark_Name(rs.getString("REMARK"));
                     responseCodes.add(responseCode);
                 }
             }
@@ -1347,7 +1349,7 @@ public class DatabaseImpl implements Database {
             String str = "{ call USP_TEMPLATE_TYPE_GET() }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
-      
+
             debugString += "\t[SQL] " + cals.toString();
 
             cals.execute();
@@ -1621,7 +1623,7 @@ public class DatabaseImpl implements Database {
         ResultSet rs = null;
         CallableStatement cals = null;
         DatabaseResponse databaseResponse = new DatabaseResponse();
-        HashMap<String, Integer> list = new HashMap<>();
+        HashMap<String, AssetType> list = new HashMap<>();
         int numOfRetry = retryTimes;
         String debugString = "\n";
         while (numOfRetry > 0) {
@@ -1637,7 +1639,12 @@ public class DatabaseImpl implements Database {
 
                 if (rs != null) {
                     while (rs.next()) {
-                        list.put(rs.getString("ASSET_TYPE_NAME"), rs.getInt("ID"));
+                        AssetType assetType = new AssetType();
+                        assetType.setId(rs.getInt("ID"));
+                        assetType.setName(rs.getString("ASSET_TYPE_NAME"));
+                        assetType.setRemark_en(rs.getString("REMARK_EN"));
+                        assetType.setRemark_vn(rs.getString("REMARK"));
+                        list.put(rs.getString("ASSET_TYPE_NAME"), assetType);
                     }
                     databaseResponse.setObject(list);
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -1916,8 +1923,8 @@ public class DatabaseImpl implements Database {
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
-            cals.setString("U_EMAIL", email);
-            cals.setString("PASS", pass);
+            cals.setString("pUSER_EMAIL", email);
+            cals.setString("pPASSWORD", pass);
 
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
             cals.registerOutParameter("pSTATUS_NAME", java.sql.Types.VARCHAR);
@@ -1934,9 +1941,8 @@ public class DatabaseImpl implements Database {
             if (result != 1) {
                 response.setStatus(result);
             } else {
-                rs.next();
                 User user = new User();
-                user.setEmail(rs.getString("EMAIL"));
+                user.setEmail(email);
 //                user.setMobile(rs.getString("MOBILE_NUMBER"));
 //                user.setId(rs.getInt("ID"));
 //                user.setName(rs.getString("USER_NAME"));
@@ -2122,12 +2128,14 @@ public class DatabaseImpl implements Database {
             rs = cals.getResultSet();
             if (rs != null) {
                 while (rs.next()) {
-                    WorkflowTemplateType data = new WorkflowTemplateType();
-                    data.setId(rs.getInt("ID"));
-                    data.setName(rs.getString("TYPE_NAME"));
-                    data.setRemark_vn(rs.getString("REMARK"));
-                    data.setRemark(rs.getString("REMARK_EN"));
-                    list.add(data);
+                    if (rs.getBoolean("STATUS")) {
+                        WorkflowTemplateType data = new WorkflowTemplateType();
+                        data.setId(rs.getInt("ID"));
+                        data.setName(rs.getString("TYPE_NAME"));
+                        data.setRemark_vn(rs.getString("REMARK"));
+                        data.setRemark(rs.getString("REMARK_EN"));
+                        list.add(data);
+                    }
                 }
                 response.setObject(list);
                 response.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -2439,7 +2447,7 @@ public class DatabaseImpl implements Database {
             //In            
             cals.setString("pUSER_EMAIL", email);
             cals.setInt("pUSER_ID", (user_id <= 0 ? 0 : user_id));
-            cals.setInt("pENTERPRISE_ID", enterprise_id);            
+            cals.setInt("pENTERPRISE_ID", enterprise_id);
 
             //Out
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
@@ -2466,7 +2474,7 @@ public class DatabaseImpl implements Database {
                     account.setUser_email(rs.getString("EMAIL"));
                     account.setUser_name(rs.getString("USER_NAME"));
                     account.setMobile_number(rs.getString("MOBILE_NUMBER"));
-                        
+
                     account.setVerified(rs.getBoolean("VERIFIED_ENABLED"));
                     response.setObject(account);
                     response.setStatus(PaperlessConstant.CODE_SUCCESS);
@@ -2674,7 +2682,7 @@ public class DatabaseImpl implements Database {
         DatabaseResponse response = new DatabaseResponse();
         String debugString = transactionID + "\n";
         try {
-            String str = "{ call USP_USER_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?) }";
+            String str = "{ call USP_USER_ADD(?,?,?,?,?,?,?,?,?,?,?,?,?,?) }";
             conn = DatabaseConnectionManager.getInstance().openReadOnlyConnection();
             cals = conn.prepareCall(str);
 
@@ -3645,7 +3653,7 @@ public class DatabaseImpl implements Database {
 
                 rs = cals.executeQuery();
                 debugString += "\n\tResponseCode get from DB:" + cals.getString("pRESPONSE_CODE");
-                if (cals.getString("pRESPONSE_CODE").equals("1")) {                    
+                if (cals.getString("pRESPONSE_CODE").equals("1")) {
                     databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
                 } else {
                     databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
@@ -3875,7 +3883,7 @@ public class DatabaseImpl implements Database {
 
     @Override
     public DatabaseResponse getTransaction(
-            String id, 
+            String id,
             String transaction_id) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
@@ -3908,7 +3916,7 @@ public class DatabaseImpl implements Database {
                 transaction.setObject_id(rs.getInt("OBJECT_ID"));
                 transaction.setObject_type(rs.getInt("OBJECT_TYPE"));
                 transaction.setUser_id(rs.getInt("USER_ID"));
-                transaction.setIp_add(rs.getString("IP_ADDRESS"));
+//                transaction.setIp_add(rs.getString("IP_ADDRESS"));
                 transaction.setHmac(rs.getString("HMAC"));
                 transaction.setCreated_by(rs.getString("CREATED_BY"));
                 transaction.setCreated_at(new Date(rs.getTimestamp("CREATED_AT").getTime()));
@@ -3947,7 +3955,7 @@ public class DatabaseImpl implements Database {
 
             cals.setInt("pENTERPRISE_ID", enterpriseId);
             cals.setInt("pOFFSET", offset);
-            cals.setInt("pROW_COUNT", rowCount);                
+            cals.setInt("pROW_COUNT", rowCount);
 
             cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
@@ -3959,7 +3967,7 @@ public class DatabaseImpl implements Database {
                 databaseResponse.setStatus(Integer.parseInt(cals.getString("pRESPONSE_CODE")));
             } else {
                 List<Account> accounts = new ArrayList<>();
-                while(rs.next()){
+                while (rs.next()) {
                     Account account = new Account();
                     account.setUser_email(rs.getString("EMAIL"));
                     account.setMobile_number(rs.getString("MOBILE_NUMBER"));
@@ -3967,7 +3975,7 @@ public class DatabaseImpl implements Database {
                     account.setRole(rs.getString("ROLE"));
                     accounts.add(account);
                 }
-                databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);                
+                databaseResponse.setStatus(PaperlessConstant.CODE_SUCCESS);
                 databaseResponse.setObject(accounts);
             }
         } catch (Exception e) {
@@ -3982,10 +3990,10 @@ public class DatabaseImpl implements Database {
 
     @Override
     public DatabaseResponse getTotalRecordsAsset(
-            int enterpriseId, 
+            int enterpriseId,
             String email,
-            String fileName, 
-            String type, 
+            String fileName,
+            String type,
             String transactionId) throws Exception {
         long startTime = System.nanoTime();
         Connection conn = null;
@@ -4001,10 +4009,9 @@ public class DatabaseImpl implements Database {
                 cals = conn.prepareCall(str);
 
                 cals.setInt("pENTERPRISE_ID", enterpriseId);
-                cals.setString("pEMAIL_USER", email);               
-                cals.setString("pFILE_NAME", fileName);                
+                cals.setString("pEMAIL_USER", email);
+                cals.setString("pFILE_NAME", fileName);
                 cals.setString("TYPE", type);
-                
 
                 cals.registerOutParameter("pRESPONSE_CODE", java.sql.Types.VARCHAR);
 
@@ -4043,7 +4050,7 @@ public class DatabaseImpl implements Database {
             String gType,
             String status,
             boolean isTest,
-            boolean isProduct,            
+            boolean isProduct,
             boolean isCustomRange,
             String fromDate,
             String toDate,
@@ -4101,6 +4108,43 @@ public class DatabaseImpl implements Database {
         }
         LogHandler.debug(this.getClass(), debugString);
         return databaseResponse;
+    }
+
+    @Override
+    public DatabaseResponse getRemarkLanguage(
+            String table,
+            String name,
+            String languageName,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_REMARK_LANGUAGE_GET(?,?,?,?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pTABLE_NAME", table);
+        input.put("pNAME", name);
+        input.put("pLANGUAGE_NAME", languageName);
+
+        HashMap<String, Integer> out = new HashMap<>();
+        out.put("pVALUE", java.sql.Types.VARCHAR);
+        out.put("pRESPONSE_CODE", java.sql.Types.VARCHAR);
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                nameStore,
+                input,
+                out,
+                "Get Remark Language");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS && response.getRows() != null) {
+            return response;
+        }
+
+        List<HashMap<String, Object>> lists = response.getRows();
+        for (HashMap<String, Object> list : lists) {
+            response.setObject(list.get("pVALUE"));
+        }
+
+        return response;
     }
 
 }

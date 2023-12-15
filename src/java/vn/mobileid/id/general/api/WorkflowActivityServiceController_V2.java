@@ -7,6 +7,8 @@ package vn.mobileid.id.general.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Base64;
 import javax.servlet.ServletException;
@@ -49,8 +51,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         "",
@@ -105,8 +107,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         "",
@@ -161,8 +163,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         "",
@@ -189,8 +191,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         0,
                         response.getStatus(),
                         "",
@@ -220,8 +222,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         "",
@@ -248,8 +250,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         0,
                         response.getStatus(),
                         "",
@@ -285,8 +287,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         0,
                         response.getStatus(),
                         "",
@@ -321,8 +323,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         0,
                         response.getStatus(),
                         "",
@@ -362,8 +364,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         0,
                         response.getStatus(),
                         "",
@@ -408,15 +410,16 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
                 String payload = Utils.getPayload(req);
+
                 InternalResponse response = PaperlessService.createWorkflowActivity(req, payload, transactionId);
                 Long id = null;
-                if(response.getStatus() ==  PaperlessConstant.HTTP_CODE_SUCCESS){
+                if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
                     id = (long) response.getData();
                 }
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id == null ? 0 : id.intValue(),
                         response.getStatus(),
                         payload,
@@ -441,12 +444,15 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         transactionId);
                 String payload = Utils.getPayload(req);
                 InternalResponse response = PaperlessService.createWorkflowActivity_forCSV(req, payload, transactionId);
-
-                Long id = (long) response.getData();
+                Long id = 0L;
+                try {
+                    id = (long) response.getData();
+                } catch (Exception ex) {
+                }
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id.intValue(),
                         response.getStatus(),
                         payload,
@@ -463,7 +469,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 return;
             }
             //</editor-fold>
-            
+
             //<editor-fold defaultstate="collapsed" desc="Assign ">
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/assign$")) {
                 int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/assign", ""));
@@ -471,12 +477,12 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
                 String payload = Utils.getPayload(req);
-                InternalResponse response = PaperlessService.assignDataIntoWorkflowActivity(req, payload , id, transactionId);
+                InternalResponse response = PaperlessService.assignDataIntoWorkflowActivity(req, payload, id, transactionId);
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         payload,
@@ -518,8 +524,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         payload,
@@ -552,12 +558,12 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
                 String payload = Utils.getPayload(req);
-                InternalResponse response = PaperlessService.processWorkflowActivityWithAuthen(req,payload , id, transactionId);
+                InternalResponse response = PaperlessService.processWorkflowActivityWithAuthen(req, payload, id, transactionId);
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         payload,
@@ -600,8 +606,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         payload,
@@ -630,7 +636,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 return;
             }
             //</editor-fold>
-            
+
             //<editor-fold defaultstate="collapsed" desc="Process without Authentication">
             if (req.getRequestURI().matches("^/paperless/v1/workflowactivity/[0-9]*/process")) {
                 int id = Integer.parseInt(req.getRequestURI().replace("/paperless/v1/workflowactivity/", "").replace("/process", ""));
@@ -638,12 +644,13 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                 LogHandler.request(WorkflowActivityServiceController_V2.class,
                         transactionId);
                 String payload = Utils.getPayload(req);
+
                 InternalResponse response = PaperlessService.processWorkflowActivity(req, payload, id, transactionId);
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         payload,
@@ -678,7 +685,7 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
                         null);
             }
             //</editor-fold>
-        
+
         } catch (Exception ex) {
             LogHandler.error(WorkflowActivityServiceController_V2.class,
                     transactionId,
@@ -706,8 +713,8 @@ public class WorkflowActivityServiceController_V2 extends HttpServlet {
 
                 ServicesController.logIntoDB(
                         req,
-                        response.getUser()==null?"anonymous":response.getUser().getEmail(),
-                        response.getUser()==null?0:response.getUser().getAid(),
+                        response.getUser() == null ? "anonymous" : response.getUser().getEmail(),
+                        response.getUser() == null ? 0 : response.getUser().getAid(),
                         id,
                         response.getStatus(),
                         "",

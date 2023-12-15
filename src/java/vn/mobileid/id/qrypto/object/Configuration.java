@@ -16,10 +16,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Configuration {
     private String contextIdentifier;
-    private int qryptoWidth;
-    private int qryptoHeight;
+    private int qryptoDimension;
     private boolean isTransparent;
     private qryptoEffectiveDate qryptoEffectiveDate;
+    private boolean getFileTokenList;
 
     public Configuration() {
     }
@@ -33,22 +33,13 @@ public class Configuration {
         this.contextIdentifier = contextIdentifier;
     }
 
-    @JsonProperty("qryptoWidth")
-    public int getQryptoWidth() {
-        return qryptoWidth;
+    @JsonProperty("qryptoDimension")
+    public int getQryptoDimension() {
+        return qryptoDimension;
     }
 
-    public void setQryptoWidth(int qryptoWidth) {
-        this.qryptoWidth = qryptoWidth;
-    }
-
-    @JsonProperty("qryptoHeight")
-    public int getQryptoHeight() {
-        return qryptoHeight;
-    }
-
-    public void setQryptoHeight(int qryptoHeight) {
-        this.qryptoHeight = qryptoHeight;
+    public void setQryptoDimension(int qryptoHeight) {
+        this.qryptoDimension = qryptoHeight;
     }
 
     @JsonProperty("isTransparent")
@@ -68,6 +59,13 @@ public class Configuration {
     public void setQryptoEffectiveDate(qryptoEffectiveDate qryptoEffectiveDate) {
         this.qryptoEffectiveDate = qryptoEffectiveDate;
     }
-    
-    
+
+    @JsonProperty("getFileTokenList")
+    public boolean isGetFileTokenList() {
+        return getFileTokenList;
+    }
+
+    public void setGetFileTokenList(boolean getFileTokenList) {
+        this.getFileTokenList = getFileTokenList;
+    }
 }

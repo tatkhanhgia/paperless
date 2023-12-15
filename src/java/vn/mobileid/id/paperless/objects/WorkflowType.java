@@ -23,6 +23,9 @@ public class WorkflowType {
     @AnnotationORM(columnName = "REMARK")
     private String remark_vn;
 
+    @AnnotationORM(columnName = "ENABLED")
+    private boolean isEnabled;
+    
     public WorkflowType() {
     }
 
@@ -57,6 +60,12 @@ public class WorkflowType {
     public void setRemark_vn(String remark_vn) {
         this.remark_vn = remark_vn;
     }
-    
-    
+
+    public boolean IsEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
 }

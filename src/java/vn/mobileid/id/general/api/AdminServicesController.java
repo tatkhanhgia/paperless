@@ -59,20 +59,10 @@ public class AdminServicesController extends HttpServlet {
                     transactionID);
             debugResponseLOG("Create Account", response);
 
-            Long id = (long) response.getData();
-            logIntoDB(
-                    request,
-                    response.getEnterprise() == null ? "anonymous" : response.getEnterprise().getName(),
-                    response.getEnterprise() == null ? 0 : response.getEnterprise().getId(),
-                    id.intValue(),
-                    response.getStatus(),
-                    payload,
-                    response.getMessage(),
-                    "Create Account",
-                    transactionID
-            );
+            Long id = 0L;
 
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                id = (long)response.getData();
                 createUserActivity(
                         request,
                         response,
@@ -84,6 +74,18 @@ public class AdminServicesController extends HttpServlet {
                         "Create new User",
                         Category.Account);
             }
+            
+            logIntoDB(
+                    request,
+                    response.getEnterprise() == null ? "anonymous" : response.getEnterprise().getName(),
+                    response.getEnterprise() == null ? 0 : response.getEnterprise().getId(),
+                    id.intValue(),
+                    response.getStatus(),
+                    payload,
+                    response.getMessage(),
+                    "Create Account",
+                    transactionID
+            );
 
             return Response
                     .status(response.getStatus())
@@ -261,6 +263,55 @@ public class AdminServicesController extends HttpServlet {
     }
     //</editor-fold>
 
+//    //<editor-fold defaultstate="collapsed" desc="Get Total Records Accounts">
+//    @GET
+//    @Path("/v1/admin/gettotal/accounts/{var:.*}")
+//    public Response getTotalRecordsAccount(
+//            @Context final HttpServletRequest request) {
+//        String transactionID = "";
+//        try {
+//            InternalResponse response;
+//            transactionID = debugRequestLOG(
+//                    "getTotalRecords Account",
+//                    request,
+//                    null,
+//                    0);
+//            if (request.getContentType() == null) {
+//                return Response.status(400).entity("{Missing Content-Type}").build();
+//            }
+//            response = PaperlessAdminService.getTotalRecordOfAccounts(request, transactionID);
+//            debugResponseLOG("Get Total Records of Accounts", response);
+//
+////            logIntoDB(
+////                    request,
+////                    response.getEnterprise().getName()!=null?String.valueOf(response.getEnterprise().getId()):response.getEnterprise().getName(),
+////                    response.getEnterprise().getId(),
+////                    0,
+////                    response.getStatus(),
+////                    null,
+////                    response.getMessage(),
+////                    "Get Accounts",
+////                    transactionID
+////            );
+//            return Response
+//                    .status(response.getStatus())
+//                    .entity(response.getMessage())
+//                    .type(MediaType.APPLICATION_JSON_TYPE)
+//                    .build();
+//        } catch (Exception e) {
+//            LogHandler.error(
+//                    this.getClass(),
+//                    transactionID,
+//                    "Error while getting accounts",
+//                    e);
+//            return Response
+//                    .status(PaperlessConstant.HTTP_CODE_500)
+//                    .entity("{Internal Server Error}")
+//                    .build();
+//        }
+//    }
+//    //</editor-fold>
+    
     //<editor-fold defaultstate="collapsed" desc="Resend Activation">
     @POST
     @Path("/v1/admin/activation/resend")
@@ -435,6 +486,63 @@ public class AdminServicesController extends HttpServlet {
     }
 //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Set new Password">
+    @PUT
+    @Path("/v2/admin/account/password/new")
+    public Response updateNewPasswordForUser(
+            @Context final HttpServletRequest request,
+            String payload) {
+        String transactionID = "";
+        try {
+            InternalResponse response;
+
+            transactionID = debugRequestLOG(
+                    "set New Password for User",
+                    request,
+                    payload,
+                    0);
+
+            if (request.getContentType() == null) {
+                return Response.status(400).type(MediaType.APPLICATION_JSON).entity("Missing Content-Type").build();
+            }
+
+            response = PaperlessAdminService.setNewPasswordForUser(
+                    request,
+                    payload,
+                    transactionID);
+            debugResponseLOG("Set New Password For User", response);
+
+            logIntoDB(
+                    request,
+                    response.getEnterprise()==null?"anonymous":response.getEnterprise().getName(),
+                    response.getEnterprise()==null?0:response.getEnterprise().getId(),
+                    0,
+                    response.getStatus(),
+                    null,
+                    response.getMessage(),
+                    "Set new Password for User",
+                    transactionID
+            );
+
+            return Response
+                    .status(response.getStatus())
+                    .entity(response.getMessage())
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build();
+        } catch (Exception e) {
+            LogHandler.error(
+                    this.getClass(),
+                    transactionID,
+                    "Error while setting new password",
+                    e);
+            return Response
+                    .status(PaperlessConstant.HTTP_CODE_500)
+                    .entity("{Internal Server Error}")
+                    .build();
+        }
+    }
+    //</editor-fold>
+    
     //========================INTERNAL METHOD==========================
     private static String conclusionString(String payload, int id) {
         String pattern = "\"value\":.*";

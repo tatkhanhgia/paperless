@@ -82,7 +82,7 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
         String nameStore = "{ CALL USP_WORKFLOW_ACTIVITY_GET(?,?)}";
 
         HashMap<String, Object> input = new HashMap<>();
-        input.put("pWO_AC_ID", id);
+        input.put("pWORKFLOW_ACTIVITY_ID", id);
 
         DatabaseResponse response = CreateConnection.executeStoreProcedure(
                 WorkflowActivity.class,
@@ -118,16 +118,16 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
         String nameStore = "{ CALL USP_WORKFLOW_ACTIVITY_GET_ROW_COUNT(?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 
         HashMap<String, Object> input = new HashMap<>();
-        input.put("U_EMAIL", U_EMAIL);
+        input.put("pUSER_EMAIL", U_EMAIL);
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
-        input.put("EMAIL_SEARCH", EMAIL_SEARCH);
-        input.put("DATE_SEARCH", DATE_SEARCH);
-        input.put("G_TYPE", G_TYPE);
-        input.put("W_A_STATUS", W_A_STATUS);
+        input.put("pSEARCH_EMAIL", EMAIL_SEARCH);
+        input.put("pSEARCH_DATE", DATE_SEARCH);
+        input.put("pGENERATION_TYPE_LIST", G_TYPE);
+        input.put("pWORKFLOW_ACTIVITY_STATUS_LIST", W_A_STATUS);
         input.put("pPRODUCTION_TYPE_LIST", pPRODUCTION_TYPE_LIST);
-        input.put("IS_CUSTOM_RANGE", IS_CUSTOM_RANGE);
-        input.put("FROM_DATE", FROM_DATE);
-        input.put("TO_DATE", TO_DATE);
+        input.put("pIS_CUSTOM_RANGE", IS_CUSTOM_RANGE);
+        input.put("pFROM_DATE", FROM_DATE);
+        input.put("pTO_DATE", TO_DATE);
         input.put("pOFFSET", pOFFSET);
         input.put("pROW_COUNT", pROW_COUNT);
 
@@ -169,16 +169,16 @@ public class DatabaseImpl_V2_WorkflowActivity implements DatabaseV2_WorkflowActi
         String nameStore = "{ CALL USP_WORKFLOW_ACTIVITY_LIST(?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 
         HashMap<String, Object> input = new HashMap<>();
-        input.put("U_EMAIL", U_EMAIL);
+        input.put("pUSER_EMAIL", U_EMAIL);
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
-        input.put("EMAIL_SEARCH", EMAIL_SEARCH);
-        input.put("DATE_SEARCH", DATE_SEARCH);
-        input.put("G_TYPE", G_TYPE);
-        input.put("W_A_STATUS", W_A_STATUS);
+        input.put("pSEARCH_EMAIL", EMAIL_SEARCH);
+        input.put("pSEARCH_DATE", DATE_SEARCH);
+        input.put("pGENERATION_TYPE_LIST", G_TYPE);
+        input.put("pWORKFLOW_ACTIVITY_STATUS_LIST", W_A_STATUS);
         input.put("pPRODUCTION_TYPE_LIST", pPRODUCTION_TYPE_LIST);
-        input.put("IS_CUSTOM_RANGE", IS_CUSTOM_RANGE);
-        input.put("FROM_DATE", FROM_DATE);
-        input.put("TO_DATE", TO_DATE);
+        input.put("pIS_CUSTOM_RANGE", IS_CUSTOM_RANGE);
+        input.put("pFROM_DATE", FROM_DATE);
+        input.put("pTO_DATE", TO_DATE);
         input.put("pOFFSET", pOFFSET);
         input.put("pROW_COUNT", pROW_COUNT);
 

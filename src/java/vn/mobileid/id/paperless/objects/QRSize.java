@@ -22,6 +22,9 @@ public class QRSize {
     @AnnotationORM(columnName="SIZE_VALUE")
     private int size;
 
+    @AnnotationORM(columnName="POINT_VALUE")
+    private int point;
+    
     public QRSize(String qr_size_name, int size) {
         this.qr_size_name = qr_size_name;
         this.size = size;
@@ -47,6 +50,13 @@ public class QRSize {
     public void setSize(int size) {
         this.size = size;
     }
-    
-    
+
+    @JsonProperty("point")
+    public int getPoint() {
+        return point;
+    }
+
+    public void setPoint(int point) {
+        this.point = point;
+    }
 }

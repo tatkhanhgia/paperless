@@ -29,6 +29,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,6 +43,7 @@ import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import vn.mobileid.id.eid.object.JWT_Authenticate;
 import vn.mobileid.id.general.LogHandler;
+import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.keycloak.obj.KeycloakReq;
@@ -59,6 +62,8 @@ import vn.mobileid.id.utils.Crypto;
 import vn.mobileid.id.utils.Utils;
 import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
 import vn.mobileid.id.paperless.kernel_v2.GetUser;
+import vn.mobileid.id.paperless.objects.Account;
+import vn.mobileid.id.paperless.objects.QryptoErrorMessageJSNObject;
 /**
  *
  * @author GiaTK
@@ -313,19 +318,53 @@ public class ManageTokenWithDB {
         DatabaseResponse res = db.login(email, pass, transactionID);
         
         if (res.getStatus() != PaperlessConstant.CODE_SUCCESS) {
-            String message = PaperlessMessageResponse.getErrorMessage(
+            InternalResponse temp = GetUser.getStatusUser(email, transactionID);
+            int minute = -1;
+            int second = -1;
+            
+            //<editor-fold defaultstate="collapsed" desc="Check lock account - return minute lock">
+            try{
+                Account account = (Account)temp.getData();
+                if(account.isLocked_enabled()){
+                    Date locked_at = account.getLocked_at();
+                    int minute_lock = PolicyConfiguration.getInstant().getPasswordExpired().getMinute_lock();
+                    Date expected_time = new Date(locked_at.toInstant().plus(minute_lock, ChronoUnit.MINUTES).toEpochMilli());
+                    Date now = Date.from(Instant.now());
+                    if(expected_time.after(now)){
+                        long remaning_time = expected_time.getTime() - now.getTime();
+                       remaning_time = remaning_time / 1000;
+                       Long tempp = remaning_time;
+                       minute = tempp.intValue() / 60;
+                       second = tempp.intValue() % 60;
+                    }
+                }
+            }catch(Exception ex){}
+            //</editor-fold>
+            
+            //<editor-fold defaultstate="collapsed" desc="Get Remaning Counter">
+            int remaning = 5;
+            try{
+                remaning = ((Account)temp.getData()).getRemaning_counter();
+            } catch (Exception ex){}
+            //</editor-fold>
+            
+            QryptoErrorMessageJSNObject message = PaperlessMessageResponse.getErrorMessage_(
                     PaperlessConstant.CODE_FAIL,
-                    res.getStatus(),
+                    res.getStatus(),                    
+                    remaning,
+                    minute,
+                    second,
                     "en",
                     null);
+            
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_FORBIDDEN,
-                    message);
+                    new ObjectMapper().writeValueAsString(message));
         }
 
         User info = (User) res.getObject();
         
-        //Check if User need to change password because of the policy 
+        //<editor-fold defaultstate="collapsed" desc="Check if User need to change password because of the policy">
         if(info.getPasswordExpiredAt().compareTo(Date.from(Instant.now()))<=0){
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
@@ -335,8 +374,10 @@ public class ManageTokenWithDB {
                     "en",
                     null)
             );
-        }                
-
+        }   
+        //</editor-fold>
+                     
+        //<editor-fold defaultstate="collapsed" desc="Get Enterprise Info">
         InternalResponse res2 = GetEnterpriseInfo.getEnterpriseInfo(
                 info.getEmail(),
                 transactionID);
@@ -344,9 +385,10 @@ public class ManageTokenWithDB {
             return res2;
         }
         Enterprise enterprise = (Enterprise) res2.getData();
-
+        //</editor-fold>
+        
         try {
-            //Get User information
+            //<editor-fold defaultstate="collapsed" desc="Get User Infomation">
             res2 = GetUser.getUser(
                     info.getEmail(),
                     0,
@@ -357,7 +399,9 @@ public class ManageTokenWithDB {
                 return res2;
             }
             info = (User)res2.getData();
+            //</editor-fold>
             
+            //<editor-fold defaultstate="collapsed" desc="Create Token">
             String[] temp = createAccess_RefreshToken(info, enterprise);
 
             String accessToken = temp[0];
@@ -365,7 +409,7 @@ public class ManageTokenWithDB {
             String sessionID = temp[2];
             String iat = temp[3];
             String exp = temp[4];
-
+            
             KeycloakRes response = new KeycloakRes();
             response.setAccess_token(accessToken);
             if (remember_me) {
@@ -374,8 +418,9 @@ public class ManageTokenWithDB {
             }
             response.setExpires_in((int) PaperlessConstant.expired_in);
             response.setToken_type(PaperlessConstant.TOKEN_TYPE_BEARER);
+            //</editor-fold>
 
-            //Write refreshtoken into DB                       
+            //<editor-fold defaultstate="collapsed" desc="Write refresh Token">
             InternalResponse internalResponse = ManageRefreshToken.write(
                     info.getEmail(),
                     sessionID,
@@ -389,6 +434,8 @@ public class ManageTokenWithDB {
             if (internalResponse.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
                 return internalResponse;
             }
+            //</editor-fold>
+            
             InternalResponse result = new InternalResponse(
                     PaperlessConstant.HTTP_CODE_SUCCESS,
                     new ObjectMapper().writeValueAsString(response));
@@ -424,11 +471,6 @@ public class ManageTokenWithDB {
         String alg = null;
 
         try {
-//            LogHandler.debug(ManageTokenWithDB.class,
-//                    "\n\tBefore decode token"
-//                    + "\n\tHeader:" + chunks[0]
-//                    + "\n\tPayload:" + chunks[1]
-//                    + "\n\tSignature:" + chunks[2]);
             header = new String(Base64.getUrlDecoder().decode(chunks[0]), "UTF-8");
             payload = new String(Base64.getUrlDecoder().decode(chunks[1]), "UTF-8");
 
@@ -437,11 +479,6 @@ public class ManageTokenWithDB {
             int typ = header.indexOf("typ");
             alg = header.substring(pos + 6, typ - 3);
         } catch (Exception e) {
-//            LogHandler.error(
-//                    ManageTokenWithDB.class,
-//                    transactionID,
-//                    "Error while decode token!",
-//                    e);
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
                     PaperlessMessageResponse.getErrorMessage(
@@ -450,22 +487,12 @@ public class ManageTokenWithDB {
                             "en",
                             null));
         }
-//        LogHandler.debug(ManageTokenWithDB.class,
-//                "\n\tAfter decode token"
-//                + "\n\tHeader:" + header
-//                + "\n\tPayload:" + payload
-//                + "\n\tSignature:" + signature);
 
         //Convert to Object
         User data = null;
         try {
             data = new ObjectMapper().readValue(payload, User.class);
         } catch (Exception e) {
-//            LogHandler.error(
-//                    ManageTokenWithDB.class,
-//                    transactionID,
-//                    "Error while parsing Data!",
-//                    e);
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
                     PaperlessMessageResponse.getErrorMessage(
@@ -571,9 +598,11 @@ public class ManageTokenWithDB {
                             PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
                             PaperlessConstant.SUBCODE_INVALID_CLIENT_ID, "en", null));
         }
-        return new InternalResponse(
-                PaperlessConstant.HTTP_CODE_SUCCESS,
+        
+        InternalResponse response = new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS,
                 ent);
+        response.setEnterprise(ent);
+        return response;
     }
     //</editor-fold>
     
@@ -819,7 +848,7 @@ public class ManageTokenWithDB {
         }
         return new InternalResponse(PaperlessConstant.HTTP_CODE_SUCCESS, response);
     }
-    //</editor-fold>
+    //</editor-fold>    
     
     //==============================INTERNAL LOWER METHOD=============================
     
@@ -867,12 +896,13 @@ public class ManageTokenWithDB {
         temp.setExp(Date.from(Instant.now().plusSeconds(PaperlessConstant.expired_in)).getTime()); //Expired                
 
 //        temp.setJti(""); //JWT ID
-        temp.setIss("https://paperless.mobile-id.vn");  //Issuer
+        temp.setIss("https://gopaperless-qrypto.mobile-id.vn");  //Issuer
 //        temp.setAud("account"); //Audience
 //        temp.setSub(""); //Subject
         temp.setTyp(PaperlessConstant.TOKEN_TYPE_BEARER);
         temp.setAzp(enterprise.getName());
         temp.setAid(enterprise.getId());
+        temp.setQr_expired_time(user.getQr_expired_time());
 //        temp.setSession_state("");
 //        temp.setAcr(email);    //Authentication context class
 //        temp.setRealm_access("");
@@ -1180,5 +1210,16 @@ public class ManageTokenWithDB {
         //Test
 //    String signature = Crypto.sign("tatkhanhgia", getPrivateKey(), "base64");
 //        System.out.println("Ve:"+verifyTokenByCode("tatkhanhgia",Base64.getUrlDecoder().decode(signature), getPublicKey()));
+
+           Date now = Date.from(Instant.now());
+           Thread.sleep(5120);
+           Date a = new Date(Date.from(Instant.now()).toInstant().plus(10, ChronoUnit.MINUTES).toEpochMilli());
+           System.out.println("now:"+now);
+           System.out.println("a:"+a);
+           System.out.println("ToSecond:"+(a.getTime() - now.getTime())/1000);
+           long total = (a.getTime() - now.getTime())/1000;
+           
+           System.out.println("Minute:"+total/60);
+           System.out.println("Second:"+total%60);
     }
 }

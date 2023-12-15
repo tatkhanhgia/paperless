@@ -9,6 +9,7 @@ import vn.mobileid.id.qrypto.object.Configuration;
 import vn.mobileid.id.qrypto.object.QRSchema;
 import vn.mobileid.id.qrypto.request.ClaimRequest;
 import vn.mobileid.id.qrypto.response.ClaimResponse;
+import vn.mobileid.id.qrypto.response.DownloadFileTokenResponse;
 import vn.mobileid.id.qrypto.response.IssueQryptoWithFileAttachResponse;
 
 /**
@@ -25,5 +26,9 @@ public interface ISession {
             
     public ClaimResponse dgci_wallet_claim(
             ClaimRequest request
+    ) throws Exception;
+    
+    public DownloadFileTokenResponse downloadFileToken(
+            String fileToken
     ) throws Exception;
 }

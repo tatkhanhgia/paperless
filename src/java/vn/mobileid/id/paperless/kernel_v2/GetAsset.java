@@ -11,6 +11,7 @@ import vn.mobileid.id.general.database.DatabaseV2_Asset;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.object.enumration.WorkflowAttributeTypeName;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
@@ -21,7 +22,7 @@ import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
  */
 public class GetAsset {
 
-    //<editor-fold defaultstate="collapsed" desc="get Asset - Constructor (AssetId)">
+    //<editor-fold defaultstate="collapsed" desc="Get Asset - Constructor (AssetId)">
     /**
      * Lấy về giá trị một Asset thông qua Id
      *
@@ -55,7 +56,7 @@ public class GetAsset {
     }
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="get Asset - Constructor(WorkflowAttributeType)">
+    //<editor-fold defaultstate="collapsed" desc="Get Asset - Constructor(WorkflowAttributeType)">
     /**
      * Lấy về giá trị một Asset thông qua WorkflowAttributeType
      *
@@ -69,9 +70,11 @@ public class GetAsset {
             String transactionId
     ) throws Exception {
         //Check type of Attribyte Type is an Asset
-        if(attribute.getId() != PaperlessConstant.ASSET_TYPE_TEMPLATE &&
-                attribute.getId() != PaperlessConstant.ASSET_TYPE_BACKGROUND && 
-                attribute.getId() != PaperlessConstant.ASSET_TYPE_APPEND){
+        if(attribute.getId() != WorkflowAttributeTypeName.ASSET_APPEND.getId() &&
+                attribute.getId() != WorkflowAttributeTypeName.ASSET_BACKGROUND.getId() && 
+                attribute.getId() != WorkflowAttributeTypeName.ASSET_TEMPLATE.getId() &&
+                attribute.getId() != WorkflowAttributeTypeName.ASSET_ELABOR.getId() &&
+                attribute.getId() != WorkflowAttributeTypeName.ASSET_ESIGN.getId() ){
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
@@ -146,7 +149,7 @@ public class GetAsset {
     }
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="get List Asset">
+    //<editor-fold defaultstate="collapsed" desc="Get List Asset">
     public static InternalResponse getListAsset(
             int ent_id,
             String email,
@@ -183,6 +186,40 @@ public class GetAsset {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get metadata of Asset">
+    /**
+     * Get Metadata of Asset
+     * @param pASSET_ID
+     * @param transactionId
+     * @return Asset(only contain Metadata in Object Asset)
+     * @throws Exception 
+     */
+    public static InternalResponse getMetadataOfAsset(
+            long pASSET_ID,
+            String transactionId
+    )throws Exception{
+        DatabaseV2_Asset callDb = new DatabaseImpl_V2_Asset();
+        
+        DatabaseResponse response = callDb.getMetadataOfAsset(pASSET_ID, transactionId);
+        
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            response.getStatus(),
+                            "en",
+                            transactionId)
+            );
+        }
+        
+        return new InternalResponse(
+                PaperlessConstant.HTTP_CODE_SUCCESS,
+                response.getObject()
+        );
+    }
+    //</editor-fold>
+    
     public static void main(String[] args) throws Exception {
 //        //Get Total Record Asset
 //        InternalResponse response = GetAsset.getTotalRecordAsset(
@@ -200,23 +237,39 @@ public class GetAsset {
 //            System.out.println("Number:"+number);
 //        }
 
-        //Get Total Record Asset
-        InternalResponse response = GetAsset.getListAsset(
-                3,
-                "khanhpx@mobile-id.vn",
-                null,
-                "1,2,3",
-                "1,2,3",
-                0,
-                100,
-                "transactionUId");
+//        //Get Total Record Asset
+//        InternalResponse response = GetAsset.getListAsset(
+//                3,
+//                "khanhpx@mobile-id.vn",
+//                null,
+//                "1,2,3",
+//                "1,2,3",
+//                0,
+//                100,
+//                "transactionUId");
+//
+//        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+//            System.out.println("Error:" + response.getMessage());
+//        } else {
+//            ((List<Asset>) response.getData()).forEach(k -> {
+//                System.out.println("Id:"+k.getId());
+//                System.out.println("Is default:"+k.IsDefault());
+//            });
+//        }
 
-        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-            System.out.println("Error:" + response.getMessage());
-        } else {
-            ((List<Asset>) response.getData()).forEach(k -> {
-                System.out.println("Id:"+k.getId());
-            });
-        }
+//        Get Metadata of Asset
+//        InternalResponse response = GetAsset.getMetadataOfAsset(1, "temp");
+//        if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+//            System.out.println("Mess:"+response.getMessage());
+//        } else {
+//            System.out.println(((Asset)response.getData()).getMetadata());
+//        }
+
+            //Get Asset
+            InternalResponse response = GetAsset.getAsset(115, "");
+            Asset asset = (Asset)response.getData();
+            System.out.println(asset.getType_name_en());
+            System.out.println(asset.getType_name_vn());
+            System.out.println(asset.getType_name());
     }
 }

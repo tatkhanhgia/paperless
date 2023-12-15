@@ -36,53 +36,6 @@ public class UpdateFileManagement {
             String signing_properties,
             String hash_values,
             String transactionID) throws Exception {
-        //Upload to FMS        
-//        System.out.println("Length Data:"+data.length);
-//        FMSClient client = new FMSClient();
-//        client.setURL(Configuration.getInstance().getUrlFMS());
-//        client.setData(data);
-//        client.setFormat("pdf");
-//
-//        //Create Log
-//        StringBuilder builder = new StringBuilder();
-//        builder.append("Send to FMS").append("\n\t");
-//        builder.append("URL:" + Configuration.getInstance().getUrlFMS()).append("\n\t");
-//        builder.append("Format:").append("pdf");
-//        System.out.println(builder.toString());
-//        LogHandler.info(
-//                UpdateFileManagement.class,
-//                transactionID,
-//                builder.toString());
-//        
-//        try {
-//            client.uploadFile();
-//        } catch (Exception ex) {
-//            LogHandler.error(
-//                    UpdateFileManagement.class,
-//                    transactionID,
-//                    ex);
-//            return new InternalResponse(
-//                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    PaperlessMessageResponse.getErrorMessage(
-//                            PaperlessConstant.CODE_FMS,
-//                            PaperlessConstant.SUBCODE_ERROR_WHILE_UPLOADING_TO_FMS,
-//                            "en",
-//                            transactionID));
-//        }
-//        if (client.getHttpCode() != 200) {
-//            LogHandler.error(
-//                    UpdateFileManagement.class,
-//                    transactionID,
-//                    client.getMessage_Error());
-//            return new InternalResponse(
-//                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
-//                    PaperlessMessageResponse.getErrorMessage(
-//                            PaperlessConstant.CODE_FMS,
-//                            PaperlessConstant.SUBCODE_FMS_REJECT_UPLOAD,
-//                            "en",
-//                            transactionID));
-//        }
-//String uuid = client.getUUID();
             
         InternalResponse response = UploadToFMS.uploadToFMS(data, transactionID);
         if(response.getStatus()!=PaperlessConstant.HTTP_CODE_SUCCESS){return response;}

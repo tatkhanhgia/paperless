@@ -8,17 +8,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.qrypto.object.Property;
 import vn.mobileid.id.qrypto.object.QRSchema;
 import vn.mobileid.id.qrypto.object.qryptoEffectiveDate;
-import vn.mobileid.id.qrypto.process.ProcessClaimRequest;
 import vn.mobileid.id.qrypto.process.QryptoSession;
 import vn.mobileid.id.qrypto.process.SessionFactory;
-import vn.mobileid.id.qrypto.request.ClaimRequest;
-import vn.mobileid.id.qrypto.response.ClaimResponse;
 import vn.mobileid.id.qrypto.response.IssueQryptoWithFileAttachResponse;
 import vn.mobileid.id.general.Configuration;
+import vn.mobileid.id.qrypto.response.DownloadFileTokenResponse;
 
 /**
  *
@@ -88,44 +85,51 @@ public class QryptoService {
         return response;
     }
 
+    public DownloadFileTokenResponse downloadFileToken(
+            String fileToken
+    )throws Exception{
+        return this.session.downloadFileToken(fileToken);
+    }
+    
     public static void main(String[] args) throws Throwable {
-        QRSchema schema = new QRSchema();
+//        QRSchema schema = new QRSchema();
+//
+//        List<QRSchema.data> listData = new ArrayList<>();
+//        List<QRSchema.field> listField = new ArrayList<>();
+//
+//        schema.setScheme("QC1");
+//
+//        QRSchema.data data = new QRSchema.data();
+//        data.setName("kvalue");
+//        data.setValue("TATKHANHGIA");
+//
+//        QRSchema.format format = new QRSchema.format();
+//        format.setVersion("2");
+//
+//        QRSchema.field field1 = new QRSchema.field();
+//        field1.setName("Name");
+//        field1.setType(QRSchema.fieldType.t2);
+//        field1.setKvalue("kvalue");
+//        listField.add(field1);
+//        listData.add(data);
+//
+//        format.setFields(listField);
+//
+//        schema.setData(listData);
+//        schema.setFormat(format);
+//
+//        vn.mobileid.id.qrypto.object.Configuration configuration = new vn.mobileid.id.qrypto.object.Configuration();
+//        configuration.setContextIdentifier("QC1:");
+//        configuration.setQryptoHeight(1080);
+//        configuration.setQryptoWidth(1080);
+//        configuration.setIsTransparent(true);
+//        configuration.setQryptoEffectiveDate(
+//                new qryptoEffectiveDate("2023-03-22 00:00:00", "2023-04-30 00:00:00"));
+//
+//        String transcation = "1";
+//        IssueQryptoWithFileAttachResponse res = QryptoService.getInstance(1).generateQR(schema, configuration, transcation);
+//        System.out.println("DataL:" + new ObjectMapper().writeValueAsString(res));
 
-        List<QRSchema.data> listData = new ArrayList<>();
-        List<QRSchema.field> listField = new ArrayList<>();
-
-        schema.setScheme("QC1");
-
-        QRSchema.data data = new QRSchema.data();
-        data.setName("kvalue");
-        data.setValue("TATKHANHGIA");
-
-        QRSchema.format format = new QRSchema.format();
-        format.setVersion("2");
-
-        QRSchema.field field1 = new QRSchema.field();
-        field1.setName("Name");
-        field1.setType(QRSchema.fieldType.t2);
-        field1.setKvalue("kvalue");
-        String a = "";
-        listField.add(field1);
-        listData.add(data);
-
-        format.setFields(listField);
-
-        schema.setData(listData);
-        schema.setFormat(format);
-
-        vn.mobileid.id.qrypto.object.Configuration configuration = new vn.mobileid.id.qrypto.object.Configuration();
-        configuration.setContextIdentifier("QC1:");
-        configuration.setQryptoHeight(1080);
-        configuration.setQryptoWidth(1080);
-        configuration.setIsTransparent(true);
-        configuration.setQryptoEffectiveDate(
-                new qryptoEffectiveDate("2023-03-22 00:00:00", "2023-04-30 00:00:00"));
-
-        String transcation = "1";
-        IssueQryptoWithFileAttachResponse res = QryptoService.getInstance(1).generateQR(schema, configuration, transcation);
-        System.out.println("DataL:" + new ObjectMapper().writeValueAsString(res));
+        DownloadFileTokenResponse response = getInstance(1).downloadFileToken("NWI1NTZlMmYtMTRlZS00YzU3LWI5MzQtMWUxODU3YWQ1YzFh");
     }
 }

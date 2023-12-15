@@ -6,12 +6,15 @@
 package vn.mobileid.id.paperless.kernel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.general.database.Database;
 import vn.mobileid.id.general.database.DatabaseImpl;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.object.enumration.ItemsType;
 import vn.mobileid.id.paperless.objects.FileDataDetails;
 import vn.mobileid.id.paperless.objects.Item_JSNObject;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
@@ -51,12 +54,12 @@ public class CheckWorkflowTemplate {
     /**
      * Check Detail of an Item in workflow template
      *
-     * @param workflow - ItemDetails of An Item
+     * @param item - ItemDetails of An Item
      * @return no object => check status
      */
     public static InternalResponse checkDataWorkflowTemplate(
-            ItemDetails workflow) {
-        if (workflow == null) {
+            ItemDetails item) {
+        if (item == null) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
@@ -65,7 +68,7 @@ public class CheckWorkflowTemplate {
                             "en",
                             null));
         }
-        if (workflow.getField() == null || workflow.getField().isEmpty() || workflow.getField().length() <= 0) {
+        if (item.getField() == null || item.getField().isEmpty() || item.getField().length() <= 0) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
@@ -74,7 +77,7 @@ public class CheckWorkflowTemplate {
                             "en",
                             null));
         }
-        if (workflow.getType() <= 0 || workflow.getType() > PaperlessConstant.NUMBER_OF_ITEMS_TYPE) {
+        if (item.getType() <= 0 || item.getType() > PaperlessConstant.NUMBER_OF_ITEMS_TYPE) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
@@ -83,7 +86,7 @@ public class CheckWorkflowTemplate {
                             "en",
                             null));
         }
-        if (workflow.getValue() == null) {
+        if (item.getValue() == null) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
@@ -92,13 +95,28 @@ public class CheckWorkflowTemplate {
                             "en",
                             null));
         }
-        if (workflow.getType() == 5) {
-            if (workflow.getFile_field() == null || workflow.getFile_field().isEmpty()) {
+        if (item.getType() == ItemsType.Binary.getId()) {
+            if (item.getFile_field() == null || item.getFile_field().isEmpty()) {
                 return new InternalResponse(
                         PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                         PaperlessMessageResponse.getErrorMessage(
                                 PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_MISSING_FILE_FIELD_IN_ITEMS,
+                                "en",
+                                null));
+            }
+        }
+        if(item.getType() == ItemsType.Date.getId()){
+            try{
+                String dateFormat = PolicyConfiguration.getInstant().getSystemConfig().getAttributes().get(0).getDateFormat();
+                SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+                format.parse((String)item.getValue());
+            }catch(Exception ex){
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                        PaperlessMessageResponse.getErrorMessage(
+                                PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
+                                PaperlessConstant.SUBCODE_DATE_IN_ITEMS_DOES_NOT_FIT,
                                 "en",
                                 null));
             }

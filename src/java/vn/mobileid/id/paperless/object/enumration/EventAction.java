@@ -30,7 +30,8 @@ public enum EventAction {
     Purchage_when_trial(19),
     Edit_type(20),
     Upload(21),
-    Revoke(22);
+    Revoke(22),
+    QR_Download(23);
     
     private int id;
 

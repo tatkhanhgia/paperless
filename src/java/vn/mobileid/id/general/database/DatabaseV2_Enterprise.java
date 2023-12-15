@@ -19,4 +19,9 @@ public interface  DatabaseV2_Enterprise {
     public DatabaseResponse getEnterpriseInfoOfUser(
             String email,
             String transaction_id) throws Exception;
+    
+    public DatabaseResponse getSigningInfoOfEnterprise(
+            int enterprise_id,
+            String transactionId
+    )throws Exception;
 }

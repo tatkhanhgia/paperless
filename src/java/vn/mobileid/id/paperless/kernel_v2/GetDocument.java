@@ -12,7 +12,9 @@ import vn.mobileid.id.paperless.kernel.GetTransaction;
 import vn.mobileid.id.paperless.object.enumration.ObjectType;
 import vn.mobileid.id.paperless.objects.CSVTask;
 import vn.mobileid.id.paperless.objects.FileManagement;
+import vn.mobileid.id.paperless.objects.Item_JSNObject;
 import vn.mobileid.id.paperless.objects.KYC;
+import vn.mobileid.id.paperless.objects.KYC_V2;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.QR;
 import vn.mobileid.id.paperless.objects.Transaction;
@@ -126,14 +128,17 @@ public class GetDocument {
                     if (woAc.getRequestData() == null) {
                         woAc = (WorkflowActivity) GetWorkflowActivity.getWorkflowActivity(woAc.getId(), transactionID).getData();
                     }
-                    KYC object = new ObjectMapper().readValue(
+                    Item_JSNObject object = new ObjectMapper().readValue(
                             woAc.getRequestData(),
-                            KYC.class);
+                            Item_JSNObject.class);
+                    KYC_V2.Component component = new ObjectMapper().readValue(
+                            woAc.getRequestData(),
+                            KYC_V2.Component.class);
                     byte[] xsltC = file.getData();
-                    byte[] html = XSLT_PDF_Processing.appendData(object, xsltC);
+                    byte[] html = XSLT_PDF_Processing.appendData(object, component,xsltC);
 
                     //Convert from HTML to PDF
-                    byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
+                    byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html, XSLT_PDF_Processing.FontOfTemplate.Elabor_Template);
                     file.setData(pdf);
                 }
                 return new InternalResponse(
@@ -247,7 +252,7 @@ public class GetDocument {
             byte[] html = XSLT_PDF_Processing.appendData(object, xsltC);
 
             //Convert from HTML to PDF
-            byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
+            byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html, XSLT_PDF_Processing.FontOfTemplate.Elabor_Template);
             file.setData(pdf);
         }
         return new InternalResponse(

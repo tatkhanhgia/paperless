@@ -24,7 +24,9 @@ import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.PaperlessService;
 import vn.mobileid.id.paperless.kernel.process.ProcessESignCloud;
 import vn.mobileid.id.paperless.kernel.process.ProcessPDFGenerator;
+import vn.mobileid.id.paperless.kernel.process.ProcessPDFStamping;
 import vn.mobileid.id.paperless.kernel.process.ProcessSecureQRTemplate;
+import vn.mobileid.id.paperless.kernel.process.ProcessSimplePDFStamping;
 import vn.mobileid.id.paperless.kernel_v2.GetCSVTask;
 import vn.mobileid.id.paperless.objects.Asset;
 import vn.mobileid.id.paperless.objects.FileDataDetails;
@@ -39,6 +41,7 @@ import vn.mobileid.id.paperless.kernel_v2.GetWorkflowActivity;
 import vn.mobileid.id.paperless.kernel_v2.GetFileManagement;
 import vn.mobileid.id.paperless.kernel_v2.GetWorkflowDetails;
 import vn.mobileid.id.paperless.object.enumration.ObjectType;
+import vn.mobileid.id.paperless.object.enumration.WorkflowAttributeTypeName;
 import vn.mobileid.id.paperless.objects.CSVTask;
 import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_CSV_JSNObject;
 import vn.mobileid.id.paperless.objects.ProcessWorkflowActivity_CSV_JSNObject.Buffer;
@@ -78,7 +81,7 @@ public class ProcessWorkflowActivity {
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
-        
+
         //<editor-fold defaultstate="collapsed" desc="get Workflow Template Type to check type of process">
         //Check Type Process
         response = GetWorkflowTemplateType.getWorkflowTemplateType(
@@ -90,8 +93,13 @@ public class ProcessWorkflowActivity {
 
         WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
         switch (templateType.getId()) {
-            case 7:{break;} case 8:{break;}
-            default:{
+            case 7: {
+                break;
+            }
+            case 8: {
+                break;
+            }
+            default: {
                 return new InternalResponse(
                         PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                         new PaperlessMessageResponse().sendErrorMessage("This type of workflow activity cannot process this API").build()
@@ -101,7 +109,6 @@ public class ProcessWorkflowActivity {
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="Get Transaction">
-        //Get transaction of the workflow activity to get File Management
         response = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
@@ -127,6 +134,7 @@ public class ProcessWorkflowActivity {
                                 null)
                 );
             }
+            System.out.println("Get File Management Thanh cong");
             woAc.setFile(file);
         }
         //</editor-fold>
@@ -155,7 +163,6 @@ public class ProcessWorkflowActivity {
                     Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
                     return response;
                 }
-                return new InternalResponse(500, "Pending");
             }
             case 8: { //ESign Cloud
                 if (isAssigned) {
@@ -181,7 +188,7 @@ public class ProcessWorkflowActivity {
                 }
             }
             default: {
-                return new InternalResponse(500, "NOT PROVIDED YET");
+                return new InternalResponse(500, "{\"message\":\"NOT PROVIDED YET\"}");
             }
         }
     }
@@ -244,7 +251,12 @@ public class ProcessWorkflowActivity {
 
         WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
         switch (templateType.getId()) {
-            case 7:{break;} case 8:{break;}
+            case 7: {
+                break;
+            }
+            case 8: {
+                break;
+            }
             default: {
                 return new InternalResponse(500,
                         new PaperlessMessageResponse().sendErrorMessage("This type of workflow activity cannot process this API").build()
@@ -252,7 +264,7 @@ public class ProcessWorkflowActivity {
             }
         }
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="Get Transaction to get File Management">
         response = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -301,7 +313,8 @@ public class ProcessWorkflowActivity {
                                     null));
                     return response;
                 }
-                InternalResponse res = ProcessELaborContract.processELaborContractWithAuthen(
+                System.out.println("RequestData:" + woAc.getRequestData());
+                InternalResponse res = ProcessELaborContract.processELaborContractWithAuthenV2(
                         user,
                         woAc.getId(),
                         file,
@@ -338,7 +351,7 @@ public class ProcessWorkflowActivity {
                                     null));
                     return response;
                 }
-                InternalResponse res = ProcessESignCloud.processEsignCloudWithAuthen(
+                InternalResponse res = ProcessESignCloud.processESignCloudWithAuthenV2(
                         user,
                         woAc.getId(),
                         file,
@@ -398,7 +411,7 @@ public class ProcessWorkflowActivity {
         //Get Data from request
         List<FileDataDetails> fileData = request.getFile_data();
         List<ItemDetails> fileItem = request.getItem();
-        
+
         //<editor-fold defaultstate="collapsed" desc="Check data of request">
         InternalResponse response = CheckWorkflowTemplate.checkDataWorkflowTemplate(request);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -426,15 +439,26 @@ public class ProcessWorkflowActivity {
 
         WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
         switch (templateType.getId()) {
-            case 3: {break;} case 2: {break;}
-            default:{
+            case 5: {
+                break;
+            }
+            case 3: {
+                break;
+            }
+            case 2: {
+                break;
+            }
+            case 4:{
+                break;
+            }
+            default: {
                 return new InternalResponse(500,
-                 new PaperlessMessageResponse().sendErrorMessage("This type of Workflow Activity cannot process this API").build()
+                        new PaperlessMessageResponse().sendErrorMessage("This type of Workflow Activity cannot process this API").build()
                 );
             }
         }
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="Get Transaction to get File Management">
         response = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -467,29 +491,17 @@ public class ProcessWorkflowActivity {
 
         switch (templateType.getId()) {
             case 3: {//PDF Generator
-                response = ProcessPDFGenerator.process(
+                response = ProcessPDFGenerator.processV2(
                         woAc,
                         fileData,
                         fileItem,
                         uer_info,
-                        filename,
+                        false,
                         transactionID);
-
-                //Update into RAM
-                InternalResponse temp = GetWorkflowActivity.getWorkflowActivity(
-                        woAc.getId(),
-                        transactionID);
-                if (temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return temp;
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
                 }
-                woAc = (WorkflowActivity) temp.getData();
-                if (Resources.getListWorkflowActivity().containsKey(String.valueOf(woAc.getId()))) {
-                    Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
-                } else {
-                    Resources.putIntoRAM(String.valueOf(woAc.getId()), woAc);
-                }
-                response.setData(woAc);
-                return response;
+                return replaceInRAM(response, woAc, transactionID);
             }
             case 2: {//Secure QR
                 //process
@@ -500,27 +512,42 @@ public class ProcessWorkflowActivity {
                         uer_info,
                         filename,
                         transactionID);
-
-                //Update into RAM
-                InternalResponse temp = GetWorkflowActivity.getWorkflowActivity(
-                        woAc.getId(),
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
+                }
+                return replaceInRAM(response, woAc, transactionID);
+            }
+            case 5: { //PDF Stamping
+                response = ProcessPDFStamping.processV2(
+                        woAc,
+                        fileData,
+                        fileItem,
+                        uer_info,
                         transactionID);
-                if (temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return temp;
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
                 }
-                woAc = (WorkflowActivity) temp.getData();
-                if (Resources.getListWorkflowActivity().containsKey(String.valueOf(woAc.getId()))) {
-                    Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
-                } else {
-                    Resources.putIntoRAM(String.valueOf(woAc.getId()), woAc);
+                return replaceInRAM(response, woAc, transactionID);
+            }
+            case 4: { // Simple PDF Stamping
+                response = ProcessSimplePDFStamping.processV2(
+                        woAc,
+                        fileData, 
+                        fileItem, 
+                        uer_info, 
+                        transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
                 }
-                response.setData(woAc);
-                return response;
+                return replaceInRAM(response, woAc, transactionID);
             }
             default: {
                 return new InternalResponse(
-                        500, 
-                        "{NOT PROVIDED YET}");
+                        PaperlessConstant.HTTP_CODE_500,
+                        new PaperlessMessageResponse()
+                                .sendErrorMessage("Not Provided yet")
+                                .build()
+                );
             }
         }
     }
@@ -553,15 +580,16 @@ public class ProcessWorkflowActivity {
         List<Buffer> fileItem = request.getItem();
 
         //<editor-fold defaultstate="collapsed" desc="Check data of request">
-        try{
-        for (int i = 0; i < fileItem.size(); i++) {
-            for (ItemDetails item : fileItem.get(i).getItemDetails()) {
-                InternalResponse response = CheckWorkflowTemplate.checkDataWorkflowTemplate(item);
-                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
-                    return response;
+        try {
+            for (int i = 0; i < fileItem.size(); i++) {
+                for (ItemDetails item : fileItem.get(i).getItemDetails()) {
+                    InternalResponse response = CheckWorkflowTemplate.checkDataWorkflowTemplate(item);
+                    if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                        return response;
+                    }
                 }
             }
-        } } catch(Exception ex){
+        } catch (Exception ex) {
             LogHandler.error(
                     PaperlessService.class,
                     transactionID,
@@ -576,7 +604,7 @@ public class ProcessWorkflowActivity {
                             null));
         }
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="Get Workflow Activity and check existed">
         InternalResponse response = GetWorkflowActivity.getWorkflowActivity(
                 id,
@@ -597,7 +625,16 @@ public class ProcessWorkflowActivity {
 
         WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
         switch (templateType.getId()) {
-            case 2:{break;}
+            case 2: {
+                woAc.setWorkflow_template_type(templateType.getId());
+                woAc.setWorkflow_template_type_name(templateType.getName());
+                break;
+            }
+            case 3: {
+                woAc.setWorkflow_template_type(templateType.getId());
+                woAc.setWorkflow_template_type_name(templateType.getName());
+                break;
+            }
             default: {
                 return new InternalResponse(
                         PaperlessConstant.HTTP_CODE_BAD_REQUEST,
@@ -606,13 +643,14 @@ public class ProcessWorkflowActivity {
             }
         }
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="Get Transaction to get CSV Task">
         response = GetTransaction.getTransaction(woAc.getTransaction(), transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
         Transaction transaction = (Transaction) response.getData();
+        System.out.println("Object Type:" + transaction.getObject_type().name());
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="Get Type Object for each type of Transaction">
@@ -623,9 +661,8 @@ public class ProcessWorkflowActivity {
                 return response;
             }
             CSVTask csv = (CSVTask) response.getData();
-            if(csv.getBinary_data()!=null || csv.getUuid() != null){
-                return new InternalResponse(PaperlessConstant.
-                        HTTP_CODE_FORBIDDEN,
+            if (csv.getBinary_data() != null || csv.getUuid() != null) {
+                return new InternalResponse(PaperlessConstant.HTTP_CODE_FORBIDDEN,
                         PaperlessMessageResponse.getErrorMessage(
                                 PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOWACTIVITY,
                                 PaperlessConstant.SUBCODE_WORKFLOW_ACTIVITY_ALREADY_PROCESS,
@@ -634,17 +671,59 @@ public class ProcessWorkflowActivity {
                 );
             }
             woAc.setCsv(csv);
+        } else {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    new PaperlessMessageResponse()
+                            .sendErrorMessage("Cannot get CSV Task of this Workflow Activity")
+                            .build()
+            );
         }
         //</editor-fold>
 
         switch (templateType.getId()) {
-            case 2: {//Secure QR
+            case 2: {
+                //<editor-fold defaultstate="collapsed" desc="CSV QR Template">
                 response = ProcessSecureQRTemplate.processCSV(
                         woAc,
                         fileItem,
                         uer_info,
                         filename,
                         transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
+                }
+                //</editor-fold>
+
+                //Update into RAM
+                InternalResponse temp = GetWorkflowActivity.getWorkflowActivity(
+                        woAc.getId(),
+                        transactionID);
+                if (temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return temp;
+                }
+                woAc = (WorkflowActivity) temp.getData();
+                if (Resources.getListWorkflowActivity().containsKey(String.valueOf(woAc.getId()))) {
+                    Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
+                } else {
+                    Resources.putIntoRAM(String.valueOf(woAc.getId()), woAc);
+                }
+                response.setMessage("CSV");
+                response.setData(woAc);
+                return response;
+            }
+            case 3: {
+                //<editor-fold defaultstate="collapsed" desc="CSV QR Template">
+                System.out.println("Process CSV PDF");
+                response = ProcessPDFGenerator.processCSV(
+                        woAc,
+                        fileItem,
+                        uer_info,
+                        transactionID);
+                if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+                    return response;
+                }
+                //</editor-fold>
 
                 //Update into RAM
                 InternalResponse temp = GetWorkflowActivity.getWorkflowActivity(
@@ -664,13 +743,14 @@ public class ProcessWorkflowActivity {
                 return response;
             }
             default: {
-                return new InternalResponse(500, 
-                new PaperlessMessageResponse().sendErrorMessage("NOT PROVIDED YET").build());
+                return new InternalResponse(500,
+                        new PaperlessMessageResponse().sendErrorMessage("NOT PROVIDED YET").build());
             }
         }
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get Document Hash">
     public static InternalResponse getDocumentHash(
             User user,
             int idWA,
@@ -703,7 +783,12 @@ public class ProcessWorkflowActivity {
 
         WorkflowTemplateType templateType = (WorkflowTemplateType) response.getData();
         switch (templateType.getId()) {
-            case 7:{break;} case 8:{break;}
+            case 7: {
+                break;
+            }
+            case 8: {
+                break;
+            }
             default: {
                 return new InternalResponse(500,
                         new PaperlessMessageResponse().sendErrorMessage("This type of workflow activity cannot process this API").build()
@@ -711,7 +796,7 @@ public class ProcessWorkflowActivity {
             }
         }
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="Get Workflow Detail">
         response = GetWorkflowDetails.getWorkflowDetail(woAc.getWorkflow_id(), transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
@@ -725,8 +810,11 @@ public class ProcessWorkflowActivity {
         List<WorkflowAttributeType> list = (List<WorkflowAttributeType>) response.getData();
         WorkflowAttributeType q = new WorkflowAttributeType();
         for (WorkflowAttributeType a : list) {
-            if (a.getId() == 1) //Asset Template
-            {
+            if (a.getId() == WorkflowAttributeTypeName.ASSET_ELABOR.getId()) {
+                q = a;
+                break;
+            }
+            if (a.getId() == WorkflowAttributeTypeName.ASSET_ESIGN.getId()) {
                 q = a;
                 break;
             }
@@ -799,9 +887,33 @@ public class ProcessWorkflowActivity {
 //                }
 //            }       
     }
+    //</editor-fold>
 
     //==================INTERAL METHOD/FUNCTION===================
-    //=========================MAIN================================
+    //<editor-fold defaultstate="collapsed" desc="Replace WoAC in RAM">
+    private static InternalResponse replaceInRAM(
+            InternalResponse response,
+            WorkflowActivity woAc,
+            String transactionID
+    ) throws Exception {
+        //Update into RAM
+        InternalResponse temp = GetWorkflowActivity.getWorkflowActivity(
+                woAc.getId(),
+                transactionID);
+        if (temp.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return temp;
+        }
+        woAc = (WorkflowActivity) temp.getData();
+        if (Resources.getListWorkflowActivity().containsKey(String.valueOf(woAc.getId()))) {
+            Resources.getListWorkflowActivity().replace(String.valueOf(woAc.getId()), woAc);
+        } else {
+            Resources.putIntoRAM(String.valueOf(woAc.getId()), woAc);
+        }
+        response.setData(woAc);
+        return response;
+    }
+    //</editor-fold>
+
     public static void main(String[] arhs) {
 //        ItemDetails a = new ItemDetails();
 //        a.setField("FullName");

@@ -26,6 +26,9 @@ public class GenerationType {
     @AnnotationORM(columnName = "REMARK")
     private String remark_vn;
 
+    @AnnotationORM(columnName = "ENABLED")
+    private boolean isEnabled;
+    
     public GenerationType() {
     }
 
@@ -68,6 +71,12 @@ public class GenerationType {
     public void setRemark_vn(String remark_vn) {
         this.remark_vn = remark_vn;
     }
-    
-    
+
+    public boolean IsEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
 }

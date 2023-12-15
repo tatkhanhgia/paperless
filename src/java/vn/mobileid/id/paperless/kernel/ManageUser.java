@@ -4,6 +4,12 @@
  */
 package vn.mobileid.id.paperless.kernel;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import vn.mobileid.id.general.PolicyConfiguration;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.email.SendMail;
 import vn.mobileid.id.general.objects.InternalResponse;
@@ -12,6 +18,9 @@ import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.utils.Utils;
+import vn.mobileid.id.paperless.kernel_v2.UpdateUser;
+import vn.mobileid.id.paperless.object.enumration.Language;
+
 /**
  *
  * @author GiaTK
@@ -33,9 +42,7 @@ public class ManageUser {
             int language,
             String transactionID
     ) throws Exception {
-        InternalResponse response = GetUser.getStatusUser(
-                email,
-                transactionID);
+        InternalResponse response = vn.mobileid.id.paperless.kernel_v2.GetUser.getStatusUser(email, transactionID);
         if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return response;
         }
@@ -43,12 +50,36 @@ public class ManageUser {
         //Get data User
         Account account = (Account) response.getData();
 
+        //If User/Account has been locked => return error
+        try {
+            if (account.isLocked_enabled()) {
+                System.out.println("Date:"+account.getLocked_at());
+                Date lockAt = account.getLocked_at();
+                int minute_lock = PolicyConfiguration.getInstant().getPasswordExpired().getMinute_lock();
+                Date expected_time = new Date(lockAt.toInstant().plus(minute_lock, ChronoUnit.MINUTES).toEpochMilli());
+                Date now = Date.from(Instant.now());
+                System.out.println("Now:"+now);
+                if (expected_time.after(now)) {
+                    return new InternalResponse(
+                            PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                            PaperlessMessageResponse.getErrorMessage(
+                                    PaperlessConstant.CODE_INVALID_PARAMS_KEYCLOAK,
+                                    PaperlessConstant.SUBCODE_CANNOT_FORGOT_PASSWORD_USER_HAS_BEEN_LOCKED,
+                                    "en",
+                                    transactionID)
+                    );
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Cannot check lock of Account => Continue forgot password");
+        }
+
         String OTP = Utils.generateRandomString(9);
 
         //Get email template
         response = GetEmailTemplate.getEmailTemplate(
-                (language < 1 || language > 2) ? 
-                        PaperlessConstant.LANGUAGE_EN : language,
+                (language < 1 || language > 2)
+                        ? Language.English.getId() : language,
                 vn.mobileid.id.paperless.object.enumration.EmailTemplate.EMAIL_FORGOT_PASSWORD.getName(),
                 transactionID);
 
@@ -63,14 +94,21 @@ public class ManageUser {
         mail.setContent(template.getBody());
         mail.appendNameUser(account.getUser_name());
         mail.appendEmailUser(email);
-        mail.appendLink(OTP);
+        mail.appendAuthorizationCode(OTP);
+        mail.appendLink(PolicyConfiguration.getInstant().getHostURLofForgotPassword().getUrl());
         mail.start();
 
         //Append queue
-        if(Resources.getQueueForgotPassword().containsValue(email)){
-            for(String otp: Resources.getQueueForgotPassword().keySet()){
-                if(Resources.getQueueForgotPassword().get(otp).equals(email)){
-                    Resources.getQueueForgotPassword().remove(otp);
+        if (!Resources.getQueueForgotPassword().isEmpty()) {
+            if (Resources.getQueueForgotPassword().containsValue(email)) {
+                Iterator<Entry<String, String>> iter = Resources.getQueueForgotPassword().entrySet().iterator();
+                while (iter.hasNext()) {
+                    Entry<String, String> entry = iter.next();
+                    String otp = entry.getKey();
+                    String email_ = entry.getValue();
+                    if (email_.equals(email)) {
+                        iter.remove();
+                    }
                 }
             }
         }
@@ -81,7 +119,6 @@ public class ManageUser {
                 "");
     }
     //</editor-fold>
-    
 
     //<editor-fold defaultstate="collapsed" desc="Set new Password">
     /**
@@ -121,5 +158,34 @@ public class ManageUser {
         return response;
     }
     //</editor-fold>
-    
+
+    //<editor-fold defaultstate="collapsed" desc="Set new Password without Login">
+    /**
+     * Set new password to user with OTP from user
+     *
+     * @param email
+     * @param passwordOld
+     * @param passwordNew
+     * @param transactionID
+     * @return
+     * @throws Exception
+     */
+    public static InternalResponse setNewPasswordWithoutLogin(
+            String email,
+            String passwordOld,
+            String passwordNew,
+            String transactionID
+    ) throws Exception {
+        InternalResponse response = UpdateUser.updateUserPassword(
+                email,
+                passwordOld,
+                passwordNew,
+                transactionID);
+
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+        return response;
+    }
+    //</editor-fold>
 }

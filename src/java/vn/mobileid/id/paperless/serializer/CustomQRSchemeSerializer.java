@@ -69,8 +69,22 @@ public class CustomQRSchemeSerializer extends JsonSerializer<QRSchema> {
                             jg.writeObjectFieldStart(q);
                             jg.writeStringField("type", tempfield.getType().getName());
                             jg.writeStringField("file_type", tempfield.getFile_type());
-                            jg.writeStringField("file_field", tempfield.getField_field());
+                            jg.writeStringField("file_field", tempfield.getFile_field());
+                            jg.writeStringField("file_name", tempfield.getFile_name());
                             jg.writeNumberField("share_mode", tempfield.getShare_mode());
+                            if(tempfield.getQr_meta_data() != null){
+                                jg.writeObjectFieldStart("qr_meta_data");
+                                    jg.writeBooleanField("isTransparent", tempfield.getQr_meta_data().isIsTransparent());
+                                    jg.writeNumberField("xcoordinator", tempfield.getQr_meta_data().getxCoordinator());
+                                    jg.writeNumberField("ycoordinator", tempfield.getQr_meta_data().getyCoordinator());
+                                    jg.writeNumberField("qrDimension", tempfield.getQr_meta_data().getQrDimension());
+                                    jg.writeArrayFieldStart("pageNumber");
+                                        for(Integer temp : tempfield.getQr_meta_data().getPageNumber()){
+                                            jg.writeNumber(temp);
+                                        }
+                                    jg.writeEndArray();
+                                jg.writeEndObject();
+                            }
                             jg.writeEndObject();
                         }
                         jg.writeEndObject();

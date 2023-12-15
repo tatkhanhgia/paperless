@@ -84,16 +84,16 @@ public class GetWorkflowDetails {
 //        }
 
         InternalResponse response = GetWorkflowDetails.getWorkflowDetail(
-                491,
+                1262,
                 "transactionId");
         
         if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
             System.out.println("Mess:"+response.getMessage());
         } else {
             for(WorkflowAttributeType temp : (List<WorkflowAttributeType>)response.getData()){
-                System.out.println(temp.getId());
-                System.out.println(temp.getName());
-                System.out.println(temp.getValue());
+                System.out.println("id:"+temp.getId());
+                System.out.println("name:"+temp.getName());
+                System.out.println("value:"+temp.getValue());
             }
         }
     }    

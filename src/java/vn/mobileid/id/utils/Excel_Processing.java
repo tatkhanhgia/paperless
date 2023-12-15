@@ -17,9 +17,10 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
@@ -35,14 +36,14 @@ public class Excel_Processing {
             List<WorkflowActivity> listObject
     ) throws Exception {
         //Create Excel
-        Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Reports Workflow Activity");
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Reports Workflow Activity");
         for (int i = 0; i <= 5; i++) {
             sheet.setColumnWidth(i, 4000);
         }
 
         //Set Header
-        Row header = sheet.createRow(0);
+        XSSFRow header = sheet.createRow(0);
 
         CellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
@@ -54,7 +55,7 @@ public class Excel_Processing {
         font.setBold(true);
         headerStyle.setFont(font);
 
-        Cell headerCell = header.createCell(0);
+        XSSFCell headerCell = header.createCell(0);
         headerCell.setCellValue("ID");
         headerCell.setCellStyle(headerStyle);
 
@@ -79,13 +80,32 @@ public class Excel_Processing {
         headerCell.setCellStyle(headerStyle);
         //Row
         CellStyle style = workbook.createCellStyle();
-        style.setWrapText(false);
+        style.setWrapText(true);
 
+        HashMap<Integer, WorkflowTemplateType> map = Resources.getListWorkflowTemplateType();
+        if (map == null || map.isEmpty()) {
+            Resources.reloadListWorkflowTemplateType();
+            map = Resources.getListWorkflowTemplateType();
+        }
+
+        System.out.println("Total record:" + listObject.size());
+        int row_count = 0;
         for (int i = 0; i < listObject.size(); i++) {
-            Row row = sheet.createRow(2+i);
+            //Check if workflow template type in Object not exist in RAM (in case that workflowtemplatetype is disable in DB) => Ignore that woAc
+            //Kiểm tra workflow template type của Object có trong danh sách tồn tại hay không? (trường hợp disable trong DB) => bỏ qua woAc đó
+            try {
+                map.get(listObject.get(i).getWorkflow_template_type()).getName();
+            } catch (Exception ex) {
+                continue;
+            }
+//            if(listObject.get(i) == null || listObject.get(i).getCreated_by() == null || listObject.get(i).getCreated_by().isEmpty()){
+//                continue;
+//            }
+            XSSFRow row = sheet.createRow(1 + row_count);
+            row_count ++;
 
             //Cell
-            Cell cell = row.createCell(0);
+            XSSFCell cell = row.createCell(0);
             cell.setCellValue(listObject.get(i).getId());
             cell.setCellStyle(style);
 
@@ -94,8 +114,8 @@ public class Excel_Processing {
             cell.setCellStyle(style);
 
             cell = row.createCell(2);
-            HashMap<Integer, WorkflowTemplateType> map = Resources.getListWorkflowTemplateType();
-            map.get(listObject.get(i).getWorkflow_template_type()).getName();
+
+//            map.get(listObject.get(i).getWorkflow_template_type()).getName();
             cell.setCellValue(map.get(listObject.get(i).getWorkflow_template_type()).getName());
             cell.setCellStyle(style);
 
@@ -106,7 +126,7 @@ public class Excel_Processing {
             cell = row.createCell(4);
             cell.setCellValue(listObject.get(i).getCreated_by());
             cell.setCellStyle(style);
-            
+
             cell = row.createCell(5);
             cell.setCellValue(new SimpleDateFormat().format(listObject.get(i).getCreated_at()));
             cell.setCellStyle(style);

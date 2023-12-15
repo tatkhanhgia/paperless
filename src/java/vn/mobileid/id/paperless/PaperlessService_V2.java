@@ -27,6 +27,9 @@ import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowActivity;
 import vn.mobileid.id.utils.Excel_Processing;
 import vn.mobileid.id.general.PolicyConfiguration;
+import vn.mobileid.id.paperless.kernel_v2.CopyWorkflow;
+import vn.mobileid.id.paperless.kernel_v2.CreateWorkflow;
+import vn.mobileid.id.paperless.objects.Workflow;
 import vn.mobileid.id.utils.Task;
 import vn.mobileid.id.utils.TaskV2;
 import vn.mobileid.id.utils.Utils;
@@ -37,6 +40,7 @@ import vn.mobileid.id.utils.Utils;
  */
 public class PaperlessService_V2 {
 
+    //<editor-fold defaultstate="collapsed" desc="Update General Profile">
     public static InternalResponse updateGeneralProfile(
             final HttpServletRequest request,
             String payload,
@@ -78,7 +82,6 @@ public class PaperlessService_V2 {
                             null));
         }
 
-        
         response = UpdateUser.updateUser(
                 account.getUser_email(),
                 account.getUser_name(),
@@ -97,6 +100,7 @@ public class PaperlessService_V2 {
         response.setUser(user_info);
         return response;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Update Enterprise User">
     public static InternalResponse updateEnterpriseUser(
@@ -197,7 +201,7 @@ public class PaperlessService_V2 {
             @Override
             public void run() {
                 try {
-                    Account temp = (Account) this.getData()[0];                    
+                    Account temp = (Account) this.getData()[0];
                     User temp2 = (User) this.getData()[1];
                     this.setResponse(
                             UpdateUser.updateRole(
@@ -231,10 +235,10 @@ public class PaperlessService_V2 {
                     ""
             );
         }
-        if(task.getResponse().getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+        if (task.getResponse().getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return task.getResponse();
         }
-        if(task2.getResponse().getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){
+        if (task2.getResponse().getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return task2.getResponse();
         }
         response = new InternalResponse(
@@ -244,8 +248,8 @@ public class PaperlessService_V2 {
         return response;
     }
     //</editor-fold>
-    
 
+    //<editor-fold defaultstate="collapsed" desc="Delete User">
     public static InternalResponse deleteUser(
             final HttpServletRequest request,
             String payload,
@@ -267,10 +271,9 @@ public class PaperlessService_V2 {
 //                            "en",
 //                            null));
 //        }
-        
         //Check email to be delete in payload
         String emailToBeDelete = Utils.getFromJson("user_email", payload);
-        if(Utils.isNullOrEmpty(emailToBeDelete)){
+        if (Utils.isNullOrEmpty(emailToBeDelete)) {
             return new InternalResponse(
                     PaperlessConstant.HTTP_CODE_BAD_REQUEST,
                     PaperlessMessageResponse.getErrorMessage(
@@ -284,8 +287,10 @@ public class PaperlessService_V2 {
                 0,
                 user_info.getAid(),
                 transactionID, true);
-        if(response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS){return response;}
-                
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return response;
+        }
+
         User temp = response.getUser();
         //Check role
         if (!temp.getRole_name().equalsIgnoreCase("owner") && !temp.getRole_name().equalsIgnoreCase("admin")) {
@@ -293,15 +298,16 @@ public class PaperlessService_V2 {
                     PaperlessConstant.HTTP_CODE_UNAUTHORIZED,
                     null);
         }
-        
+
         response = DeleteUser.deleteUser(
-                user_info.getEmail(), 
-                emailToBeDelete, 
-                user_info.getAid(), 
+                user_info.getEmail(),
+                emailToBeDelete,
+                user_info.getAid(),
                 transactionID);
         response.setUser(user_info);
         return response;
     }
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Get Report of Workflow Ac">
     public static InternalResponse getReportofWorkflowActivity(
@@ -484,27 +490,27 @@ public class PaperlessService_V2 {
 
         //Processing
         InternalResponse res = GetWorkflowActivity.getListWorkflowActivity(
-                user_info.getEmail(), 
-                user_info.getAid(), 
-                email_search, 
-                null, 
-                searchTemplate, 
-                search, 
+                user_info.getEmail(),
+                user_info.getAid(),
+                email_search,
+                null,
+                searchTemplate,
+                search,
                 "1,2,3",
-                (start != null || stop != null), 
-                start, 
-                stop, 
-                (page_no <= 1) ? 0 : (page_no - 1) * record, 
-                record == 0 ? numberOfRecords : record, 
-                transactionID);   
+                (start != null || stop != null),
+                start,
+                stop,
+                (page_no <= 1) ? 0 : (page_no - 1) * record,
+                record == 0 ? numberOfRecords : record,
+                transactionID);
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
             return res;
         }
         List<WorkflowActivity> list = (List<WorkflowActivity>) res.getData();
-        byte[] fileExcel =null;
-        try{
+        byte[] fileExcel = null;
+        try {
             fileExcel = Excel_Processing.createExcel(list);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             LogHandler.error(PaperlessService_V2.class,
                     "Cannot create Excel file",
                     ex);
@@ -517,7 +523,7 @@ public class PaperlessService_V2 {
         return res;
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Get Total Records User Activity">
     public static InternalResponse getTotalRecordsUserActivity(
             final HttpServletRequest request,
@@ -715,6 +721,86 @@ public class PaperlessService_V2 {
         res.setMessage("{\"x-total-records\":" + res.getData() + "}");
         res.setUser(user_info);
         return res;
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Copy Workflow">
+    public static InternalResponse copyWorkflow(
+            final HttpServletRequest request,
+            String payload,
+            int workflowId,
+            String transactionID
+    ) throws Exception {
+        //<editor-fold defaultstate="collapsed" desc="Check Valid Token">
+        InternalResponse response = PaperlessService.verifyToken(request, transactionID);
+        if (response.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS || response == null) {
+            return response;
+        }
+        User user_info = response.getUser();
+        //</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="Check valid payload">
+        if (Utils.isNullOrEmpty(payload)) {
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_NO_PAYLOAD_FOUND,
+                            "en",
+                            null));
+        }
+        //</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="Parse Payload">
+        ObjectMapper mapper = new ObjectMapper();
+        Workflow workflow = new Workflow();
+        try {
+            workflow = mapper.readValue(payload, Workflow.class);
+        } catch (Exception e) {
+            LogHandler.error(
+                    PaperlessService.class,
+                    transactionID,
+                    "Cannot parse payload",
+                    e);
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_FAIL,
+                            PaperlessConstant.SUBCODE_INVALID_PAYLOAD_STRUCTURE,
+                            PaperlessMessageResponse.getLangFromJson(payload),
+                            null));
+        }
+        //</editor-fold>
+        
+        //<editor-fold defaultstate="collapsed" desc="Check valid Workflow - contain at least Label">
+        InternalResponse result = null;
+        result = CreateWorkflow.checkDataWorkflow(workflow);
+        if (result.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {
+            return result;
+        }
+        if(workflowId <= 0 ){
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_BAD_REQUEST,
+                    PaperlessMessageResponse.getErrorMessage(
+                            PaperlessConstant.CODE_INVALID_PARAMS_WORKFLOW,
+                            PaperlessConstant.SUBCODE_CANNOT_GET_ASSET_TEMPLATE_TYPE,
+                            "en",
+                            transactionID
+                            )
+            ); 
+        }
+        //</editor-fold>
+        
+        //<editor-fold defaultstate="collapsed" desc="Processing">
+        response = CopyWorkflow.copyWorkflow(
+                workflowId, 
+                workflow.getLabel(), 
+                user_info, 
+                transactionID);
+        
+        response.setUser(user_info);
+        return response;
+        //</editor-fold>
     }
     //</editor-fold>
 }

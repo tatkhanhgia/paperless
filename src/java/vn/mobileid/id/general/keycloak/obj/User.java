@@ -53,6 +53,9 @@ public class User {
     private int aid; //authorized party ID
     private Date passwordExpiredAt;
     
+    @AnnotationORM(columnName = "QR_EXPIRED_DURATION")
+    private long qr_expired_time;
+    
     //Internal Service
     private String ipAddress;
     
@@ -294,5 +297,14 @@ public class User {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    @JsonProperty("qr_ext")
+    public long getQr_expired_time() {
+        return qr_expired_time;
+    }
+
+    public void setQr_expired_time(long qr_expired_time) {
+        this.qr_expired_time = qr_expired_time;
     }
 }

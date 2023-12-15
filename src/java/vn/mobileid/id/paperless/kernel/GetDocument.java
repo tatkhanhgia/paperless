@@ -75,7 +75,7 @@ public class GetDocument {
             byte[] html = XSLT_PDF_Processing.appendData(object, xsltC);
 
             //Convert from HTML to PDF
-            byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html);
+            byte[] pdf = XSLT_PDF_Processing.convertHTMLtoPDF(html, XSLT_PDF_Processing.FontOfTemplate.Elabor_Template);
             file.setData(pdf);
         }
         return new InternalResponse(

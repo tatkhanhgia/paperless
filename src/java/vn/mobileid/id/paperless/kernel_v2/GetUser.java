@@ -124,15 +124,57 @@ public class GetUser {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Get total records of User">
+    /**
+     * Get data of User (choose email or id to get data)
+     *
+     * @param enterprise_id - Enterprise id
+     * @param listRole
+     * @param transactionID
+     * @return Long rowcount
+     * @throws Exception
+     */
+    public static InternalResponse getTotalRecordUser(
+            int enterprise_id,
+            String listRole,
+            String transactionID
+    ) throws Exception {
+        DatabaseV2_User DB = new DatabaseImpl_V2_User();
+
+        DatabaseResponse callDB = DB.getTotalRecordOfUser(enterprise_id, listRole,transactionID);
+
+        try {
+            if (callDB.getStatus() != PaperlessConstant.CODE_SUCCESS) {
+                String message = null;
+                message = PaperlessMessageResponse.getErrorMessage(
+                        PaperlessConstant.CODE_FAIL,
+                        callDB.getStatus(),
+                        "en",
+                        null);
+                return new InternalResponse(
+                        PaperlessConstant.HTTP_CODE_FORBIDDEN,
+                        message
+                );
+            }
+            
+            return new InternalResponse(
+                    PaperlessConstant.HTTP_CODE_SUCCESS,
+                    callDB.getObject());
+        } catch (Exception e) {
+            throw new Exception("Cannot get total records of User!", e);
+        }
+    }
+    //</editor-fold> 
+    
     public static void main(String[] args)throws Exception {
-        InternalResponse response = GetUser.getUser(
-                "khanhpx@mobile-id.vn",
-                0,
-                3,
-                "null",
-                false);
+        InternalResponse response = GetUser.getStatusUser("giahang980708@gmail.com", "transactionId");
                 
         Account account = (Account)response.getData();
         System.out.println("Id:"+account.getStatus_id());
+        System.out.println("IS Lock:"+account.isLocked_enabled());
+        System.out.println("Lock at:"+account.getLocked_at());
+        
+        response = GetUser.getTotalRecordUser(3,"2", "transactionId");
+        System.out.println("Row:"+response.getData());
     }
 }

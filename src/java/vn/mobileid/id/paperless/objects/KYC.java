@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import java.lang.reflect.Field;
+import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -40,20 +40,21 @@ public class KYC {
     private float width;
     private float height;
     private String QR;
+    
+    //For Course
+    private String GraduationType; //Loại
+    private String Specialized; //CHuyên ngành
+    private int Day;
+    private int Month;
+    private int Year;
+    private String SerialNumber; //Số hiệu
+    private String ReferenceNumber; //Sổ gốc
+    private String Gender; //1: Ông, 2:Bà
+    private String ValidationUrl;
+    private String SignDate;
 
-//    public KYC(String FullName, String BirthDate, String Nationality, String PersonalNumber, String IssuanceDate, String PlaceOfResidence, String CurrentDate, String DateAfterOneYear, String PreviousDay, String PreviousMonth, String PreviousYear) {
-//        this.FullName = FullName;
-//        this.BirthDate = BirthDate;
-//        this.Nationality = Nationality;
-//        this.PersonalNumber = PersonalNumber;
-//        this.IssuanceDate = IssuanceDate;
-////        this.PlaceOfResidence = PlaceOfResidence;
-//        this.CurrentDate = CurrentDate;
-//        this.DateAfterOneYear = DateAfterOneYear;
-//        this.PreviousDay = PreviousDay;
-//        this.PreviousMonth = PreviousMonth;
-//        this.PreviousYear = PreviousYear;
-//    }
+    //Internal 
+    private Date date; //Lưu trữ dữ liệu date phòng khi cần
 
     public KYC() {        
     }        
@@ -137,6 +138,91 @@ public class KYC {
         return QR;
     }
 
+    @XmlElement(name = "GraduationType")
+    public String getGraduationType() {
+        return GraduationType;
+    }
+
+    @XmlElement(name = "Specialized")
+    public String getSpecialized() {
+        return Specialized;
+    }
+
+    @XmlElement(name = "Day")
+    public int getDay() {
+        return Day;
+    }
+
+    @XmlElement(name = "Month")
+    public int getMonth() {
+        return Month;
+    }
+
+    @XmlElement(name = "Year")
+    public int getYear() {
+        return Year;
+    }
+
+    @XmlElement(name = "SerialNumber")
+    public String getSerialNumber() {
+        return SerialNumber;
+    }
+
+    @XmlElement(name = "ReferenceNumber")
+    public String getReferenceNumber() {
+        return ReferenceNumber;
+    }
+
+    @XmlElement(name = "Gender")
+    public String getGender() {
+        return Gender;
+    }
+
+    @XmlElement(name = "Url")
+    public String getValidationUrl() {
+        return ValidationUrl;
+    }
+
+    public String getSignDate() {
+        return SignDate;
+    }
+
+    public void setValidationUrl(String ValidationUrl) {
+        this.ValidationUrl = ValidationUrl;
+    }
+    
+    public void setSerialNumber(String SerialNumber) {
+        this.SerialNumber = SerialNumber;
+    }
+
+    public void setReferenceNumber(String ReferenceNumber) {
+        this.ReferenceNumber = ReferenceNumber;
+    }
+
+    public void setGender(String Gender) {
+        this.Gender = Gender;
+    }
+    
+    public void setGraduationType(String GraduationType) {
+        this.GraduationType = GraduationType;
+    }
+
+    public void setSpecialized(String Specialized) {
+        this.Specialized = Specialized;
+    }
+
+    public void setDay(int Day) {
+        this.Day = Day;
+    }
+
+    public void setMonth(int Month) {
+        this.Month = Month;
+    }
+
+    public void setYear(int Year) {
+        this.Year = Year;
+    }
+    
     public void setQR(String QR) {
         this.QR = QR;
     }
@@ -204,6 +290,18 @@ public class KYC {
 
     public void setHeight(float height) {
         this.height = height;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setSignDate(String SignDate) {
+        this.SignDate = SignDate;
     }
     
     public static void main(String[] args) throws Exception{

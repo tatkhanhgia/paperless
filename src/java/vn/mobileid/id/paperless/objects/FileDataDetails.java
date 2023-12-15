@@ -57,62 +57,30 @@ public class FileDataDetails {
     public void setHash_value(String hash_value) {
         this.hash_value = hash_value;
     }
-
     
-    
-//    @JsonIgnore
-//    public void setFile_type(FileType file_type) {
-//        this.file_type = file_type;
-//        this.type = file_type.value;
-//    }
-
     public void setValue(Object value) {
         this.value = value;
     }
 
     public void setFile_type(int type) {
         this.file_type = type;
-//        switch(type){
-//            case 1 : {
-//                this.file_type = FileType.FingerPrint;
-//                break;
-//            }
-//            case 2 : {
-//                this.file_type = FileType.IdentityCard;
-//                break;
-//            }
-//            case 3:{
-//                this.file_type = FileType.Photo;
-//                break;
-//            }
-//            case 4:{
-//                this.file_type = FileType.PDF;
-//                break;
-//            }
-//        }
     }
+    
+    public enum FileType{
+        FingerPrint(1),
+        IdentityCard(2),
+        Photo(3),
+        PDF(4);
         
-    
-    
-//    @JsonIgnore
-//    public FileType getFile_typeOriginal() {
-//        return file_type;
-//    }
-//    
-//    public enum FileType{
-//        FingerPrint(1),
-//        IdentityCard(2),
-//        Photo(3),
-//        PDF(4);
-//        
-//        private int value;
-//        FileType(int i){
-//            this.value = i;
-//        };
-//        
-//        public int getValue(){
-//            return value;
-//        }
-//    }
+        private int value;
+        
+        FileType(int i){
+            this.value = i;
+        };
+        
+        public int getValue(){
+            return value;
+        }
+    }
 }
 

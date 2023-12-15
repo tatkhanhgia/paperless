@@ -16,18 +16,23 @@ import vn.mobileid.id.general.Resources;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.general.LogHandler;
 import vn.mobileid.id.general.keycloak.obj.KeycloakRes;
+import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.object.enumration.Language;
+import vn.mobileid.id.paperless.objects.QryptoErrorMessageJSNObject.Lock;
+import vn.mobileid.id.paperless.objects.QryptoErrorMessageJSNObject.RemarkLanguage;
 import vn.mobileid.id.paperless.objects.response.GetToken_IAM_MessageJSNObject;
 import vn.mobileid.id.utils.Utils;
 
 /**
  *
- * @author ADMIN
+ * @author GiaTK
  */
-public class PaperlessMessageResponse implements ErrorMessageBuilder{
+public class PaperlessMessageResponse implements ErrorMessageBuilder {
+
     private StringBuilder builder = new StringBuilder();
-    private boolean isHaveDescription =false;
-    
+    private boolean isHaveDescription = false;
+
     private static final Logger LOG = LogManager.getLogger(PaperlessMessageResponse.class);
 
     final private static ObjectMapper objectMapper = new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -59,20 +64,34 @@ public class PaperlessMessageResponse implements ErrorMessageBuilder{
             if (responseCode != null) {
                 responseMessageJSNObject.setCode(responseCode.getCode());
                 responseMessageJSNObject.setCode_description(responseCode.getCode_description());
+                try {
+                    DatabaseResponse vn = new DatabaseImpl().getRemarkLanguage(
+                            "RESPONSE_CODE",
+                            responseCode.getRemark_Name(),
+                            Language.Vietnamese.getName(),
+                            transactionID);
+
+                    DatabaseResponse eng = new DatabaseImpl().getRemarkLanguage(
+                            "RESPONSE_CODE",
+                            responseCode.getRemark_Name(),
+                            Language.English.getName(),
+                            transactionID);
+
+                    RemarkLanguage remark = new RemarkLanguage();
+                    remark.setRemark_VN((String) vn.getObject());
+                    remark.setRemark_EN((String) eng.getObject());
+                    responseMessageJSNObject.setRemark(remark);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
                 return objectMapper.writeValueAsString(responseMessageJSNObject);
             } else {
-                    if (LogHandler.isShowErrorLog()) {
-                        LOG.error("Response code " + code + " is not defined in database.");
-                    }
-                    responseMessageJSNObject.setCode(responseCode.getCode());
-                    responseMessageJSNObject.setCode_description(responseCode.getCode_description());
-                    return objectMapper.writeValueAsString(responseMessageJSNObject);
-//                } else {
-//                    Resources.getResponseCodes().put(strCode, responseCode);
-//                    responseMessageJSNObject.setCode(responseCode.getCode());
-//                    responseMessageJSNObject.setCode_description(responseCode.getCode_description());
-//                    return objectMapper.writeValueAsString(responseMessageJSNObject);
-//                }
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Response code " + code + " is not defined in database.");
+                }
+                responseMessageJSNObject.setCode(responseCode.getCode());
+                responseMessageJSNObject.setCode_description(responseCode.getCode_description());
+                return objectMapper.writeValueAsString(responseMessageJSNObject);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,6 +99,75 @@ public class PaperlessMessageResponse implements ErrorMessageBuilder{
                 LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
             }
             return PaperlessConstant.INTERNAL_EXP_MESS;
+        }
+    }
+
+    public static QryptoErrorMessageJSNObject getErrorMessage_(
+            int code,
+            int subCode,
+            int remaining_counter,
+            int minute,
+            int second,
+            String lang,
+            String transactionID) {
+        try {
+            QryptoErrorMessageJSNObject responseMessageJSNObject = new QryptoErrorMessageJSNObject();
+            String strCode = String.valueOf(code) + String.valueOf(subCode);
+            ResponseCode responseCode = Resources.getResponseCodes().get(strCode);
+            if (responseCode == null) {
+                Resources.reloadResponseCodes();
+                responseCode = Resources.getResponseCodes().get(strCode);
+            }
+
+            if (responseCode != null) {
+                responseMessageJSNObject.setCode(responseCode.getCode());
+                responseMessageJSNObject.setCode_description(responseCode.getCode_description());
+                try {
+                    DatabaseResponse vn = new DatabaseImpl().getRemarkLanguage(
+                            "RESPONSE_CODE",
+                            responseCode.getRemark_Name(),
+                            Language.Vietnamese.getName(),
+                            transactionID);
+
+                    DatabaseResponse eng = new DatabaseImpl().getRemarkLanguage(
+                            "RESPONSE_CODE",
+                            responseCode.getRemark_Name(),
+                            Language.English.getName(),
+                            transactionID);
+
+                    RemarkLanguage remark = new RemarkLanguage();
+                    remark.setRemark_VN((String) vn.getObject());
+                    remark.setRemark_EN((String) eng.getObject());
+                    responseMessageJSNObject.setRemark(remark);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                try {
+                    responseMessageJSNObject.setRemaining_counter(remaining_counter);
+                    if (minute != -1 || second != -1) {
+                        Lock lock = new Lock();
+                        lock.setMinute(minute==-1?0:minute);
+                        lock.setSecond(second==-1?0:second);
+                        responseMessageJSNObject.setLock(lock);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                return responseMessageJSNObject;
+            } else {
+                if (LogHandler.isShowErrorLog()) {
+                    LOG.error("Response code " + code + " is not defined in database.");
+                }
+                responseMessageJSNObject.setCode(responseCode.getCode());
+                responseMessageJSNObject.setCode_description(responseCode.getCode_description());
+                return responseMessageJSNObject;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (LogHandler.isShowErrorLog()) {
+                LOG.error("UNKNOWN EXCEPTION. Details: " + Utils.printStackTrace(e));
+            }
+            return null;
         }
     }
 
@@ -152,8 +240,8 @@ public class PaperlessMessageResponse implements ErrorMessageBuilder{
             }
             return PaperlessConstant.INTERNAL_EXP_MESS;
         }
-    }   
-    
+    }
+
     public static boolean isVietnamese(String lang) {
         if (lang.compareToIgnoreCase("vn") == 0) {
             return true;
@@ -164,7 +252,7 @@ public class PaperlessMessageResponse implements ErrorMessageBuilder{
     @Override
     public ErrorMessageBuilder sendErrorMessage(String message) {
         builder.append("{");
-        builder.append("\"error_message\":\"");
+        builder.append("\"error\":\"");
         builder.append(message).append("\",");
         return this;
     }
@@ -180,15 +268,19 @@ public class PaperlessMessageResponse implements ErrorMessageBuilder{
     @Override
     public String build() {
         builder.append("}");
-        if(!isHaveDescription){
+        if (!isHaveDescription) {
             builder.deleteCharAt(builder.lastIndexOf(","));
         }
         return builder.toString();
     }
-    
-    public static void main(String[] args) {
-        PaperlessMessageResponse response = new PaperlessMessageResponse();
-        System.out.println(response.sendErrorMessage("gello").build());
+
+    public static void main(String[] args) throws Exception {
+        DatabaseResponse response = new DatabaseImpl().getRemarkLanguage(
+                "RESPONSE_CODE",
+                "10",
+                "VN",
+                "transactionId");
+        System.out.println("Response:" + response.getObject());
     }
 
 }

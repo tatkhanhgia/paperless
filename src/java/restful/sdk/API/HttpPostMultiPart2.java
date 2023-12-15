@@ -4,6 +4,7 @@
  */
 package restful.sdk.API;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -16,6 +17,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -48,6 +50,8 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClients;
 import vn.mobileid.id.general.LogHandler;
 import org.apache.http.HttpResponse;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.content.InputStreamBody;
 
 /**
  *
@@ -76,18 +80,17 @@ public class HttpPostMultiPart2 {
 //      USING APACHE HTTP COMPONENT
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+        builder.setCharset(Charset.forName("UTF-8"));
 
         for (String key : bodypart.keySet()) {
             if (bodypart.get(key) instanceof byte[]) {
-                Files.write(new File("D:\\NetBean\\paperless\\temp\\FileTemp.txt").toPath(), (byte[]) bodypart.get(key), StandardOpenOption.CREATE);
-
-                File file = new File("D:\\NetBean\\paperless\\temp\\FileTemp.txt");
-                FileBody fileBody = new FileBody(file);
-                builder.addPart(key, fileBody);
-                file.deleteOnExit();
+                ByteArrayInputStream bis = new ByteArrayInputStream((byte[])bodypart.get(key));
+//                InputStreamBody fileBody = new InputStreamBody(bis, ContentType.DEFAULT_BINARY);
+//                builder.addPart(key, fileBody);
+                builder.addBinaryBody(key, bis, ContentType.DEFAULT_BINARY, key);
             }
             if (bodypart.get(key) instanceof String) {
-                builder.addTextBody(key, (String) bodypart.get(key));
+                builder.addTextBody(key, (String) bodypart.get(key), ContentType.APPLICATION_JSON);
             }
         }
 
@@ -95,6 +98,7 @@ public class HttpPostMultiPart2 {
 
         HttpPost httpPost = new HttpPost(baseURL);
         httpPost.setEntity(entity);
+        
         if (headers != null && !headers.isEmpty()) {
             for (String headerKey : headers.keySet()) {
                 httpPost.addHeader(headerKey, headers.get(headerKey));
@@ -102,7 +106,6 @@ public class HttpPostMultiPart2 {
         }
 
         HttpClient httpClient = HttpClients.createDefault();
-
         HttpResponse response = httpClient.execute(httpPost);
 
         return response;

@@ -534,4 +534,11 @@ public interface Database {
             String languageName,
             String transactionId
     )throws Exception;
+    
+    public DatabaseResponse getRemarkLanguage(
+            String table,
+            String name,
+            String languageName,
+            String transactionId
+    )throws Exception;
 }

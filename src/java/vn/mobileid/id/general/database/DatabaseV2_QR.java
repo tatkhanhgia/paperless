@@ -39,4 +39,9 @@ public interface DatabaseV2_QR {
             long pQR_ID,
             String transactionId
     )throws Exception;
+    
+    public DatabaseResponse getQRSize(
+            String pQR_SIZE_NAME,
+            String transactionId
+    )throws Exception;
 }

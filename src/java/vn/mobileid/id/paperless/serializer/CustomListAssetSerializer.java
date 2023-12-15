@@ -43,8 +43,16 @@ public class CustomListAssetSerializer implements JsonSerializable {
             jg.writeNumberField("asset_id", asset.getId());
             jg.writeStringField("asset_name", asset.getName());
             jg.writeNumberField("asset_size", asset.getSize());
-            jg.writeStringField("asset_type", asset.getType_name());
-            jg.writeStringField("workflow_use", asset.getUsed_by());            
+                jg.writeFieldName("asset_type");
+                jg.writeStartArray();
+                jg.writeStartObject();
+                jg.writeStringField("asset_type_name", asset.getType_name());
+                jg.writeStringField("asset_type_name_en", asset.getType_name_en());
+                jg.writeStringField("asset_type_name_vn", asset.getType_name_vn());
+                jg.writeEndObject();
+                jg.writeEndArray();
+            jg.writeBooleanField("is_default", asset.IsDefault());
+            jg.writeStringField("workflow_use", asset.getUsed_by());
             jg.writeStringField("created_at", dateFormat.format(asset.getCreated_at()));
             jg.writeStringField("created_by", asset.getCreated_by());
             if (asset.getModified_at() != null) {

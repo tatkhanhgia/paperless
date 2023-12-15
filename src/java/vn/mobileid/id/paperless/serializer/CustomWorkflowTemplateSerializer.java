@@ -46,6 +46,12 @@ public class CustomWorkflowTemplateSerializer implements  JsonSerializable {
                 if(detail.getValue() instanceof String){
                     jg.writeStringField("value",(String) detail.getValue());
                 }                 
+                if(detail.getValue() instanceof Integer){
+                    jg.writeNumberField("value", (Integer)detail.getValue());
+                }
+                if(detail.getValue() instanceof Boolean){
+                    jg.writeBooleanField("value", (Boolean)detail.getValue());
+                }
                 jg.writeStringField("remark",detail.getRemark());
                 
             jg.writeEndObject();

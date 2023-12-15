@@ -11,6 +11,7 @@ import vn.mobileid.id.general.database.DatabaseV2_WorkflowDetails;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.object.enumration.WorkflowAttributeTypeName;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
 import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 
@@ -21,7 +22,7 @@ import vn.mobileid.id.paperless.objects.WorkflowAttributeType;
 public class CreateWorkflowDetails {
 
     //<editor-fold defaultstate="collapsed" desc="Create Workflow Details">
-    public static InternalResponse createWorkflowDetail(            
+    public static InternalResponse createWorkflowDetail(
             int id,
             List<WorkflowAttributeType> details,
             String hmac,
@@ -30,6 +31,21 @@ public class CreateWorkflowDetails {
     ) throws Exception {
         DatabaseV2_WorkflowDetails callDb = new DatabaseImpl_V2_WorkflowDetails();
         for (WorkflowAttributeType temp : details) {
+            if (temp.getId() == WorkflowAttributeTypeName.ASSET_APPEND.getId()
+                    || temp.getId() == WorkflowAttributeTypeName.ASSET_BACKGROUND.getId()
+                    || temp.getId() == WorkflowAttributeTypeName.ASSET_TEMPLATE.getId()
+                    || temp.getId() == WorkflowAttributeTypeName.ASSET_ELABOR.getId()
+                    || temp.getId() == WorkflowAttributeTypeName.ASSET_ESIGN.getId()) {
+                try {
+                    if (temp.getValue() != null && ((int) temp.getValue()) == 0) {
+                        temp.setValue(null);
+                    }
+                } catch (Exception ex) {
+                    if (temp.getValue() != null && ((String) temp.getValue()).equals("0")) {
+                        temp.setValue(null);
+                    }
+                }
+            }
             DatabaseResponse response = callDb.createWorkflowDetail(
                     id,
                     temp.getId(),
@@ -54,30 +70,30 @@ public class CreateWorkflowDetails {
     }
     //</editor-fold>
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         WorkflowAttributeType attribute = new WorkflowAttributeType();
         attribute.setId(1);
         attribute.setValue(21);
-        
+
         WorkflowAttributeType attribute2 = new WorkflowAttributeType();
         attribute2.setId(6);
         attribute2.setValue("White");
-        
+
         WorkflowAttributeType attribute3 = new WorkflowAttributeType();
         attribute3.setId(3);
         attribute3.setValue(true);
-        
+
         List<WorkflowAttributeType> list = new ArrayList<>();
         list.add(attribute);
         list.add(attribute2);
         list.add(attribute3);
-        
+
         InternalResponse response = CreateWorkflowDetails.createWorkflowDetail(
                 491,
                 list,
                 "HMAC",
-                "GIATK", 
+                "GIATK",
                 "transactionId");
-        System.out.println("Mess:"+response.getMessage());
+        System.out.println("Mess:" + response.getMessage());
     }
 }

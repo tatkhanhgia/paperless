@@ -217,6 +217,7 @@ public class AssetServiceController extends HttpServlet {
         }
         return Response
                 .status(PaperlessConstant.HTTP_CODE_500)
+                .type(MediaType.APPLICATION_JSON_TYPE)
                 .entity("{Internal Server Error}")
                 .build();
     }
@@ -268,6 +269,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -328,6 +330,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -388,6 +391,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -448,6 +452,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -472,8 +477,10 @@ public class AssetServiceController extends HttpServlet {
                     transactionID);
 
             debugResponseLOG("Upload Asset", response);
-
-            Long id = (long)response.getData();
+            Long id = 0L;
+            try{
+                id = (long)response.getData();
+            } catch(Exception ex){}
             ServicesController.logIntoDB(
                         request,
                         response.getUser()==null?"anonymous":response.getUser().getEmail(),
@@ -487,6 +494,7 @@ public class AssetServiceController extends HttpServlet {
                 );
             
             if (response.getStatus() == PaperlessConstant.HTTP_CODE_SUCCESS) {
+                
                 ServicesController.createUserActivity(
                         request,
                         response,
@@ -512,6 +520,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -537,15 +546,19 @@ public class AssetServiceController extends HttpServlet {
                     transactionID);
 
             debugResponseLOG("Upload Asset", response);
-
-            Long id = (long)response.getData();
+            
+            Long id = 0L;
+            try{
+                id = (long)response.getData();
+            } catch(Exception ex){}
+            
             ServicesController.logIntoDB(
                         request,
                         response.getUser()==null?"anonymous":response.getUser().getEmail(),
                         response.getUser()==null?0:response.getUser().getAid(),
                         id.intValue(), 
                         response.getStatus(),
-                        "",
+                        payload,
                         response.getMessage(),
                         "Upload Asset Base64",
                         transactionID
@@ -577,6 +590,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -639,6 +653,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -701,6 +716,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -751,6 +767,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }
@@ -801,6 +818,7 @@ public class AssetServiceController extends HttpServlet {
                     e);
             return Response
                     .status(PaperlessConstant.HTTP_CODE_500)
+                    .type(MediaType.APPLICATION_JSON_TYPE)
                     .entity("{Internal Server Error}")
                     .build();
         }

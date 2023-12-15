@@ -96,8 +96,8 @@ public class DatabaseImpl_V2_Workflow implements DatabaseV2_Workflow {
         HashMap<String, Object> input = new HashMap<>();
         input.put("pUSER_EMAIL", pUSER_EMAIL);
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
-        input.put("pWORKFLOW_STATUS", pWORKFLOW_STATUS);
-        input.put("pLIST_TYPE", pLIST_TYPE);
+        input.put("pWORKFLOW_STATUS_LIST", pWORKFLOW_STATUS);
+        input.put("pWORKFLOW_TYPE_LIST", pLIST_TYPE);
         input.put("pUSE_META_DATA", pUSE_META_DATA);
         input.put("pMETA_DATA", pMETA_DATA);
 
@@ -136,8 +136,8 @@ public class DatabaseImpl_V2_Workflow implements DatabaseV2_Workflow {
         HashMap<String, Object> input = new HashMap<>();
         input.put("pUSER_EMAIL", pUSER_EMAIL);
         input.put("pENTERPRISE_ID", pENTERPRISE_ID);
-        input.put("pWORKFLOW_STATUS", pWORKFLOW_STATUS);
-        input.put("pLIST_TYPE", pLIST_TYPE);
+        input.put("pWORKFLOW_STATUS_LIST", pWORKFLOW_STATUS);
+        input.put("pWORKFLOW_TYPE_LIST", pLIST_TYPE);
         input.put("pUSE_META_DATA", pUSE_META_DATA);
         input.put("pMETA_DATA", pMETA_DATA);
         input.put("pOFFSET", pOFFSET);

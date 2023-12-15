@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Date;
 import vn.mobileid.id.general.annotation.AnnotationORM;
 import vn.mobileid.id.paperless.object.enumration.BusinessType;
 import vn.mobileid.id.paperless.serializer.CustomAccountSerializer;
@@ -61,14 +62,25 @@ public class Account {
     @AnnotationORM(columnName = "ORGANIZATION_WEBSITE")
     private String organization_website;
 
-//    private StatusOfAccount status ;
     @AnnotationORM(columnName = "STATUS")
     private int status_id;
 
     private String status_name_vn;
 
     private String status_name;
+    
+    @AnnotationORM(columnName = "REMAINING_COUNTER")
+    private int remaning_counter;
+    
+    @AnnotationORM(columnName = "LOCKED_ENABLED")
+    private boolean locked_enabled;
+    
+    @AnnotationORM(columnName = "LOCKED_AT")
+    private Date locked_at;
 
+    @AnnotationORM(columnName = "QR_EXPIRED_DURATION")
+    private long qr_expired_time;
+    
     public Account() {
     }
 
@@ -262,4 +274,35 @@ public class Account {
         return organization_website;
     }
 
+    public int getRemaning_counter() {
+        return remaning_counter;
+    }
+
+    public void setRemaning_counter(int remaning_counter) {
+        this.remaning_counter = remaning_counter;
+    }
+
+    public boolean isLocked_enabled() {
+        return locked_enabled;
+    }
+
+    public void setLocked_enabled(boolean locked_enabled) {
+        this.locked_enabled = locked_enabled;
+    }
+
+    public Date getLocked_at() {
+        return locked_at;
+    }
+
+    public void setLocked_at(Date locked_at) {
+        this.locked_at = locked_at;
+    }
+
+    public long getQr_expired_time() {
+        return qr_expired_time;
+    }
+
+    public void setQr_expired_time(long qr_expired_time) {
+        this.qr_expired_time = qr_expired_time;
+    }
 }

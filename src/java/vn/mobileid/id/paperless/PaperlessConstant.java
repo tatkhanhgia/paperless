@@ -27,9 +27,7 @@ public class PaperlessConstant {
     final public static String TOKEN_TYPE_BEARER = "Bearer";
     final public static String TOKEN_TYPE_BASIC = "Basic";
     final public static String TOKEN_TYPE_REFRESH = "Refresh";
-
-    final public static int LANGUAGE_VN = 1;
-    final public static int LANGUAGE_EN = 2;        
+    
     
     //AccessToken Data
     final public static String alg = PolicyConfiguration
@@ -66,11 +64,7 @@ public class PaperlessConstant {
             .getSystemConfig()
             .getAttributes().get(0)
             .getTokenConfig()
-            .getPassword_user_expired_at();    
-
-    final public static int ASSET_TYPE_BACKGROUND = 13;
-    final public static int ASSET_TYPE_APPEND = 14;
-    final public static int ASSET_TYPE_TEMPLATE = 1;   
+            .getPassword_user_expired_at();       
 
     //Template Type
     final public static int NUMBER_WORKFLOW_TEMPLATE_TYPE = 8;
@@ -95,10 +89,9 @@ public class PaperlessConstant {
     final public static int CODE_INVALID_PARAMS_JWT = 5005;
 //    final public static int CODE_INVALID_PARAMS_WORKFLOW_TEMPLATE = 5003;
     final public static int CODE_FMS = 5006;
-
-    final public static int CODE_FUNCTION_ACCESS_DENIED = 5005;
-    final public static int CODE_INVALID_BEARER_TOKEN = 5006;
-    final public static int CODE_EXPIRED_BEARER_TOKEN = 5007;
+    final public static int CODE_INVALID_PASSWORD = 5007;
+    final public static int CODE_CANNOT_SIGNING = 5008;
+    final public static int CODE_INVALID_PARAMS_WORKFLOWDETAIL = 5009;
 
     //-----------------------SUB CODE    -----------------------------
     final public static int SUBCODE_SUCCESS = 0;
@@ -133,6 +126,7 @@ public class PaperlessConstant {
     final public static int SUBCODE_MISSING_AUTHORIZATION_CODE = 18;
     final public static int SUBCODE_USER_ALREADY_VERIFIED = 19;
     final public static int SUBCODE_USER_NEED_TO_CHANGE_PASSWORD = 20;
+    final public static int SUBCODE_CANNOT_FORGOT_PASSWORD_USER_HAS_BEEN_LOCKED = 21;
 
     //SUBCODE INVALID WORKFLOW - 5001
     final public static int SUBCODE_MISSING_WORKFLOW_LABEL = 2;
@@ -158,6 +152,8 @@ public class PaperlessConstant {
     final public static int SUBCODE_FILE_DATA_IS_TOO_MUCH_VALUES = 14;
     final public static int SUBCODE_THIS_TYPE_OF_WORKFLOW_DOES_NOT_SUPPORT_YET = 15;
     final public static int SUBCODE_NOT_SUPPORT_THIS_STATUS_OF_WORKFLOW_ACTIVITY = 16;
+    final public static int SUBCODE_DATE_IN_ITEMS_DOES_NOT_FIT = 17;
+    final public static int SUBCODE_CANNOT_DECODE_FILE_DATA = 18;
 
     //SUBCPDE INVALID WORKFLOW TEMPLATE - 5003
 //    final public static int SUBCODE_WORKFLOW_TEMPLATE_ALREADY_EXISTED = 2;
@@ -168,6 +164,11 @@ public class PaperlessConstant {
     final public static int SUBCODE_THIS_TYPE_IS_NOT_AN_ASSET = 4;
     final public static int SUBCODE_MISSING_FILE_DATA = 5;
     final public static int SUBCODE_INVALID_FILE_DATA = 6;
+    final public static int SUBCODE_MISSING_ASSET_NAME = 7;
+    final public static int SUBCODE_NOT_SUPPORT_EXTENSION = 8;
+    final public static int SUBCODE_MISSING_METADATA_SIGNING_POSITION_IN_ASSET = 9;
+    final public static int SUBCODE_MISSING_QR_POSITION_PROPERTIES_IN_PAYLOAD = 10;
+    final public static int SUBCODE_MISSING_SIGNATURE_POSITION_PROPERTIES_IN_PAYLOAD = 11;
 
     //SUBCODE INVALID JWT - 5005
     final public static int SUBCODE_INVALID_JWT_TOKEN = 2;    
@@ -179,4 +180,21 @@ public class PaperlessConstant {
     final public static int SUBCODE_FMS_REJECT_UPLOAD = 3;
     final public static int SUBCODE_ERROR_WHILE_DOWNLOADING_FROM_FMS = 4;
     final public static int SUBCODE_FMS_REJECT_DOWNLOAD = 5;
+    
+    //SUBCODE INVALID PASSWORD - 5007
+    final public static int SUBCODE_LENGTH_OF_PASSWORD_TOO_SHORT = 2;
+    final public static int SUBCODE_LENGTH_OF_PASSWORD_TOO_LONG = 3;
+    final public static int SUBCODE_PASSWORD_NEEDS_CONTAIN_NUMERIC = 4;
+    final public static int SUBCODE_PASSWORD_NEEDS_CONTAIN_LOWERCASE = 5;
+    final public static int SUBCODE_PASSWORD_NEEDS_CONTAIN_UPPERCASE = 6;
+    final public static int SUBCODE_PASSWORD_NEEDS_CONTAIN_SPECIALCHAR = 7;
+    final public static int SUBCODE_PASSWORD_MUST_ONLY_NUMERIC = 8;
+    
+    //SUBCODE CANNOT SIGNING - 5008
+    final public static int SUBCODE_CANNOT_GET_SIGNING_INFO_PROPERTIES = 2;
+    final public static int SUBCODE_INVALID_PAGE_IN_POSITION_CONFIGURATION = 3;
+    
+    //SUBCODE INVALID PARAMS WORKFLOW DETAIL - 5009
+    final public static int SUBCODE_CANNOT_GET_PAGES = 2;
+    
 }

@@ -18,6 +18,7 @@ import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.kernel.GetEmailTemplate;
 import vn.mobileid.id.paperless.kernel_v2.GetEnterpriseInfo;
 import vn.mobileid.id.paperless.kernel_v2.GetUser;
+import vn.mobileid.id.paperless.object.enumration.Language;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.Enterprise;
@@ -142,6 +143,11 @@ public class CreateAccount {
         }
         //</editor-fold>
 
+        //If it role_name is owner => downgrade into USER
+        if(role_name.equals("OWNER")){
+            role_name = "USER";
+        }
+        
         //<editor-fold defaultstate="collapsed" desc="Processing create User">
         res = CreateUser.createUser(
                 ((User) res.getData()).getEmail(),
@@ -196,7 +202,7 @@ public class CreateAccount {
 //                send.start();
 //            } else {
         res = GetEmailTemplate.getEmailTemplate(
-                PaperlessConstant.LANGUAGE_EN,
+                Language.English.getId(),
                 vn.mobileid.id.paperless.object.enumration.EmailTemplate.EMAIL_SEND_PASSWORD.getName(),
                 transactionID);
         if (res.getStatus() != PaperlessConstant.HTTP_CODE_SUCCESS) {

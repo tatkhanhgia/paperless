@@ -147,4 +147,25 @@ public class DatabaseImpl_V2_QR implements DatabaseV2_QR {
         return response;
     }
 
+    @Override
+    public DatabaseResponse getQRSize(
+            String pQR_SIZE_NAME,
+            String transactionId) throws Exception {
+        String nameStore = "{ CALL USP_QR_SIZE_GET(?,?)}";
+
+        HashMap<String, Object> input = new HashMap<>();
+        input.put("pQR_SIZE_NAME", pQR_SIZE_NAME);
+
+        DatabaseResponse response = CreateConnection.executeStoreProcedure(
+                QRSize.class,
+                nameStore,
+                input,
+                null,
+                "Get QR Size");
+
+        LogHandler.debug(this.getClass(), response.getDebugString());
+        
+        return response;
+    }
+
 }

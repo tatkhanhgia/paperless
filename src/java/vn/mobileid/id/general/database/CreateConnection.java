@@ -12,7 +12,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -100,10 +102,11 @@ class CreateConnection {
             e.printStackTrace();
             throw new Exception("Error while " + nameFunction, e);
         } finally {
-            try{
-            rs.close();
-            cals.close();
-            } catch(Exception ex){}
+            try {
+                rs.close();
+                cals.close();
+            } catch (Exception ex) {
+            }
             DatabaseConnectionManager.getInstance().close(conn);
         }
         return response;
@@ -282,12 +285,14 @@ class CreateConnection {
             }
         }
         if (field.getType() == Date.class) {
+            ZoneId z = ZoneId.systemDefault();
+            ZonedDateTime zone = ZonedDateTime.now(z);
             if (data instanceof LocalDateTime) {
                 LocalDateTime local = (LocalDateTime) data;
-                return new Date(local.toInstant(ZoneOffset.ofHours(7)).toEpochMilli());
+                return new Date(local.toInstant(zone.getOffset()).toEpochMilli());
             }
             if (data instanceof Date) {
-                return data;
+                return new Date(((Date) data).toInstant().atZone(z).toEpochSecond());
             } else {
                 if (ClassUtils.isPrimitiveOrWrapper(data.getClass()) && data instanceof Long) {
                     Date temp = new Date((long) data);

@@ -39,6 +39,7 @@ public class WorkflowDetail_Option extends Object {
     private int page;
 
     private String stamp_in;
+    
     private String page_size;
 
     private String asset_background_string;
@@ -46,6 +47,12 @@ public class WorkflowDetail_Option extends Object {
 
     private String asset_append_string;
     private int asset_append;
+    
+    private String asset_elabor_string;
+    private int asset_elabor;
+
+    private String asset_esign_string;
+    private int asset_esign;
 
     private String asset_template_string;
     private int asset_template;
@@ -75,9 +82,11 @@ public class WorkflowDetail_Option extends Object {
     private boolean show_domain;
 
     private String text_below_QR;
+    
     private String note;
+    
     private String metadata;
-
+    
     public WorkflowDetail_Option(String qr_background, int qr_size, String qr_type, boolean url_code, int page, String stamp_in, String page_size, int asset_Background, int asset_Append, int asset_Template, boolean disable_CSV_task_notification_email, boolean CSV_email, boolean omit_if_empty, boolean email_notification) {
         this.qr_background = qr_background;
         this.qr_size = qr_size;
@@ -301,6 +310,40 @@ public class WorkflowDetail_Option extends Object {
         this.email_notification_string = "1";
         this.email_notification = email_notification;
     }
+
+    public String getAsset_elabor_string() {
+        return asset_elabor_string;
+    }
+
+    public void setAsset_elabor_string(String asset_elabor_string) {
+        this.asset_elabor_string = asset_elabor_string;
+    }
+
+    public int getAsset_elabor() {
+        return asset_elabor;
+    }
+
+    public void setAsset_elabor(int asset_elabor) {
+        this.asset_elabor = asset_elabor;
+    }
+
+    public String getAsset_esign_string() {
+        return asset_esign_string;
+    }
+
+    public void setAsset_esign_string(String asset_esign_string) {
+        this.asset_esign_string = asset_esign_string;
+    }
+
+    public int getAsset_esign() {
+        return asset_esign;
+    }
+
+    public void setAsset_esign(int asset_esign) {
+        this.asset_esign = asset_esign;
+    }
+    
+    
 
     @JsonProperty("notneed")
     public HashMap<String, Object> getHashMap() throws IllegalArgumentException, IllegalAccessException {

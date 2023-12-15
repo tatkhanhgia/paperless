@@ -72,6 +72,9 @@ public class FileManagement extends Object{
     
     @AnnotationORM(columnName = "FILE_TYPE")
     private FileType file_type = FileType.PDF;
+    
+    @AnnotationORM(columnName = "SIGNING_PROPERTIES")
+    private String signingProperties;
            
 
     public FileManagement(byte[] data, String name, long ID, String created_by) {
@@ -239,8 +242,14 @@ public class FileManagement extends Object{
     public void setFile_type(String file_type){
         this.file_type = FileType.valueOf(file_type);
     }
-    
-    
+
+    public String getSigningProperties() {
+        return signingProperties;
+    }
+
+    public void setSigningProperties(String signingProperties) {
+        this.signingProperties = signingProperties;
+    }
     
     public static void main(String[] args) throws JsonProcessingException{
         FileManagement a = new FileManagement();

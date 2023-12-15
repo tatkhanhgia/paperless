@@ -77,9 +77,15 @@ public class QRSchema {
         private String name;
         private fieldType type;
         private String kvalue;
+        
+        //File
         private String file_type;
-        private String field_field;
+        private String file_field;
+        private String file_name;
         private int share_mode;
+        
+        //QR
+        private QR_META_DATA qr_meta_data;
 
         public field() {
         }
@@ -100,12 +106,12 @@ public class QRSchema {
             this.file_type = file_type;
         }
 
-        public String getField_field() {
-            return field_field;
+        public String getFile_field() {
+            return file_field;
         }
 
-        public void setField_field(String field_field) {
-            this.field_field = field_field;
+        public void setFile_field(String field_field) {
+            this.file_field = field_field;
         }
 
         public String getName() {
@@ -131,8 +137,82 @@ public class QRSchema {
         public void setKvalue(String kvalue) {
             this.kvalue = kvalue;
         }
+
+        public String getFile_name() {
+            return file_name;
+        }
+
+        public void setFile_name(String file_name) {
+            this.file_name = file_name;
+        }
+
+        public QR_META_DATA getQr_meta_data() {
+            return qr_meta_data;
+        }
+
+        public void setQr_meta_data(QR_META_DATA qr_meta_data) {
+            this.qr_meta_data = qr_meta_data;
+        }
     }
 
+    public static class QR_META_DATA{
+        private boolean isTransparent;
+        private float xCoordinator;
+        private float yCoordinator;
+        private float qrDimension;
+        private List<Integer> pageNumber;
+
+        public QR_META_DATA() {
+        }
+
+        public boolean isIsTransparent() {
+            return isTransparent;
+        }
+
+        public float getxCoordinator() {
+            return xCoordinator;
+        }
+
+        public float getyCoordinator() {
+            return yCoordinator;
+        }
+
+        public float getQrDimension() {
+            return qrDimension;
+        }
+
+        public List<Integer> getPageNumber() {
+            return pageNumber;
+        }
+
+        public QR_META_DATA setIsTransparent(boolean isTransparent) {
+            this.isTransparent = isTransparent;
+            return this;
+        }
+
+        public QR_META_DATA setxCoordinator(float xCoordinator) {
+            this.xCoordinator = xCoordinator;
+            return this;
+        }
+
+        public QR_META_DATA setyCoordinator(float yCoordinator) {
+            this.yCoordinator = yCoordinator;
+            return this;
+        }
+
+        public QR_META_DATA setQrDimension(float qrDimension) {
+            this.qrDimension = qrDimension;
+            return this;
+        }
+
+        public QR_META_DATA setPageNumber(List<Integer> pageNumber) {
+            this.pageNumber = pageNumber;
+            return this;
+        }
+        
+        
+    }
+    
     public enum fieldType {
         url("url"),//url
         t2("t2"), //text

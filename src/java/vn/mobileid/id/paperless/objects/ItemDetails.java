@@ -20,9 +20,12 @@ public class ItemDetails {
     private boolean mandatory_enable;
     private int type;
     private Object value;
+    private String remark;
+
+    //File
     private String file_field;
     private String file_format;
-    private String remark;
+    private String file_name;
 
     //Remark language
     private String field_name;
@@ -36,8 +39,9 @@ public class ItemDetails {
         return file_format;
     }
 
-    public void setFile_format(String file_format) {
+    public ItemDetails setFile_format(String file_format) {
         this.file_format = file_format;
+        return this;
     }   
     
     @JsonProperty("file_field")
@@ -45,8 +49,9 @@ public class ItemDetails {
         return file_field;
     }
 
-    public void setFile_field(String file_field) {
+    public ItemDetails setFile_field(String file_field) {
         this.file_field = file_field;
+        return this;
     }        
     
     @JsonProperty("mandatory_enable")
@@ -54,8 +59,9 @@ public class ItemDetails {
         return mandatory_enable;
     }
 
-    public void setMandatory_enable(boolean mandatory_enable) {
+    public ItemDetails setMandatory_enable(boolean mandatory_enable) {
         this.mandatory_enable = mandatory_enable;
+        return this;
     }
 
     @JsonProperty("field")
@@ -63,8 +69,9 @@ public class ItemDetails {
         return field;
     }
 
-    public void setField(String field) {
+    public ItemDetails setField(String field) {
         this.field = field;
+        return this;
     }
 
     @JsonProperty("type")
@@ -72,8 +79,9 @@ public class ItemDetails {
         return type;
     }
 
-    public void setType(int type) {
+    public ItemDetails setType(int type) {
         this.type = type;
+        return this;
     }
 
     @JsonProperty("value")
@@ -81,8 +89,9 @@ public class ItemDetails {
         return value;
     }
 
-    public void setValue(Object value) {
+    public ItemDetails setValue(Object value) {
         this.value = value;
+        return this;
     }
 
     @JsonProperty("remark")
@@ -90,8 +99,9 @@ public class ItemDetails {
         return remark;
     }
 
-    public void setRemark(String remark) {
+    public ItemDetails setRemark(String remark) {
         this.remark = remark;
+        return this;
     }      
 
     @JsonProperty("field_name")
@@ -99,8 +109,9 @@ public class ItemDetails {
         return field_name;
     }
 
-    public void setField_name(String field_name) {
+    public ItemDetails setField_name(String field_name) {
         this.field_name = field_name;
+        return this;
     }
 
     @JsonProperty("field_name_vn")
@@ -108,10 +119,20 @@ public class ItemDetails {
         return field_name_vn;
     }
 
-    public void setField_name_vn(String field_name_vn) {
+    public ItemDetails setField_name_vn(String field_name_vn) {
         this.field_name_vn = field_name_vn;
+        return this;
     }
 
+    @JsonProperty("file_name")
+    public String getFile_name() {
+        return file_name;
+    }
+
+    public void setFile_name(String file_name) {
+        this.file_name = file_name;
+    }
+    
     public static Object checkType(int i){
         if(i == 1)
             return "String";
@@ -122,5 +143,9 @@ public class ItemDetails {
         if( i==4)
             return new Date();
         return null;
+    }
+    
+    public static ItemDetails genNew(){
+        return new ItemDetails();
     }
 }

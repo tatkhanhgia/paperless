@@ -90,6 +90,7 @@ public interface DatabaseV2_User {
     
     public DatabaseResponse getListUser(
             long pENTERPRISE_ID,
+            String pENTERPRISE_ROLE_LIST,
             int pOFFSET,
             int pROW_COUNT,
             String transactionId
@@ -126,6 +127,17 @@ public interface DatabaseV2_User {
     
     public DatabaseResponse getUserActivityLog(
             long pUSER_ACTIVITY_LOG_ID,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getTotalRecordOfUser(
+            int enterprise_id,
+            String listRole,
+            String transactionId
+    )throws Exception;
+    
+    public DatabaseResponse getListRoleOfEnterprise(
+            int enterprise_id,
             String transactionId
     )throws Exception;
 }

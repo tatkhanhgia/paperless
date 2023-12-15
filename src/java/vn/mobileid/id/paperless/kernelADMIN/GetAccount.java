@@ -99,6 +99,7 @@ public class GetAccount {
     /**
      * Get về toàn bộ accoun thuộc về enterprise nào đó
      * @param enterprise_name
+     * @param pENTERPRISE_ROLE_LIST
      * @param enterprise_id
      * @param offset
      * @param rowCount
@@ -108,12 +109,14 @@ public class GetAccount {
      */
     public static InternalResponse getAccounts(
             int enterprise_id,
+            String pENTERPRISE_ROLE_LIST,
             int offset,
             int rowCount,
             String transactionId
     ) throws Exception {
         DatabaseResponse response = new DatabaseImpl_V2_User().getListUser(
                 enterprise_id,
+                pENTERPRISE_ROLE_LIST,
                 offset,
                 rowCount,
                 transactionId);

@@ -6,6 +6,7 @@
 package vn.mobileid.id.general;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Level;
 import javax.servlet.http.HttpServlet;
@@ -22,6 +23,7 @@ import vn.mobileid.id.general.database.DatabaseV2_WorkflowDetails;
 import vn.mobileid.id.general.objects.DatabaseResponse;
 import vn.mobileid.id.general.objects.ResponseCode;
 import vn.mobileid.id.paperless.PaperlessConstant;
+import vn.mobileid.id.paperless.objects.AssetType;
 import vn.mobileid.id.paperless.objects.Category;
 import vn.mobileid.id.paperless.objects.EventAction;
 import vn.mobileid.id.paperless.objects.GenerationType;
@@ -33,7 +35,7 @@ import vn.mobileid.id.paperless.objects.WorkflowType;
 
 /**
  *
- * @author ADMIN
+ * @author GIATK
  */
 public class Resources extends HttpServlet {
 
@@ -43,35 +45,35 @@ public class Resources extends HttpServlet {
     private static volatile HashMap<String, ResponseCode> responseCodes = new HashMap<>();
 
     //Save temporal Workflow Activity
-    private static volatile HashMap<String, WorkflowActivity> listWorkflowActivity = new HashMap<>(100, 1f);   
+    private static volatile HashMap<String, WorkflowActivity> listWorkflowActivity = new HashMap<>(20, 1f);
 
     //Save  AssetType
-    private static volatile HashMap<String, Integer> listAssetType = new HashMap();
+    private static volatile HashMap<String, AssetType> listAssetType = new HashMap();
 
     //Save Workflow Template Type
     private static volatile HashMap<Integer, WorkflowTemplateType> listWoTemplateType = new HashMap<>();
 
     //Save AuthorizeCode when user has been created
-    private static volatile HashMap<String, String> queueAuthorizeCode = new HashMap();
+    private static volatile LinkedHashMap<String, String> queueAuthorizeCode = new LinkedHashMap(20, 1f);
 
     //Save ForgotPassword when user using API "Forgot Password"
-    private static volatile HashMap<String, String> queueForgotPassword = new HashMap<>();
+    private static volatile LinkedHashMap<String, String> queueForgotPassword = new LinkedHashMap<>(20, 1f);
 
     //Save Workflow Detail Attribute Type in DB <=> mapping with Workflow Detail
     private static volatile HashMap<String, WorkflowAttributeType> listWorkflowAttributeType = new HashMap<>();
 
     //Save Event Action in DB <=> Mapping with Action, API 
     private static volatile HashMap<Integer, EventAction> listEventAction = new HashMap<>();
-    
+
     //Save Category
     private static volatile HashMap<Integer, Category> listCategory = new HashMap<>();
-    
+
     //Save User Status in DB
     private static volatile HashMap<Integer, StatusOfAccount> listStatusOfAccount = new HashMap<>();
-    
+
     //Save Workflow Type
     private static volatile HashMap<Integer, WorkflowType> listWorkflowType = new HashMap<>();
-    
+
     //Save GenerationType
     private static volatile HashMap<Integer, GenerationType> listGenerationType = new HashMap<>();
 
@@ -99,13 +101,13 @@ public class Resources extends HttpServlet {
         reloadListWorkflowDetailAttributeTypes();
 
         reloadListEventAction();
-        
+
         reloadListTypeOfStatusAccount();
-        
+
         reloadListGenerationType();
-        
+
         reloadListWorkflowType();
-        
+
         reloadListCategory();
 
         LOG.info("Service is started up and ready to use!");
@@ -123,7 +125,7 @@ public class Resources extends HttpServlet {
     }
 
     public static void main(String[] args) throws Exception {
-    } 
+    }
 
     public static void reloadListEventAction() throws Exception {
         DatabaseV2 db = new DatabaseImpl_V2();
@@ -143,17 +145,17 @@ public class Resources extends HttpServlet {
         listAssetType = new HashMap();
         DatabaseResponse res = db.getAssetType();
         if (res != null) {
-            listAssetType = (HashMap<String, Integer>) res.getObject();
+            listAssetType = (HashMap<String, AssetType>) res.getObject();
         }
     }
-    
-    public static void reloadListTypeOfStatusAccount()throws Exception{
+
+    public static void reloadListTypeOfStatusAccount() throws Exception {
         DatabaseV2_User db = new DatabaseImpl_V2_User();
         DatabaseResponse res = db.getTypeOfStatus();
         listStatusOfAccount = new HashMap<>();
-        if(res.getStatus() == PaperlessConstant.CODE_SUCCESS){
-            List<StatusOfAccount> status = (List<StatusOfAccount>)res.getObject();
-            for(StatusOfAccount temp : status){
+        if (res.getStatus() == PaperlessConstant.CODE_SUCCESS) {
+            List<StatusOfAccount> status = (List<StatusOfAccount>) res.getObject();
+            for (StatusOfAccount temp : status) {
                 listStatusOfAccount.put(temp.getId(), temp);
             }
         }
@@ -170,7 +172,7 @@ public class Resources extends HttpServlet {
             }
         }
     }
-    
+
     public static void reloadListCategory() throws Exception {
         DatabaseV2_User db = new DatabaseImpl_V2_User();
         listCategory = new HashMap();
@@ -181,7 +183,7 @@ public class Resources extends HttpServlet {
                 listCategory.put(temp.getId(), temp);
             }
         }
-    } 
+    }
 
     public static void reloadListWorkflowDetailAttributeTypes() throws Exception {
         DatabaseV2_WorkflowDetails callDb = new DatabaseImpl_V2_WorkflowDetails();
@@ -195,30 +197,34 @@ public class Resources extends HttpServlet {
             listWorkflowAttributeType.put(temp.getName(), temp);
         }
     }
-    
-    public static void reloadListWorkflowType() throws Exception{
+
+    public static void reloadListWorkflowType() throws Exception {
         DatabaseV2 callDb = new DatabaseImpl_V2();
         DatabaseResponse response = callDb.getWorkflowType();
-        if(response.getStatus() != PaperlessConstant.CODE_SUCCESS){
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             throw new Exception("Cannot load list Wofklow Type!");
         }
-        List<WorkflowType> temps = (List<WorkflowType>)response.getObject();
+        List<WorkflowType> temps = (List<WorkflowType>) response.getObject();
         listWorkflowType.clear();
-        for(WorkflowType data : temps){
-            listWorkflowType.put(data.getId(), data);
+        for (WorkflowType data : temps) {
+            if (data.IsEnabled()) {
+                listWorkflowType.put(data.getId(), data);
+            }
         }
     }
-    
-    public static void reloadListGenerationType() throws Exception{
+
+    public static void reloadListGenerationType() throws Exception {
         DatabaseV2 callDb = new DatabaseImpl_V2();
         DatabaseResponse response = callDb.getGenerationType();
-        if(response.getStatus() != PaperlessConstant.CODE_SUCCESS){
+        if (response.getStatus() != PaperlessConstant.CODE_SUCCESS) {
             throw new Exception("Cannot load list Generation Type!");
         }
-        List<GenerationType> temps = (List<GenerationType>)response.getObject();
+        List<GenerationType> temps = (List<GenerationType>) response.getObject();
         listGenerationType.clear();
-        for(GenerationType data : temps){
-            listGenerationType.put(data.getId(), data);
+        for (GenerationType data : temps) {
+            if (data.IsEnabled()) {
+                listGenerationType.put(data.getId(), data);
+            }
         }
     }
 
@@ -252,7 +258,7 @@ public class Resources extends HttpServlet {
         }
     }
 
-    public static HashMap<String, Integer> getListAssetType() {
+    public static HashMap<String, AssetType> getListAssetType() {
         return listAssetType;
     }
 
@@ -264,16 +270,8 @@ public class Resources extends HttpServlet {
         return queueAuthorizeCode;
     }
 
-    public static void setQueueAuthorizeCode(HashMap<String, String> queueAuthorizeCode) {
-        Resources.queueAuthorizeCode = queueAuthorizeCode;
-    }
-
     public static HashMap<String, String> getQueueForgotPassword() {
         return queueForgotPassword;
-    }
-
-    public static void setQueueForgotPassword(HashMap<String, String> queue) {
-        Resources.queueForgotPassword = queue;
     }
 
     public static HashMap<String, WorkflowAttributeType> getListWorkflowAttributeType() {
@@ -283,8 +281,8 @@ public class Resources extends HttpServlet {
     public static HashMap<Integer, EventAction> getListEventAction() {
         return listEventAction;
     }
-    
-    public static HashMap<Integer, StatusOfAccount> getListStatusOfAccount(){
+
+    public static HashMap<Integer, StatusOfAccount> getListStatusOfAccount() {
         return listStatusOfAccount;
     }
 
@@ -295,8 +293,40 @@ public class Resources extends HttpServlet {
     public static HashMap<Integer, GenerationType> getListGenerationType() {
         return listGenerationType;
     }
-    
-    public static HashMap<Integer, Category> getListCategory(){
+
+    public static HashMap<Integer, Category> getListCategory() {
         return listCategory;
+    }
+
+    public static void putIntoRAM_AuthorizeCode(String key, String code) {
+        if (queueAuthorizeCode.size() == 20) {
+            for (String keySet : queueAuthorizeCode.keySet()) {
+                queueAuthorizeCode.remove(keySet);
+                if (queueAuthorizeCode.size() >= 18) {
+                    break;
+                }
+            }
+        }
+        if (queueAuthorizeCode.containsKey(key)) {
+            queueAuthorizeCode.replace(key, code);
+        } else {
+            queueAuthorizeCode.put(key, code);
+        }
+    }
+    
+    public static void putIntoRAM_ForgotPass(String key, String code) {
+        if (queueForgotPassword.size() == 20) {
+            for (String keySet : queueForgotPassword.keySet()) {
+                queueForgotPassword.remove(keySet);
+                if (queueForgotPassword.size() >= 18) {
+                    break;
+                }
+            }
+        }
+        if (queueForgotPassword.containsKey(key)) {
+            queueForgotPassword.replace(key, code);
+        } else {
+            queueForgotPassword.put(key, code);
+        }
     }
 }

@@ -11,6 +11,7 @@ import vn.mobileid.id.general.objects.InternalResponse;
 import vn.mobileid.id.paperless.PaperlessConstant;
 import vn.mobileid.id.paperless.kernel.GetEmailTemplate;
 import vn.mobileid.id.paperless.kernel_v2.GetUser;
+import vn.mobileid.id.paperless.object.enumration.Language;
 import vn.mobileid.id.paperless.objects.Account;
 import vn.mobileid.id.paperless.objects.EmailTemplate;
 import vn.mobileid.id.paperless.objects.PaperlessMessageResponse;
@@ -62,7 +63,7 @@ public class ResendActivation {
             EmailTemplate template;
 
             res = GetEmailTemplate.getEmailTemplate(
-                    PaperlessConstant.LANGUAGE_EN,
+                    Language.English.getId(),
                     vn.mobileid.id.paperless.object.enumration.EmailTemplate.EMAIL_SEND_PASSWORD.getName(),
                     transactionID);
 

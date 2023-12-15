@@ -72,7 +72,7 @@ public class UpdateUser {
     }
     //</editor-fold>
     
-    //<editor-fold defaultstate="collapsed" desc="Update Password of User">
+    //<editor-fold defaultstate="collapsed" desc="Update Password of User (Email, pass)">
     /**
      * Update password of User
      *
@@ -113,7 +113,7 @@ public class UpdateUser {
     }
     //</editor-fold>
     
-    //<editor-fold defaultstate="collapsed" desc="update Password of user">
+    //<editor-fold defaultstate="collapsed" desc="Update Password of user(Email , pass Old, pass New)">
     /**
      * Update Password of User
      * @param email
